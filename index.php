@@ -12,6 +12,12 @@
     <title>GBR</title>
 </head>
 <body>
-    
+    <?php
+        include "build/header.php";
+    ?>
+
+    <?php
+        include "build/footer.php";
+    ?>
 </body>
 </html>

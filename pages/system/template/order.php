@@ -4,7 +4,7 @@
 
     $page_title = "GBR Add Order";
     include "../../../build/header.php";
-    ?>
+    ?>  
 
     <?php
         include "../../../build/footer.php";

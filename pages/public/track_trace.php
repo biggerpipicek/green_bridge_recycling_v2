@@ -7,6 +7,18 @@
     include "../../build/header.php";
     ?>
 
+    <div class="container-fluid">
+        <div class="container-sm w-50 border border-secondary-subtle rounded-4 p-4">
+            <form action="" method="get">
+                <label for="track_id" class="form-label">Track ID</label>
+                <input type="text" name="track_id" class="form-control">
+                <br>
+                <button type="submit" class="btn btn-primary">Track</button>
+            </form>
+        </div>
+    </div>
+
+
     <?php
         include "../../build/footer.php";
     ?>

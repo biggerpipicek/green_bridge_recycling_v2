@@ -22,7 +22,7 @@
         $result = mysqli_stmt_get_result($stmt);
         $user_val = mysqli_fetch_assoc($result);
 
-        // VERIFYING IF USER AND PASSWORD MATCH → SET SESSION & COOKIE
+        // VERIFYING IF USER AND PASSWORD MATCH → SET SESSION & COOKIE THEN MOVE TO INDEX.PHP
         if($user_val && password_verify($pass, $user_val['password'])) {
             $_SESSION['user'] = $user_val['username'];
             $_SESSION['email'] = $user_val['email'];
@@ -46,7 +46,7 @@
     <?php if(!isset($_SESSION['user'])): ?>
     <div class="container-fluid">
         <div class="container-sm">
-            <form action="" method="post" class="border border-secondary-subtle rounded p-4">
+            <form action="" method="post" class="border border-secondary-subtle rounded-4 p-4">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" class="form-control">
                 <br>
@@ -60,7 +60,7 @@
     <?php else: ?>
     <div class="container-fluid">
         <div class="container-sm">
-            <h1>Hello, <?php echo $_SESSION['user']; ?></h1>
+            <h1>Hello, <?php echo $_SESSION['user']; ?>!</h1>
         </div>
     </div>
     <?php endif; ?>

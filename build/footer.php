@@ -17,10 +17,19 @@
             justify-content: center;
             align-items: center;
         }
+
+        .half {
+            width: 50%;
+        }
     </style>
 </head>
     <footer>
-        Michael D. Phillips - 2026
+        <div class="half">
+            <span>Michael D. Phillips - 2026</span>
+        </div>|
+        <div class="half">
+            <a href="https://www.greenbridgerecycling.com" target="_blank">Homepage</a>
+        </div>
     </footer>
 </body>
 </html>

@@ -6,6 +6,12 @@
     include "../../build/header.php";
     ?>
 
+    <!-- NAVIGATION -->
+
+    <!-- TABLE WITH ITEM LIST -->
+
+    <!-- LAST ADDED ITEM -->
+
     <?php
         include "../../build/footer.php";
     ?>

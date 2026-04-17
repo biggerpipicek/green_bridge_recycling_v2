@@ -6,7 +6,7 @@
 
     include "../../build/header.php";
     ?>
-
+    <!-- TRACK & TRACE FORM -->
     <div class="container-fluid">
         <div class="container-sm w-50 border border-secondary-subtle rounded-4 p-4">
             <form action="" method="get">
@@ -17,6 +17,8 @@
             </form>
         </div>
     </div>
+
+    <!-- CONTAINER FILLED WITH ORDER DATA -->
 
 
     <?php

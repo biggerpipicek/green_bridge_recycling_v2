@@ -1,20 +1,23 @@
-<?
+<?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // GREEN BRIDGE RECYCLING V2 - START
+    require "build/auth.php";
 
-?>
+    $page_title = "GBR Home";
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GBR</title>
-</head>
-<body>
-    <?php
+    if(session_start() === PHP_SESSION_NONE) {
+        session_start();
+    }   
+
+    $log_in_system = false;
+
+    if($_SERVER['REQUEST_METHOD'] === "POST") {
+        header("Location: index.php?success=1");
+        $log_in_system = true;
+    }
+
         include "build/header.php";
-    ?>
+?>
 
     <div class="container-fluid">
         <div class="container-sm">
@@ -29,9 +32,14 @@
             </form>
         </div>
     </div>
-
-    <?php
+    
+    <div class="container-sm mt-4 d-flex justify-content-center">
+        <br>
+        <?php if(isset($_GET['success'])): ?>
+                <div class='alert alert-success alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button>Log in successful!</div>
+        <?php endif; ?>
+    </div>
+   
+   <?php
         include "build/footer.php";
     ?>
-</body>
-</html>

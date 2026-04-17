@@ -1,10 +1,7 @@
-<?
+<?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // FOOTER
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <style>
         footer {
@@ -22,7 +19,6 @@
         }
     </style>
 </head>
-<body>
     <footer>
         Michael D. Phillips - 2026
     </footer>

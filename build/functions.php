@@ -27,6 +27,6 @@
     }
 
 
-    function genTrackId($length = 12) {
-        return strtoupper(bin2hex(randon_bytes($length / 2)));
+    function generateTrackId($length = 12) {
+        return strtoupper(bin2hex(random_bytes($length / 2)));
     }

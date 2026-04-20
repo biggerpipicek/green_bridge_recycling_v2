@@ -44,7 +44,7 @@
 
         $order_no = sprintf("GBR-%s-%s-%05d", $type_prefix, $year, $next_number);
 
-        $order_type = ($action == "incoming_orders") ? "incoming" : "outgoing";
+        $order_type = ($action == "incoming_orders") ? "in" : "out";
 
         if($action == "incoming_orders") {
             $partner_id = $_POST['customer'];
@@ -59,7 +59,7 @@
             $track_id = generateTrackId();
             $created_by = $_SESSION['user_id'];
 
-            $sql = "INSERT INTO orders (order_no, track_id, date, partner_id, price, currency, pallet_no, netto_w, brutto_w, type, approve_status, order_status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO orders (order_no, track_id, date, partner_id, price, currency, pallet_no, netto_w, brutto_w, `type`, approve_status, order_status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 
@@ -89,7 +89,7 @@
             $track_id = generateTrackId();
             $created_by = $_SESSION['user_id'];
 
-            $sql = "INSERT INTO orders (order_no, track_id, date, partner_id, price, currency, pallet_no, netto_w, brutto_w, type, approve_status, order_status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO orders (order_no, track_id, date, partner_id, price, currency, pallet_no, netto_w, brutto_w, `type`, approve_status, order_status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 

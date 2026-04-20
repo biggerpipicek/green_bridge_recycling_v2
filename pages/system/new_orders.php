@@ -111,11 +111,17 @@
                                         <!-- Material -->
                                         <div class="col-md-5">
                                             <select name="materials[]" class="form-select" required>
-                                                <option value="">Select material</option>
-                                                <option value="plastic">Plastic</option>
-                                                <option value="metal">Metal</option>
-                                                <option value="paper">Paper</option>
-                                                <option value="glass">Glass</option>
+                                                <option value="" disabled>Select material</option>
+                                                <?php
+                                                    $sql = "SELECT item_code, name from materials";
+                                                    $result = mysqli_query($conn, $sql);
+
+                                                    if(mysqli_num_rows($result) > 0) {
+                                                        while($row = mysqli_fetch_assoc($result)) {
+                                                            echo "<option value='".strtolower($row['name'])."'>".$row['name']."</option>";
+                                                        }
+                                                    }
+                                                ?>
                                             </select>
                                         </div>
 
@@ -153,9 +159,8 @@
                             <div class="col-md-3">
                                 <label class="form-label">Approve Status</label>
                                 <select name="approve_status" class="form-select">
-                                    <option value="pending">Pending</option>
                                     <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
+                                    <option value="not appproved">Not Approved</option>
                                 </select>
                             </div>
 
@@ -163,8 +168,9 @@
                             <div class="col-md-3">
                                 <label class="form-label">Order Status</label>
                                 <select name="order_status" class="form-select">
-                                    <option value="new">New</option>
-                                    <option value="processing">Processing</option>
+                                    <option value="created">Created</option>
+                                    <option value="received">Received</option>
+                                    <option value="in process">In process</option>
                                     <option value="completed">Completed</option>
                                     <option value="cancelled">Cancelled</option>
                                 </select>

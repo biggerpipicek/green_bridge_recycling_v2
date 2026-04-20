@@ -5,7 +5,7 @@
 <head>
     <style>
         body {
-            padding-bottom: 50px;
+            padding-bottom: 100px;
         }
         footer {
             /*background-color: red;*/

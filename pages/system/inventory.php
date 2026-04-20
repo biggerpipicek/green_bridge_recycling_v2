@@ -52,7 +52,7 @@
     <br>
     <!-- TABLE WITH ITEM LIST -->
     <div class="container-fluid">
-        <div class="container-sm">
+        <div class="container-sm w-50 l-25">
             <table class="table align-middle text-center">
                 <thead>
                     <th>Item code</th>

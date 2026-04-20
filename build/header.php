@@ -1,6 +1,8 @@
 <?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // HEADER
+    require_once __DIR__ . "/auth.php";
+    require_once __DIR__ . "/functions.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,15 +16,15 @@
 <body>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
-            <a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/index.php" class="navbar-brand"><b>Home</b></a>
+            <a href="/green_bridge_recycling_v2/index.php" class="navbar-brand"><b>Home</b></a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/public/profile.php" class="nav-link">Profile</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/public/track_trace.php" class="nav-link">Track & Trace</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/system/dashboard.php" class="nav-link">Dashboard</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/system/inventory.php" class="nav-link">Inventory</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/system/orders.php" class="nav-link">Orders</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/green_bridge_recycling_v2/pages/system/tickets.php" class="nav-link">Tickets</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/public/profile.php" class="nav-link">Profile</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/public/track_trace.php" class="nav-link">Track & Trace</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/dashboard.php" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/inventory.php" class="nav-link">Inventory</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/orders.php" class="nav-link">Orders</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/tickets.php" class="nav-link">Tickets</a></li>
                 </ul>
             </div>
         </div>

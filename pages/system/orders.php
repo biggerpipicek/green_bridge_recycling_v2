@@ -4,12 +4,67 @@
 
     $page_title = "GBR Orders";
     include "../../build/header.php";
-    ?>
 
-    <!-- NAVIGATION -->
+    $action = $_GET['action'] ?? '';
+    ?>
+    
     <div class="container-fluid">
-    <!-- TABLE WITH ORDER LIST -->
+            <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
+        <ul class="nav nav-tabs container-sm">
+            <li class="nav-item"><a href="?action=incoming_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'incoming_orders') ? 'active' : ''; ?>">Incoming orders</a></li>
+            <li class="nav-item"><a href="?action=outgoing_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'outgoing_orders') ? 'active' : ''; ?>">Outgoing orders</a></li>
+        </ul>
+
+        <br>
+
+        <!-- NAVIGATION -->
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">
+            <div class="container-fluid justify-content-between">
+
+                <!-- SEARCH -->
+                <form action="" method="get" class="d-flex">
+                    <input type="hidden" name="action" value="<?php echo $action; ?>">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search..">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+
+                <!-- RIGHT SIDE -->
+                <ul class="navbar-nav">
+
+                    <!-- SORT DROPDOWN -->
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="?action=<?php echo $action; ?>&sort=date_asc" class="dropdown-item">Date: New → Old</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=date_desc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- ACTIONS -->
+                    <li class="nav-item">
+                        <a href="orders.php?action=<?php echo $action; ?>" class="nav-link">Refresh</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="new_orders.php?action=<?php echo $action; ?>" class="nav-link">Add</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="" class="nav-link">Export</a>
+                    </li>
+
+                </ul>
+            </div>
+        </nav>
+        <br>
+        <!-- TABLE WITH ORDER LIST -->
         <div class="container-sm pt-4">
+
+            <?php
+                if($action == "incoming_orders"):
+            ?>
+            <!-- INCOMING ORDERS -->
+            <h1><i>Incoming Orders</i></h1>
             <table class="table align-middle">
                 <thead>
                     <th>Order No.</th>
@@ -30,7 +85,7 @@
                         <td>10000 €</td>
                         <td><div class="badge bg-success">Completed</div></td>
                         <td><div class="badge bg-primary">Approved</div></td>
-                        <td><button type="button" class="btn btn-primary">Check order</button></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>
                     <tr>
                         <td>GBR-IN-00002</td>
@@ -40,7 +95,7 @@
                         <td>12500 €</td>
                         <td><div class="badge bg-danger">Received</div></td>
                         <td><div class="badge bg-primary">Approved</div></td>
-                        <td><button type="button" class="btn btn-primary">Check order</button></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>
                     <tr>
                         <td>GBR-IN-00003</td>
@@ -50,7 +105,7 @@
                         <td>8500 €</td>
                         <td><div class="badge bg-warning">In process</div></td>
                         <td><div class="badge bg-danger">Not Approved</div></td>
-                        <td><button type="button" class="btn btn-primary">Check order</button></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>
                     <tr>
                         <td>GBR-IN-00004</td>
@@ -60,10 +115,69 @@
                         <td>125000 CZK</td>
                         <td><div class="badge bg-warning">In process</div></td>
                         <td><div class="badge bg-danger">Not Approved</div></td>
-                        <td><button type="button" class="btn btn-primary">Check order</button></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>
                 </tbody>
             </table>
+            <?php elseif($action == "outgoing_orders"): ?>
+            <h1><i>Outgoing Orders</i></h1>
+            <!-- OUTGOING ORDERS -->
+            <table class="table align-middle">
+                <thead>
+                    <th>Order No.</th>
+                    <th>Creation Date</th>
+                    <th>Customer</th>
+                    <th>Documents</th>
+                    <th>Price</th>
+                    <th>Approve Status</th>
+                    <th>Check Order</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GBR-OUT-00001</td>
+                        <td>17/04/2026</td>
+                        <td>RecoMetall</td>
+                        <td>GBR-OUT-00001_document.pdf</td>
+                        <td>10000 €</td>
+                        <td><div class="badge bg-primary">Approved</div></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
+                    </tr>
+                    <tr>
+                        <td>GBR-OUT-00002</td>
+                        <td>17/04/2026</td>
+                        <td>Metallio SP</td>
+                        <td>GBR-OUT-00002_document.pdf</td>
+                        <td>12500 €</td>
+                        <td><div class="badge bg-primary">Approved</div></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
+                    </tr>
+                    <tr>
+                        <td>GBR-OUT-00003</td>
+                        <td>20/04/2026</td>
+                        <td>Guhring Germany</td>
+                        <td>GBR-OUT-00003_document.pdf</td>
+                        <td>8500 €</td>
+                        <td><div class="badge bg-danger">Not Approved</div></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
+                    </tr>
+                    <tr>
+                        <td>GBR-OUT-00004</td>
+                        <td>20/04/2026</td>
+                        <td>Schrott & Bobs GmbH</td>
+                        <td>GBR-OUT-00004_document.pdf</td>
+                        <td>125000 CZK</td>
+                        <td><div class="badge bg-danger">Not Approved</div></td>
+                        <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <?php endif; ?>
+            <?php if(!isset($_GET['action'])): ?>
+                <div class="alert alert-info alert-dismissible fade show">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>    
+                        Please select either Incoming orders or Outgoing orders to view the list.
+                </div>
+                <?php endif; ?>
         </div>
     </div>
 

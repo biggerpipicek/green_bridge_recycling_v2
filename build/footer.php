@@ -25,7 +25,7 @@
 </head>
     <footer>
         <div class="half">
-            <span>Michael D. Phillips - 2026</span>
+            <a href="https://github.com/biggerpipicek/" target="_blank">Michael D. Phillips</a> - 2026
         </div>|
         <div class="half">
             <a href="https://www.greenbridgerecycling.com" target="_blank">Homepage</a>

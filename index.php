@@ -61,6 +61,12 @@
     <div class="container-fluid">
         <div class="container-sm">
             <h1>Hello, <?php echo $_SESSION['user']; ?>!</h1>
+            <h2><i>Recent activities,</i></h2>
+            <!-- USER'S RECENT ACTIVITIES -->
+            <div class="container-sm w-50" style="position: relative; left: -25%;">
+                
+
+            </div>
         </div>
     </div>
     <?php endif; ?>

@@ -73,8 +73,21 @@
                         <td>w.kania@schredder.pl</td>
                     </tr>-->
                     <?php
-                        $sql = "SELECT name, type, contact_info FROM partners";
+                        // CLIENT LIST AND PAGINATION - CLIENT LIST LIMITED TO 4
+                        $page = $_GET['page'] ?? 1;
+                        $page = max(1, (int)$page); // SAFETY
+                        $client_limit = 5; // CLIENT LIMIT
+                        $offset = ($page - 1) * $client_limit; // HOW MANY ROWS TO SKIP
+                        $sql = "SELECT name, type, contact_info FROM partners LIMIT $client_limit OFFSET $offset";
                         $result = mysqli_query($conn, $sql);
+
+                        // TOTAL ROWS FOR PAGINATION
+                        $total_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM partners");
+                        $total_row = mysqli_fetch_assoc($total_result);
+                        $total_clients = $total_row['total'];
+
+                        $total_pages = ceil($total_clients / $client_limit);
+
                         if(mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $type = $row['type'];
@@ -85,6 +98,22 @@
                     ?>
                 </tbody>
             </table>
+            <ul class="pagination justify-content-center">
+                <!-- PREVIOUS -->
+                <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+                    <a href="?page=<?= $page - 1 ?>" class="page-link">Previous</a>
+                </li>
+                <!-- NUMBERS -->
+                 <?php for($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?= ($i == $page ) ? 'active' : '' ?>">
+                        <a href="?page=<?= $i ?>" class="page-link"><?= $i ?></a>
+                    </li>
+                <?php endfor; ?>
+                <!-- NEXT -->
+                <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : '' ?>">
+                    <a href="?page=<?= $page + 1 ?>" class="page-link">Next</a>
+                </li>
+            </ul>
         </div>
     </div>
 <?php

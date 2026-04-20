@@ -7,7 +7,7 @@
         footer {
             /*background-color: red;*/
             border-top: 1px solid #c4c8cb;
-            position: fixed;
+            position: sticky;
             bottom: 0;
             height: 55px;
             width: 90%;

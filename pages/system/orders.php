@@ -12,7 +12,7 @@
     ?>
     
     <div class="container-fluid">
-            <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
+        <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
         <ul class="nav nav-tabs container-sm">
             <li class="nav-item"><a href="?action=incoming_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'incoming_orders') ? 'active' : ''; ?>">Incoming orders</a></li>
             <li class="nav-item"><a href="?action=outgoing_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'outgoing_orders') ? 'active' : ''; ?>">Outgoing orders</a></li>

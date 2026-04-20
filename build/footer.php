@@ -4,10 +4,14 @@
 ?>
 <head>
     <style>
+        body {
+            padding-bottom: 50px;
+        }
         footer {
             /*background-color: red;*/
             border-top: 1px solid #c4c8cb;
-            position: sticky;
+            background: white;
+            position: fixed;
             bottom: 0;
             height: 55px;
             width: 90%;

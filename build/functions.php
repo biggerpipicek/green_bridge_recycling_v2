@@ -25,3 +25,8 @@
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     }
+
+
+    function genTrackId($length = 12) {
+        return strtoupper(bin2hex(randon_bytes($length / 2)));
+    }

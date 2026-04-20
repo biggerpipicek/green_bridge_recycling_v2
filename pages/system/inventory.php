@@ -40,7 +40,7 @@
                     <a href="" class="nav-link">Refresh</a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link">Add</a>
+                    <a href="add_inventory.php" class="nav-link">Add</a>
                 </li>
                 <li class="nav-item">
                     <a href="" class="nav-link">Export</a>
@@ -60,7 +60,7 @@
                     <th>In Stock weight</th>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!--<tr>
                         <td>7401</td>
                         <td>End mills</td>
                         <td>150 kg</td>
@@ -74,12 +74,24 @@
                         <td>7403</td>
                         <td>Pieces</td>
                         <td>351 kg</td>
-                    </tr>
+                    </tr>-->
+                    <?php
+                    
+                        $sql = "SELECT item_code, name from materials";
+                        $result = mysqli_query($conn, $sql);
+
+                        if(mysqli_num_rows($result) > 0) {
+                            while($row = mysqli_fetch_assoc($result)) {
+                                echo "<tr><td>".$row['item_code']."</td><td>".$row['name']."</td><td>?</td></tr>";
+                            }
+                        }
+
+                    ?>
                 </tbody>
             </table>
         </div>
     </div>
-    <!-- LAST ADDED ITEM -->
+    <!-- 5 LAST ADDED WEIGHTS -->
 
     <?php
         include "../../build/footer.php";

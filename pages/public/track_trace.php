@@ -2,6 +2,9 @@
     // MICHAEL D. PHILLIPS - 16.04.2026
     // TRACK & TRACE SYSTEM
 
+    require "../../build/auth.php";
+    require "../../build/functions.php";
+
     $page_title = "GBR Track & Trace";
 
     include "../../build/header.php";

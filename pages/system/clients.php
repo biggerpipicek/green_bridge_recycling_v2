@@ -1,16 +1,21 @@
 <?php
-    // MICHAEL D. PHILLIPS - 16.04.2026
-    // INVENTORY SYSTEM
+    // MICHAEL D. PHILLIPS - 20.04.2026
+    // CLIENT LIST - ADD, REMOVE
 
     require "../../build/auth.php";
     require "../../build/functions.php";
 
-    $page_title = "GBR Inventory";
+    $page_title = "GBR Clients";
     include "../../build/header.php";
+
+    $client_type = [
+        "supplier" => "badge bg-info",
+        "customer" => "badge bg-warning"
+    ];
     ?>
 
     <!-- NAVIGATION -->
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-75 mx-auto rounded-3">
         <div class="container-fluid justify-content-between">
 
             <!-- SEARCH -->
@@ -40,7 +45,7 @@
                     <a href="" class="nav-link">Refresh</a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link">Add</a>
+                    <a href="add_client.php" class="nav-link">Add</a>
                 </li>
                 <li class="nav-item">
                     <a href="" class="nav-link">Export</a>
@@ -50,37 +55,38 @@
         </div>
     </nav>
     <br>
-    <!-- TABLE WITH ITEM LIST -->
+
+    <!-- TABLE CLIENT LIST -->
     <div class="container-fluid">
-        <div class="container-sm">
+        <div class="container-sm w-75">
             <table class="table align-middle text-center">
                 <thead>
-                    <th>Item code</th>
-                    <th>Item name</th>
-                    <th>In Stock weight</th>
+                    <th>Client</th>
+                    <th>Type</th>
+                    <th>Contact Info</th>
+                    <th>Edit</th>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>7401</td>
-                        <td>End mills</td>
-                        <td>150 kg</td>
-                    </tr>
-                    <tr>
-                        <td>7402</td>
-                        <td>Inserts</td>
-                        <td>1759 kg</td>
-                    </tr>
-                    <tr>
-                        <td>7403</td>
-                        <td>Pieces</td>
-                        <td>351 kg</td>
-                    </tr>
+                    <!--<tr>
+                        <td>Schredder - Wojciech Kania</td>
+                        <td><div class="badge bg-info">Supplier</div></td>
+                        <td>w.kania@schredder.pl</td>
+                    </tr>-->
+                    <?php
+                        $sql = "SELECT name, type, contact_info FROM partners";
+                        $result = mysqli_query($conn, $sql);
+                        if(mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $type = $row['type'];
+                                $badge = $client_type[$type] ?? "badge bg-secondary";
+                                echo "<tr><td>".$row['name']."</td><td><span class='{$badge}'>".ucfirst($type)."</span></td><td>".$row['contact_info']."</td><td><a href='' class='btn btn-outline-primary'>Edit</a> <a href='' class='btn btn-outline-danger'>Delete</a></td></tr>";
+                            }
+                        }
+                    ?>
                 </tbody>
             </table>
         </div>
     </div>
-    <!-- LAST ADDED ITEM -->
-
-    <?php
-        include "../../build/footer.php";
-    ?>
+<?php
+    include "../../build/footer.php";
+?>

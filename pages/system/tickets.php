@@ -2,6 +2,9 @@
     // MICHAEL D. PHILLIPS - 16.04.2026
     // TICKETS SYSTEM
 
+    require "../../build/auth.php";
+    require "../../build/functions.php";
+
     $page_title = "GBR Tickets";
     include "../../build/header.php";
     ?>

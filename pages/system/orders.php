@@ -2,6 +2,9 @@
     // MICHAEL D. PHILLIPS - 16.04.2026
     // ORDERS - SHOWING
 
+    require "../../build/auth.php";
+    require "../../build/functions.php";
+
     $page_title = "GBR Orders";
     include "../../build/header.php";
 

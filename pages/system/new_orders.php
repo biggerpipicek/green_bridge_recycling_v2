@@ -1,6 +1,10 @@
 <?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // NEW ORDERS - INCOMING/OUTGOING
+
+    require "../../build/auth.php";
+    require "../../build/functions.php";
+    
         $page_title = "GBR Create Order";
         include "../../build/header.php";
 
@@ -18,6 +22,9 @@
         <div class="container-fuild">
             <div class="container-sm">
                 <h1>Outgoing Order</h1>
+                <form action="" method="post">
+                    <!-- EDITABLE → CUSTOMER, DOCUMENTS, PRICE, APPROVE STATUS, WEIGHT, PALLET_NO, MATERIAL -->
+                </form>
             </div>
         </div>
     <?php

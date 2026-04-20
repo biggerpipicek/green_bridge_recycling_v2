@@ -3,6 +3,7 @@
     // SHOW USER PROFILE DATA
 
     require "../../build/auth.php";
+    require "../../build/functions.php";
 
     $page_title = "GBR Profile";
 

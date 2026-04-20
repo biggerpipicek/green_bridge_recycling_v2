@@ -1,8 +1,6 @@
 <?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // HEADER
-    require_once __DIR__ . "/auth.php";
-    require_once __DIR__ . "/functions.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,6 +23,7 @@
                     <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/inventory.php" class="nav-link">Inventory</a></li>
                     <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/orders.php" class="nav-link">Orders</a></li>
                     <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/tickets.php" class="nav-link">Tickets</a></li>
+                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/clients.php" class="nav-link">Clients</a></li>
                 </ul>
             </div>
         </div>

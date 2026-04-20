@@ -2,6 +2,7 @@
     // MICHAEL D. PHILLIPS - 16.04.2026
     // GREEN BRIDGE RECYCLING V2 - START
     require "build/auth.php";
+    require "build/functions.php";
 
     $page_title = "GBR Home";
 
@@ -30,12 +31,15 @@
 
             setcookie('user_login', $user_val['username'], time() + (86400*7), "/");
             
+            logActivity($conn, $_SESSION['user_id'], 'login', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} logged in");
 
             header("Location: index.php?success=1");
+
             exit();
         } else {
 
             header("Location: index.php?fail=1");
+            logActivity($conn, null, 'login_failed', 'user', 'null', "Failed log in attempt for username: {$user}");
             exit();
         }
     }
@@ -64,8 +68,10 @@
             <h2><i>Recent activities,</i></h2>
             <!-- USER'S RECENT ACTIVITIES -->
             <div class="container-sm w-50" style="position: relative; left: -25%;">
-                
+                <?php
+                    $sql = "";
 
+                ?>
             </div>
         </div>
     </div>

@@ -8,6 +8,12 @@
     include "../../build/header.php";
     ?>
 
+    <div class="container-fluid">
+        <div class="container-sm">
+            
+        </div>
+    </div>
+
     <?php
         include "../../build/footer.php";
     ?>

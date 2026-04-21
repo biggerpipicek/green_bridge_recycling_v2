@@ -92,9 +92,13 @@
             // ================= DOCUMENTS =================
             if (!empty($_FILES['documents']['name'][0])) {
 
-                $upload_dir = "../../uploads/orders/";
-                $relative_dir = "uploads/orders/";
+                // decide subfolder based on order type
+                $type_folder = ($order_type === 'in') ? 'in/' : 'out/';
 
+                $upload_dir = "../../order_attachments/" . $type_folder;
+                $relative_dir = "order_attachments/" . $type_folder;
+
+                // create folder if it doesn't exist
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
@@ -117,7 +121,7 @@
                             continue;
                         }
 
-                        // ✅ Rename file using order_no
+                        // rename file
                         $new_name = $order_no . "_doc_" . ($key + 1) . "_" . time() . "." . $ext;
 
                         $destination = $upload_dir . $new_name;
@@ -125,7 +129,8 @@
 
                         if (move_uploaded_file($tmp_name, $destination)) {
 
-                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $destination, $_SESSION['user_id']);
+                            // ⚠️ store RELATIVE path, not absolute
+                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $relative_path, $_SESSION['user_id']);
                             mysqli_stmt_execute($stmt_file);
                         }
                     }
@@ -148,7 +153,7 @@
             }
 
             header("Location: new_orders.php?action=incoming_orders&success=1");
-            //exit;
+            exit;
         } else if($action == "outgoing_orders") {
             $partner_id = $_POST['customer'];
             $date = $_POST['date'];
@@ -195,9 +200,13 @@
             // ================= DOCUMENTS =================
             if (!empty($_FILES['documents']['name'][0])) {
 
-                $upload_dir = "../../uploads/orders/";
-                $relative_dir = "uploads/orders/";
+                // decide subfolder based on order type
+                $type_folder = ($order_type === 'in') ? 'in/' : 'out/';
 
+                $upload_dir = "../../order_attachments/" . $type_folder;
+                $relative_dir = "order_attachments/" . $type_folder;
+
+                // create folder if it doesn't exist
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
@@ -220,7 +229,7 @@
                             continue;
                         }
 
-                        // ✅ Rename file using order_no
+                        // rename file
                         $new_name = $order_no . "_doc_" . ($key + 1) . "_" . time() . "." . $ext;
 
                         $destination = $upload_dir . $new_name;
@@ -228,7 +237,8 @@
 
                         if (move_uploaded_file($tmp_name, $destination)) {
 
-                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $destination, $_SESSION['user_id']);
+                            // ⚠️ store RELATIVE path, not absolute
+                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $relative_path, $_SESSION['user_id']);
                             mysqli_stmt_execute($stmt_file);
                         }
                     }
@@ -249,7 +259,7 @@
             }
 
             header("Location: new_orders.php?action=outgoing_orders&success=1");
-            //exit;
+            exit;
         }
     }
 ?>

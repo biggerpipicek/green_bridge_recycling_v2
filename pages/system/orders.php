@@ -80,7 +80,7 @@
                     <th>Check Order</th>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!--<tr>
                         <td>GBR-IN-00001</td>
                         <td>17/04/2026</td>
                         <td>Schredder</td>
@@ -119,7 +119,18 @@
                         <td><div class="badge bg-warning">In process</div></td>
                         <td><div class="badge bg-danger">Not Approved</div></td>
                         <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
-                    </tr>
+                    </tr>-->
+                    <?php
+                        $sql = "SELECT orders.order_no, orders.date, partners.name AS partner_name, orders.price, orders.currency, orders.type, orders.approve_status FROM orders JOIN partners ON orders.partner_id = partners.id";
+                        $result = mysqli_query($conn, $sql);
+                        if(mysqli_num_rows($result) > 0) {
+                            while($row = mysqli_fetch_assoc($result)) {
+                                if($row['type'] === "in") {
+                                    echo "<tr><td>".$row['order_no']."</td><td>".$row['date']."</td><td>".$row['partner_name']."</td><td>".$row['price']." ".$row['currency']."</td><td>".$row['approve_status']."</td></tr>";
+                                }
+                            }
+                        }
+                    ?>
                 </tbody>
             </table>
             <?php elseif($action == "outgoing_orders"): ?>
@@ -136,7 +147,7 @@
                     <th>Check Order</th>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!--<tr>
                         <td>GBR-OUT-00001</td>
                         <td>17/04/2026</td>
                         <td>RecoMetall</td>
@@ -171,7 +182,18 @@
                         <td>125000 CZK</td>
                         <td><div class="badge bg-danger">Not Approved</div></td>
                         <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
-                    </tr>
+                    </tr>-->
+                    <?php
+                        $sql = "SELECT orders.order_no, orders.date, partners.name AS partner_name, orders.price, orders.currency, orders.type, orders.approve_status FROM orders JOIN partners ON orders.partner_id = partners.id";
+                        $result = mysqli_query($conn, $sql);
+                        if(mysqli_num_rows($result) > 0) {
+                            while($row = mysqli_fetch_assoc($result)) {
+                                if($row['type'] === "out") {
+                                    echo "<tr><td>".$row['order_no']."</td><td>".$row['date']."</td><td>".$row['partner_name']."</td><td></td><td>".$row['price']." ".$row['currency']."</td><td>".$row['approve_status']."</td><td></td></tr>";
+                                }
+                            }
+                        }
+                    ?>
                 </tbody>
             </table>
             <?php endif; ?>

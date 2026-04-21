@@ -72,10 +72,83 @@
 
             mysqli_stmt_execute($stmt);
 
-            logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $_SESSION['user_id'], "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
-        
-            header("Location: add_inventory.php?action=incoming_orders&success=1");
-            exit;
+            $order_id = mysqli_insert_id($conn);
+
+            // ================= MATERIALS =================
+            if (!empty($_POST['materials'])) {
+
+                $sql_mat = "INSERT INTO order_materials (order_id, material_id, quantity) VALUES (?, ?, ?)";
+                $stmt_mat = mysqli_prepare($conn, $sql_mat);
+
+                foreach ($_POST['materials'] as $i => $material) {
+
+                    $weight = (float)$_POST['weights'][$i];
+
+                    mysqli_stmt_bind_param($stmt_mat, "isd", $order_id, $material, $weight);
+                    mysqli_stmt_execute($stmt_mat);
+                }
+            }
+
+            // ================= DOCUMENTS =================
+            if (!empty($_FILES['documents']['name'][0])) {
+
+                $upload_dir = "../../uploads/orders/";
+                $relative_dir = "uploads/orders/";
+
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                $allowed = ['jpg', 'jpeg', 'png', 'pdf'];
+
+                $sql_file = "INSERT INTO order_attachments (order_id, file_path, uploaded_by) VALUES (?, ?, ?)";
+                $stmt_file = mysqli_prepare($conn, $sql_file);
+
+                foreach ($_FILES['documents']['name'] as $key => $filename) {
+
+                    $tmp_name = $_FILES['documents']['tmp_name'][$key];
+                    $error = $_FILES['documents']['error'][$key];
+
+                    if ($error === 0) {
+
+                        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+                        if (!in_array($ext, $allowed)) {
+                            continue;
+                        }
+
+                        // ✅ Rename file using order_no
+                        $new_name = $order_no . "_doc_" . ($key + 1) . "_" . time() . "." . $ext;
+
+                        $destination = $upload_dir . $new_name;
+                        $relative_path = $relative_dir . $new_name;
+
+                        if (move_uploaded_file($tmp_name, $destination)) {
+
+                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $destination, $_SESSION['user_id']);
+                            mysqli_stmt_execute($stmt_file);
+                        }
+                    }
+                }
+            }
+
+            //logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
+
+            $log_result = logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
+
+            if (!$log_result) {
+                // This will stop the script and tell you if the function returned false
+                //die("The logActivity function failed to insert data.");
+            } else {
+                // This will prove the function actually worked
+                $new_id = mysqli_insert_id($conn);
+                //echo "Log successfully created! New ID is: " . $new_id;
+                //echo "Connected to database: " . mysqli_query($conn, "SELECT DATABASE()")->fetch_row()[0];
+                exit;
+            }
+
+            header("Location: new_orders.php?action=incoming_orders&success=1");
+            //exit;
         } else if($action == "outgoing_orders") {
             $partner_id = $_POST['customer'];
             $date = $_POST['date'];
@@ -102,10 +175,81 @@
 
             mysqli_stmt_execute($stmt);
 
-            logActivity($conn, $_SESSION['user_id'], 'create outgoing_order', 'order', $_SESSION['user_id'], "User #{$_SESSION['user_id']} created Outgoing order No.{$order_no}");
+            $order_id = mysqli_insert_id($conn);
+
+            // ================= MATERIALS =================
+            if (!empty($_POST['materials'])) {
+
+                $sql_mat = "INSERT INTO order_materials (order_id, material_id, quantity) VALUES (?, ?, ?)";
+                $stmt_mat = mysqli_prepare($conn, $sql_mat);
+
+                foreach ($_POST['materials'] as $i => $material) {
+
+                    $weight = (float)$_POST['weights'][$i];
+
+                    mysqli_stmt_bind_param($stmt_mat, "isd", $order_id, $material, $weight);
+                    mysqli_stmt_execute($stmt_mat);
+                }
+            }
+
+            // ================= DOCUMENTS =================
+            if (!empty($_FILES['documents']['name'][0])) {
+
+                $upload_dir = "../../uploads/orders/";
+                $relative_dir = "uploads/orders/";
+
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                $allowed = ['jpg', 'jpeg', 'png', 'pdf'];
+
+                $sql_file = "INSERT INTO order_attachments (order_id, file_path, uploaded_by) VALUES (?, ?, ?)";
+                $stmt_file = mysqli_prepare($conn, $sql_file);
+
+                foreach ($_FILES['documents']['name'] as $key => $filename) {
+
+                    $tmp_name = $_FILES['documents']['tmp_name'][$key];
+                    $error = $_FILES['documents']['error'][$key];
+
+                    if ($error === 0) {
+
+                        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+                        if (!in_array($ext, $allowed)) {
+                            continue;
+                        }
+
+                        // ✅ Rename file using order_no
+                        $new_name = $order_no . "_doc_" . ($key + 1) . "_" . time() . "." . $ext;
+
+                        $destination = $upload_dir . $new_name;
+                        $relative_path = $relative_dir . $new_name;
+
+                        if (move_uploaded_file($tmp_name, $destination)) {
+
+                            mysqli_stmt_bind_param($stmt_file, "iss", $order_id, $destination, $_SESSION['user_id']);
+                            mysqli_stmt_execute($stmt_file);
+                        }
+                    }
+                }
+            }
+
+            //logActivity($conn, $_SESSION['user_id'], 'create outgoing_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Outgoing order No.{$order_no}");
             
-            header("Location: add_inventory.php?action=outgoing_orders&success=1");
-            exit;
+            $log_result = logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
+
+            if (!$log_result) {
+                // This will stop the script and tell you if the function returned false
+                //die("The logActivity function failed to insert data.");
+            } else {
+                // This will prove the function actually worked
+                //echo "Log successfully created!";
+                exit;
+            }
+
+            header("Location: new_orders.php?action=outgoing_orders&success=1");
+            //exit;
         }
     }
 ?>
@@ -203,12 +347,12 @@
                                             <select name="materials[]" class="form-select" required>
                                                 <option value="" disabled>Select material</option>
                                                 <?php
-                                                    $sql = "SELECT item_code, name from materials";
+                                                    $sql = "SELECT id, name from materials";
                                                     $result = mysqli_query($conn, $sql);
 
                                                     if(mysqli_num_rows($result) > 0) {
                                                         while($row = mysqli_fetch_assoc($result)) {
-                                                            echo "<option value='".strtolower($row['name'])."'>".$row['name']."</option>";
+                                                            echo "<option value='".$row['id']."'>".$row['name']."</option>";
                                                         }
                                                     }
                                                 ?>
@@ -297,6 +441,16 @@
                                 <label class="form-label">Customer</label>
                                 <select name="customer" class="form-select" required>
                                     <option value="" disabled>Select customer</option>
+                                    <?php
+                                        $sql = "SELECT id, name FROM partners WHERE type = 'supplier'";
+                                        $result = mysqli_query($conn, $sql);
+
+                                        if(mysqli_num_rows($result) > 0) {
+                                            while($row = mysqli_fetch_assoc($result)) {
+                                                echo "<option value='".$row['id']."'>".$row['name']."</option>";
+                                            }
+                                        }
+                                    ?>
                                 </select>
                             </div>
 
@@ -309,7 +463,7 @@
                             <!-- Track ID -->
                             <div class="col-md-3">
                                 <label class="form-label">Track ID</label>
-                                <input type="text" name="track_id" class="form-control" required>
+                                <input type="text" name="track_id" class="form-control" disabled>
                             </div>
 
                             <!-- Date -->
@@ -360,12 +514,12 @@
                                             <select name="materials[]" class="form-select" required>
                                                 <option value="" disabled>Select material</option>
                                                 <?php
-                                                    $sql = "SELECT item_code, name from materials";
+                                                    $sql = "SELECT id, name from materials";
                                                     $result = mysqli_query($conn, $sql);
 
                                                     if(mysqli_num_rows($result) > 0) {
                                                         while($row = mysqli_fetch_assoc($result)) {
-                                                            echo "<option value='".strtolower($row['name'])."'>".$row['name']."</option>";
+                                                            echo "<option value='".$row['id']."'>".$row['name']."</option>";
                                                         }
                                                     }
                                                 ?>
@@ -453,6 +607,20 @@
         </div>
         <?php
             endif;
+            if(isset($_GET['success'])):
+        ?>
+            <div class="container-fluid">
+            <div class="container-sm">
+                <div class="alert alert-success alert-dismissible fade show">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>    
+                        <h1>Yay!</h1><br>Order was created!
+                </div>
+            </div>
+        </div>
+
+        <?php
+            endif;
+
         include "../../build/footer.php";
     ?>
 </body>

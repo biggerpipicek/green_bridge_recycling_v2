@@ -69,7 +69,17 @@
             <!-- USER'S RECENT ACTIVITIES -->
             <div class="container-sm w-50" style="position: relative; left: -25%;">
                 <?php
-                    $sql = "";
+                    // RECENT/LAST ACTIVITY BY USER
+                    $activity_limit = 5;
+                    $sql = "SELECT `action`, entity_type, `description` FROM activity_log WHERE entity_id = {$_SESSION['user_id']} LIMIT {$activity_limit}";
+
+                    $result = mysqli_query($conn, $sql);
+                    if(mysqli_num_rows($result) > 0) {
+                        while($row = mysqli_fetch_assoc($result)) {
+                            //echo $row['action'] . " - " . $row['entity_type'] . " - " . $_SESSION['user'] . " - " . $row['description'] . "<br>";
+                            echo "<div class='card'><div class='card-body'><h4 class='card-title'>".$row['action']."</h4><p class='card-text'>".$row['description'].".</p></div></div>&nbsp;";
+                        }
+                    }
 
                 ?>
             </div>

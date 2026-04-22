@@ -5,16 +5,16 @@
     require "../../../build/auth.php";
     require "../../../build/functions.php";
 
-    $page_title = "GBR Add Order";
-    include "../../../build/header.php";
-
     $id = $_GET['id'];
+
+    $page_title = "GBR ORDER {$id}";
+    include "../../../build/header.php";
 
     $sql = "SELECT * FROM orders WHERE id = {$id}";
     $result = mysqli_query($conn, $sql);
 
     if(mysqli_num_rows($result) > 0):
-        while(mysqli_fetch_assoc($result)) {
+        while($row_m = mysqli_fetch_assoc($result)) {
     ?>
 
     <div class="container-fuild">
@@ -45,25 +45,25 @@
                             <!-- Order No -->
                             <div class="col-md-3">
                                 <label class="form-label">Order No</label>
-                                <input type="text" name="order_no" class="form-control" disabled>
+                                <input type="text" name="order_no" class="form-control" disabled value="<?php echo $row_m['order_no']; ?>">
                             </div>
 
                             <!-- Track ID -->
                             <div class="col-md-3">
                                 <label class="form-label">Track ID</label>
-                                <input type="text" name="track_id" class="form-control" disabled>
+                                <input type="text" name="track_id" class="form-control" disabled value="<?php echo $row_m['track_id']; ?>">
                             </div>
 
                             <!-- Date -->
                             <div class="col-md-4">
                                 <label class="form-label">Date</label>
-                                <input type="date" name="date" class="form-control" required>
+                                <input type="date" name="date" class="form-control" required value="<?php echo $row_m['date']; ?>">
                             </div>
 
                             <!-- Price -->
                             <div class="col-md-2">
                                 <label class="form-label">Price</label>
-                                <input type="number" step="0.01" name="price" class="form-control" required>
+                                <input type="number" step="0.01" name="price" class="form-control" required value="<?php echo $row_m['price'] ?>">
                             </div>
 
                             <!-- Currency -->
@@ -81,13 +81,13 @@
                             <!-- Pallet No -->
                             <div class="col-md-6">
                                 <label class="form-label">Pallet No</label>
-                                <input type="text" name="pallet_no" class="form-control">
+                                <input type="text" name="pallet_no" class="form-control" value="<?php echo $row_m['pallet_no'] ?>">
                             </div>
 
                             <!-- Brutto Weight -->
                             <div class="col-md-6">
                                 <label class="form-label">Brutto Weight (kg)</label>
-                                <input type="number" step="0.01" name="brutto_weight" class="form-control">
+                                <input type="number" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $row_m['brutto_w'] ?>">
                             </div>
 
                             <!-- ================= MATERIALS SECTION ================= -->
@@ -141,7 +141,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Netto Weight (kg)</label>
                                 <input type="number" step="0.01" name="netto_weight" 
-                                    id="netto_weight" class="form-control" readonly>
+                                    id="netto_weight" class="form-control" readonly value="<?php echo $row_m['netto_w'] ?>">
                             </div>
                             <!-- ===================================================== -->
 
@@ -149,8 +149,8 @@
                             <div class="col-md-3">
                                 <label class="form-label">Approve Status</label>
                                 <select name="approve_status" class="form-select">
-                                    <option value="approved">Approved</option>
-                                    <option value="not approved">Not Approved</option>
+                                    <option value="approved" <?php ($row_m['approve_status'] === 'approved') ? 'selected' : '' ?>>Approved</option>
+                                    <option value="not approved" <?php ($row_m['approve_status'] === 'not approved') ? 'selected' : '' ?>>Not Approved</option>
                                 </select>
                             </div>
 
@@ -158,11 +158,11 @@
                             <div class="col-md-3">
                                 <label class="form-label">Order Status</label>
                                 <select name="order_status" class="form-select">
-                                    <option value="created">Created</option>
-                                    <option value="received">Received</option>
-                                    <option value="in process">In process</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="created" <?php ($row_m['order_status'] === 'created') ? 'selected' : '' ?>>Created</option>
+                                    <option value="received" <?php ($row_m['order_status'] === 'received') ? 'selected' : '' ?>>Received</option>
+                                    <option value="in process" <?php ($row_m['order_status'] === 'in process') ? 'selected' : '' ?>>In process</option>
+                                    <option value="completed" <?php ($row_m['order_status'] === 'completed') ? 'selected' : '' ?>>Completed</option>
+                                    <option value="cancelled" <?php ($row_m['order_status'] === 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
                                 </select>
                             </div>
 

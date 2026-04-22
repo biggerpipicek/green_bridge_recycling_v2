@@ -22,6 +22,14 @@
         "completed" => "badge bg-success",
         "cancelled" => "badge bg-danger"
     ];
+
+    $order_currency = [
+        "EUR" => "€",
+        "USD" => "$",
+        "YEN" => "¥",
+        "ZL" => "zł",
+        "CZK" => "Kč"
+    ];
     ?>
     
     <div class="container-fluid">
@@ -134,7 +142,7 @@
                         <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>-->
                     <?php
-                        $sql = "SELECT orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
+                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {
@@ -144,8 +152,11 @@
 
                                     $o_stat = $row['order_status'];
                                     $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
+
+                                    $currency = $row['currency'];
+                                    $symbol_currency = $order_currency[$currency] ?? "XXX";
                                     $date = date("m/d/Y", strtotime($row['date']));
-                                    echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td><a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a></td><td>".$row['price']." ".$row['currency']."</td><td><span class='{$o_badge}'>".$row['order_status']."</span></td><td><span class='{$a_badge}'>".$row['approve_status']."</span></td><td>Check order</td></tr>";
+                                    echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td><a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a></td><td>".$row['price']." ".$symbol_currency."</td><td><span class='{$o_badge}'>".$row['order_status']."</span></td><td><span class='{$a_badge}'>".$row['approve_status']."</span></td><td><a href='template/order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
                                 }
                             }
                         }

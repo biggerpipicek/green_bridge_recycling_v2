@@ -1,0 +1,18 @@
+.ver-line {
+    background-color: #c4c8cb;
+    width: 1px;
+    height: inherit;
+}
+
+.main-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.left, .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

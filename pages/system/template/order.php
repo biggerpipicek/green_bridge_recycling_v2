@@ -39,7 +39,7 @@
 
                                         if(mysqli_num_rows($result) > 0) {
                                             while($row = mysqli_fetch_assoc($result)) {
-                                                echo "<option value='".$row['id']."'>".$row['name']."</option>";
+                                                echo "<option value='".$row['id']."' ".(($row['id'] == $row_m['partner_id']) ? 'selected' : '').">".$row['name']."</option>";
                                             }
                                         }
                                     ?>
@@ -74,11 +74,11 @@
                             <div class="col-md-2">
                                 <label class="form-label">Currency</label>
                                 <select name="currency" class="form-select" required>
-                                    <option value="EUR">€ EUR</option>
-                                    <option value="USD">$ USD</option>
-                                    <option value="CZK">Kč CZK</option>
-                                    <option value="PLN">zł PLN</option>
-                                    <option value="JPY">¥ JPY</option>
+                                    <option value="EUR" <?php echo ($row_m['currency'] == "EUR") ? 'selected' : '' ?>>€ EUR</option>
+                                    <option value="USD" <?php echo ($row_m['currency'] == "USD") ? 'selected' : '' ?>>$ USD</option>
+                                    <option value="CZK" <?php echo ($row_m['currency'] == "CZK") ? 'selected' : '' ?>>Kč CZK</option>
+                                    <option value="PLN" <?php echo ($row_m['currency'] == "PLN") ? 'selected' : '' ?>>zł PLN</option>
+                                    <option value="JPY" <?php echo ($row_m['currency'] == "YEN") ? 'selected' : '' ?>>¥ JPY</option>
                                 </select>
                             </div>
 
@@ -153,8 +153,8 @@
                             <div class="col-md-3">
                                 <label class="form-label">Approve Status</label>
                                 <select name="approve_status" class="form-select">
-                                    <option value="approved" <?php ($row_m['approve_status'] === 'approved') ? 'selected' : '' ?>>Approved</option>
-                                    <option value="not approved" <?php ($row_m['approve_status'] === 'not approved') ? 'selected' : '' ?>>Not Approved</option>
+                                    <option value="approved" <?php echo ($row_m['approve_status'] == 'approved') ? 'selected' : '' ?>>Approved</option>
+                                    <option value="not approved" <?php echo ($row_m['approve_status'] == 'not approved') ? 'selected' : '' ?>>Not Approved</option>
                                 </select>
                             </div>
 
@@ -162,12 +162,12 @@
                             <div class="col-md-3">
                                 <label class="form-label">Order Status</label>
                                 <select name="order_status" class="form-select">
-                                    <option value="created" <?php ($row_m['order_status'] === 'created') ? 'selected' : '' ?>>Created</option>
-                                    <option value="received" <?php ($row_m['order_status'] === 'received') ? 'selected' : '' ?>>Received</option>
-                                    <option value="in process" <?php ($row_m['order_status'] === 'in process') ? 'selected' : '' ?>>In process</option>
-                                    <option value="completed" <?php ($row_m['order_status'] === 'completed') ? 'selected' : '' ?>>Completed</option>
-                                    <option value="cancelled" <?php ($row_m['order_status'] === 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
-                                </select>
+                                    <option value="created" <?php echo ($row_m['order_status'] == 'created') ? 'selected' : '' ?>>Created</option>
+                                    <option value="received" <?php echo ($row_m['order_status'] == 'received') ? 'selected' : '' ?>>Received</option>
+                                    <option value="in process" <?php echo ($row_m['order_status'] == 'in process') ? 'selected' : '' ?>>In process</option>
+                                    <option value="completed" <?php echo ($row_m['order_status'] == 'completed') ? 'selected' : '' ?>>Completed</option>
+                                    <option value="cancelled" <?php echo ($row_m['order_status'] == 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
+    </select>
                             </div>
 
                             <!-- Documents -->

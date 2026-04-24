@@ -11,6 +11,21 @@
 
     $id = $_GET['id'];
 
+    // 1. Fetch available materials for the dropdowns
+    $m_sql = "SELECT id, name FROM materials ORDER BY name ASC";
+    $m_res = mysqli_query($conn, $m_sql);
+    $materials = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
+
+    // 2. Fetch specific items for THIS order from your 'order_materials' table
+    $om_sql = "SELECT material_id, quantity as weight FROM order_materials WHERE order_id = $id";
+    $om_res = mysqli_query($conn, $om_sql);
+    $order_materials = mysqli_fetch_all($om_res, MYSQLI_ASSOC);
+
+    // 3. Fetch attachments for this order
+    $at_sql = "SELECT file_path FROM order_attachments WHERE order_id = $id";
+    $at_res = mysqli_query($conn, $at_sql);
+    $attachments = mysqli_fetch_all($at_res, MYSQLI_ASSOC);
+
     $page_title = "GBR ORDER {$id}";
     include "../../../build/header.php";
 
@@ -20,7 +35,7 @@
     if(mysqli_num_rows($result) > 0):
         while($row_m = mysqli_fetch_assoc($result)) {
     ?>
-
+    <script src="../../../js/script.js></script>
     <div class="container-fuild">
             <div class="container-sm">
                 <h1>Incoming Order</h1>
@@ -97,47 +112,36 @@
                             <!-- ================= MATERIALS SECTION ================= -->
                             <div class="col-12">
                                 <label class="form-label">Materials</label>
-
                                 <div id="materials-container">
-                                    <div class="row g-2 material-row mb-2 align-items-center">
+                                    <?php 
+                                    // Use your order_materials data, or one empty row if none exists
+                                    $display_items = !empty($order_materials) ? $order_materials : [['material_id' => '', 'weight' => '']];
+                                    
+                                    foreach($display_items as $om): 
+                                    ?>
+                                        <div class="row g-2 material-row mb-2 align-items-center">
+                                            <div class="col-md-5">
+                                                <select name="materials[]" class="form-select" required>
+                                                    <option value="" disabled <?= empty($om['material_id']) ? 'selected' : '' ?>>Select material</option>
+                                                    <?php foreach($materials as $m): ?>
+                                                        <option value="<?= $m['id']; ?>" <?= ($m['id'] == $om['material_id']) ? 'selected' : '' ?>>
+                                                            <?= $m['name']; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
 
-                                        <!-- Material -->
-                                        <div class="col-md-5">
-                                            <select name="materials[]" class="form-select" required>
-                                                <option value="" disabled>Select material</option>
-                                                <?php
-                                                    // INSERT HERE AN SQL COMMAND TO SELECT ALL MATERIALS FROM THE SPECIFIC ORDER
-                                                    $sql = "SELECT id, name from materials";
-                                                    $result = mysqli_query($conn, $sql);
+                                            <div class="col-md-3">
+                                                <input type="number" step="0.01" name="weights[]" class="form-control weight-input" 
+                                                    placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required>
+                                            </div>
 
-                                                    if(mysqli_num_rows($result) > 0) {
-                                                        while($row = mysqli_fetch_assoc($result)) {
-                                                            echo "<option value='".$row['id']."'>".$row['name']."</option>";
-                                                        }
-                                                    }
-                                                ?>
-                                            </select>
+                                            <div class="col-md-4 d-flex gap-2">
+                                                <button type="button" class="btn btn-danger w-50 remove-material">Remove</button>
+                                                <button type="button" class="btn btn-success w-50 add-material">+ Add</button>
+                                            </div>
                                         </div>
-
-                                        <!-- Weight -->
-                                        <div class="col-md-3">
-                                            <input type="number" step="0.01" name="weights[]" 
-                                                class="form-control weight-input" 
-                                                placeholder="Weight (kg)" required>
-                                        </div>
-
-                                        <!-- Buttons -->
-                                        <div class="col-md-4 d-flex gap-2">
-                                            <button type="button" class="btn btn-danger w-50 remove-material">
-                                                Remove
-                                            </button>
-
-                                            <button type="button" class="btn btn-success w-50 add-material">
-                                                + Add
-                                            </button>
-                                        </div>
-
-                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 
@@ -167,16 +171,25 @@
                                     <option value="in process" <?php echo ($row_m['order_status'] == 'in process') ? 'selected' : '' ?>>In process</option>
                                     <option value="completed" <?php echo ($row_m['order_status'] == 'completed') ? 'selected' : '' ?>>Completed</option>
                                     <option value="cancelled" <?php echo ($row_m['order_status'] == 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
-    </select>
+                                </select>
                             </div>
 
                             <!-- Documents -->
                             <div class="col-12">
                                 <label class="form-label">Documents (Images / PDFs)</label>
-                                <input type="file" name="documents[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf">
-                                <?php
-                                    // INSERT HERE AN SQL COMMAND TO SELECT ALL ATTACHMENTS FOR THE SPECIFIC ORDER
-                                ?>
+                                <input type="file" name="documents[]" class="form-control mb-2" multiple accept=".jpg,.jpeg,.png,.pdf">
+                                
+                                <?php if(!empty($attachments)): ?>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <?php foreach($attachments as $file): ?>
+                                            <div class="border p-1 rounded">
+                                                <a href="<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Submit -->

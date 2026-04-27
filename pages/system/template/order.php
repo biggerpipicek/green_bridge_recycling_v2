@@ -35,7 +35,7 @@
     if(mysqli_num_rows($result) > 0):
         while($row_m = mysqli_fetch_assoc($result)) {
     ?>
-    <script src="../../../js/script.js></script>
+    <script src="../../../js/script.js"></script>
     <div class="container-fuild">
             <div class="container-sm">
                 <h1>Incoming Order</h1>

@@ -102,8 +102,8 @@
     $page_title = "GBR ORDER {$id}";
     include "../../../build/header.php";
 ?>
-
-                            <div class="container-fluid">
+<script src="../../../js/script.js"></script>
+<div class="container-fluid">
     <div class="container-sm">
         <h1>Incoming Order</h1>
         

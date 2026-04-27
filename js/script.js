@@ -46,20 +46,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function calculateNetto() {
         let total = 0;
-        const inputs = document.querySelectorAll(".weight-input");
+        // We target the class you assigned to the weight inputs
+        const weightInputs = document.querySelectorAll(".weight-input");
         
-        inputs.forEach(input => {
-            const value = parseFloat(input.value);
-            if (!isNaN(value)) {
-                total += value;
+        weightInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val)) {
+                total += val;
             }
         });
 
         if (nettoField) {
             nettoField.value = total.toFixed(2);
+            // Debugging: uncomment the line below to see if it's running in your console
+            // console.log("New Total:", total);
         }
     }
-    
-    // Initial calculation on page load (in case data is already there)
+
+    // Use "change" and "input" to cover all bases (typing and clicking arrows)
+    document.addEventListener("input", function (e) {
+        if (e.target.classList.contains("weight-input")) {
+            calculateNetto();
+        }
+    });
+
+    // Run it once immediately so the page is correct on load
     calculateNetto();
 });

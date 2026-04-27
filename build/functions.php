@@ -58,6 +58,23 @@
         return false; // IF NOTHING FOUND, NOTHING LOGGED
     }
 
+    function getChangedFields($old_data, $new_data) {
+        $changes = [];
+
+        foreach ($new_data as $key => $new_value) {
+            if (array_key_exists($key, $old_data)) {
+                if ($old_data[$key] != $new_value) {
+                    $changes[$key] = [
+                        'from' => $old_data[$key],
+                        'to' => $new_value
+                    ];
+                }
+            }
+        }
+
+        return $changes;
+    }
+
     function generateTrackId($length = 12) {
         return strtoupper(bin2hex(random_bytes($length / 2)));
     }

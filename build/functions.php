@@ -38,6 +38,26 @@
         return $execute;
     }
 
+    function logChanges($conn, $user_id, $entity_type, $entity_id, $old_data, $new_data) {
+        $changes = [];
+
+        foreach ($new_data as $key => $new_value) {
+            // ONLY COMPATE KEY THAT EXIST IN THE OLD DATA
+            if (array_key_exists($key, $old_data)) {
+                if($old_data[$key] != $new_value) {
+                    $changes[] = "$key changed from {$old_data[$key]} to {$new_value}";
+                }
+            }
+        }
+
+        if(!empty($changes)) {
+            $description = "Updated $entity_type: " . implode(", ", $changes);    
+            return logActivity($conn, $user_id, "update", $entity_type, $entity_id, $description);    
+        }
+
+        return false; // IF NOTHING FOUND, NOTHING LOGGED
+    }
+
     function generateTrackId($length = 12) {
         return strtoupper(bin2hex(random_bytes($length / 2)));
     }

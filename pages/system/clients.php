@@ -78,7 +78,7 @@
                         $page = max(1, (int)$page); // SAFETY
                         $client_limit = 5; // CLIENT LIMIT
                         $offset = ($page - 1) * $client_limit; // HOW MANY ROWS TO SKIP
-                        $sql = "SELECT name, type, contact_info FROM partners LIMIT $client_limit OFFSET $offset";
+                        $sql = "SELECT id, name, type, contact_info FROM partners LIMIT $client_limit OFFSET $offset";
                         $result = mysqli_query($conn, $sql);
 
                         // TOTAL ROWS FOR PAGINATION
@@ -92,7 +92,7 @@
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $type = $row['type'];
                                 $badge = $client_type[$type] ?? "badge bg-secondary";
-                                echo "<tr><td>".$row['name']."</td><td><span class='{$badge}'>".ucfirst($type)."</span></td><td>".$row['contact_info']."</td><td><a href='' class='btn btn-outline-primary'>Edit</a> <a href='' class='btn btn-outline-danger'>Delete</a></td></tr>";
+                                echo "<tr><td>".$row['name']."</td><td><span class='{$badge}'>".ucfirst($type)."</span></td><td>".$row['contact_info']."</td><td><a href='template/client.php?id={$row['id']}' class='btn btn-outline-primary'>Edit</a> <a href='' class='btn btn-outline-danger'>Delete</a></td></tr>";
                             }
                         }
                     ?>

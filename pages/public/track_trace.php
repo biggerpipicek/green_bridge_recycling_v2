@@ -37,15 +37,16 @@
         <div class="container-sm w-50 border border-secondary-subtle rounded-4 p-4">
             <form action="" method="get">
                 <label for="track_id" class="form-label">Track ID</label>
-                <input type="text" name="track_id" class="form-control" value="<?php if(isset($track_id)): echo $track_id; ?>">
+                <input type="text" name="track_id" class="form-control" value="<?php echo htmlspecialchars($track_id); ?>">
                 <br>
                 <button type="submit" class="btn btn-primary">Track</button>
             </form>
         </div>
     </div>
+    <br>
 
     <!-- CONTAINER FILLED WITH ORDER DATA -->
-    <?php if(!empty(isset($track_id))): ?>
+    <?php if(!empty($track_id)): ?>
         <br>
         <div class="container-fluid">
             <div class="container-sm">
@@ -71,31 +72,31 @@
                                         <div class='row'>
                                             <img src='../../imgs/person.png' style='width: 75px; height: 50px;'>
                                             <div class='col'>
-                                                <p>Customer</p>
-                                                <p>{$row['partner_name']}</p>
+                                                <p class='mb-0'>Customer</p>
+                                                <h4>{$row['partner_name']}</h4>
                                             </div>
                                         </div>
                                         <br>
                                         <div class='row'>
                                             <img src='../../imgs/list.png' style='width: 75px; height: 50px;'>
                                             <div class='col'>
-                                                <p>Status</p>
-                                                <span class='{$o_badge}'>{$row['order_status']}</span>                                            
+                                                <p class='mb-0'>Status</p>
+                                                <h4><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></h4>                                            
                                             </div>
                                         </div>
                                         <br>
                                         <div class='row'>
                                             <img src='../../imgs/barcode.png' style='width: 75px; height: 50px;'>
                                             <div class='col'>
-                                                <p>Track ID</p>
-                                                <p>{$row['track_id']}</p>
+                                                <p class='mb-0'>Track ID</p>
+                                                <h4 class='text-center' style='background-color: rgba(13,110,253,0.1); border-radius: 5px;'>{$row['track_id']}</h4>
                                             </div>
                                         </div>
                                         <br>
                                         <div class='row'>
                                             <img src='../../imgs/calendar.png' style='width: 75px; height: 50px;'>
                                             <div class='col'>
-                                                <p>Created at: <span>{$date}</span></p>
+                                                <p style='margin: auto;'>Created at: <span><b>{$date}</b></span></p>
                                             </div>
                                         </div>
                                     </div>
@@ -108,24 +109,24 @@
                                             <div class='row'>
                                                 <img src='../../imgs/dollar.png' style='width: 75px; height: 50px;'>
                                                 <div class='col'>
-                                                    <p>Price</p>
-                                                    <p>{$row['price']} {$symbol_currency}</p>
+                                                    <p class='mb-0'>Price</p>
+                                                    <h4>{$row['price']} {$symbol_currency}</h4>
                                                 </div>
                                             </div>
                                             <br>
                                             <div class='row'>
                                                 <img src='../../imgs/weight.png' style='width: 75px; height: 50px;'>
                                                 <div class='col'>
-                                                    <p>Pallet No.</p>
-                                                    <p>{$row['pallet_no']}</p>
+                                                    <p class='mb-0'>Pallet No.</p>
+                                                    <h4>{$row['pallet_no']}</h4>
                                                 </div>
                                             </div>
                                             <br>
                                             <div class='row'>
                                                 <img src='../../imgs/weight.png' style='width: 75px; height: 50px;'>
                                                 <div class='col'>
-                                                    <p>Brutto Weight</p>
-                                                    <p>{$row['brutto_w']}</p>
+                                                    <p class='mb-0'>Brutto Weight</p>
+                                                    <h4>{$row['brutto_w']} kg</h4>
                                                 </div>
                                             </div>
                                         </div>
@@ -139,6 +140,12 @@
         </div>
     <?php
         endif;
+        if(empty($track_id)):
+            echo "<div class='container-fluid'><div class='container-sm d-flex justify-content-center'><br><div class='alert alert-danger alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button><b>Whoops!</b><br>No result found or wrong input</div></div></div>";
+    ?>
+    <?php
+            // IF IS SET AND IS EMPTY, THEN LOG THIS AS "USER {USER} TRIED TO LOG NOTHING"
+            logActivity($conn, $_SESSION['user_id'], 'track_and_trace', 'order', $_SESSION['user_id'], "User #{$_SESSION['user_id']} tried to track nothing");
         endif;
         include "../../build/footer.php";
     ?>

@@ -577,7 +577,6 @@
                                 <label class="form-label">Order Status</label>
                                 <select name="order_status" class="form-select">
                                     <option value="created">Created</option>
-                                    <option value="received">Received</option>
                                     <option value="in process">In process</option>
                                     <option value="completed">Completed</option>
                                     <option value="cancelled">Cancelled</option>

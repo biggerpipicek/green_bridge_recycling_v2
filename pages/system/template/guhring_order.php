@@ -1,0 +1,4 @@
+<?php
+    // MICHAEL D. PHILLIPS - 28/04/2026
+    // GÜHRING TEMPLATE ORDER PAGE
+?>

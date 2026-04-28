@@ -5,10 +5,6 @@
     require "../../build/auth.php";
     require "../../build/functions.php";
 
-    if(session_status() === PHP_SESSION_NONE) {
-        session_start();
-    } 
-
     $page_title = "GBR Track & Trace";
 
     include "../../build/header.php";

@@ -4,8 +4,6 @@
     require "../../../build/auth.php";
     require "../../../build/functions.php";
 
-    session_start();
-
     logActivity($conn, $_SESSION['user_id'], 'logout', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} logged out");
 
     setcookie(session_name(), '', 100);

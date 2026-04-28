@@ -4,8 +4,6 @@
     require "../../../build/auth.php";
     require "../../../build/functions.php";
 
-    if(session_status() === PHP_SESSION_NONE) { session_start(); } 
-
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
     // --- 1. FETCH MAIN ORDER DATA ---

@@ -6,11 +6,7 @@
     require "../../build/functions.php";
     
     $page_title = "GBR Add Client";
-    include "../../build/header.php";
-
-    if(session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }   
+    include "../../build/header.php"; 
 
     if($_SERVER['REQUEST_METHOD'] === "POST") {
         $name = $_POST['name'];

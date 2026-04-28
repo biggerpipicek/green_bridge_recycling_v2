@@ -1,6 +1,10 @@
 <?php
     // MICHAEL D. PHILLIPS - 16.04.2026
     // HEADER
+
+    if(session_status() === PHP_SESSION_NONE) {
+        session_start();
+    } 
 ?>
 <!DOCTYPE html>
 <html lang="en">

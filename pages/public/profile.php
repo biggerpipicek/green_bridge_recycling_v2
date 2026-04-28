@@ -7,11 +7,6 @@
 
     $page_title = "GBR Profile";
 
-    if(session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }   
-
-
     include "../../build/header.php";
     ?>
     <style>

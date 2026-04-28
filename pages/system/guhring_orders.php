@@ -8,6 +8,27 @@
     include "../../build/header.php";
 
     $action = $_GET['action'] ?? '';
+
+    $approve_type = [
+        "approved" => "badge bg-success",
+        "not approved" => "badge bg-danger"
+    ];
+
+    $order_type = [
+        "created" => "badge bg-danger",
+        "received" => "badge bg-warning",
+        "in process" => "badge bg-info",
+        "completed" => "badge bg-success",
+        "cancelled" => "badge bg-danger"
+    ];
+
+    $order_currency = [
+        "EUR" => "€",
+        "USD" => "$",
+        "YEN" => "¥",
+        "ZL" => "zł",
+        "CZK" => "Kč"
+    ];
 ?>
     <div class="container-fluid">
         <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
@@ -89,7 +110,7 @@
                                     $currency = $row['currency'];
                                     $symbol_currency = $order_currency[$currency] ?? "XXX";
                                     $date = date("m/d/Y", strtotime($row['date']));
-                                    echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td><a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a></td><td>".$row['price']." ".$symbol_currency."</td><td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td><td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td><td><a href='template/order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
+                                    echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td><a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a></td><td>".$row['price']." ".$symbol_currency."</td><td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td><td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td><td><a href='template/guhring_order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
                                 }
                             }
                         } else {

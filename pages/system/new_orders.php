@@ -420,7 +420,7 @@
                             <!-- Documents -->
                             <div class="col-12">
                                 <label class="form-label">Documents (Images / PDFs)</label>
-                                <input type="file" name="documents[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf">
+                                <input type="file" name="documents[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf, .zip, .rar, .7zip">
                             </div>
 
                             <!-- Submit -->
@@ -587,7 +587,7 @@
                             <!-- Documents -->
                             <div class="col-12">
                                 <label class="form-label">Documents (Images / PDFs)</label>
-                                <input type="file" name="documents[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf">
+                                <input type="file" name="documents[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf, .zip, .rar, .7zip">
                             </div>
 
                             <!-- Submit -->

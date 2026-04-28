@@ -114,7 +114,7 @@
                     <label class="form-label">Customer</label>
                     <select name="customer" class="form-select" required>
                         <?php
-                            $cust_res = mysqli_query($conn, "SELECT id, name FROM partners WHERE type = 'supplier'");
+                            $cust_res = mysqli_query($conn, "SELECT id, name FROM partners");
                             while($cust = mysqli_fetch_assoc($cust_res)) {
                                 // Change: used $order_data here
                                 $selected = ($cust['id'] == $order_data['partner_id']) ? 'selected' : '';

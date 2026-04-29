@@ -7,7 +7,10 @@
     include "../../chartphp/lib/inc/chartphp_dist.php";
 
     $page_title = "GBR Dashboard";
-    $extra_css = "../../chartphp/lib/js/chartphp.css";
+    $extra_css = [
+        "../../chartphp/lib/js/chartphp.css",
+        "../../styles/dashboard.css"
+    ];
     $extra_js = [
         "../../chartphp/lib/js/jquery.min.js",
         "../../chartphp/lib/js/chartphp.js"
@@ -85,7 +88,81 @@
 
             ?>
         </div>
-    </div>
+        <br>
+        <div class="container-sm">
+
+            <!-- TOP STATS -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                <div class="card p-3 stat-card">
+                    <div>
+                    <h6>Total Orders</h6>
+                    <h3>24</h3>
+                    <small>All time</small>
+                    </div>
+                    <div class="bg-primary text-white p-3 rounded">🛒</div>
+                </div>
+                </div>
+                <div class="col-md-3">
+                <div class="card p-3 stat-card">
+                    <div>
+                    <h6>Outgoing Orders</h6>
+                    <h3>12</h3>
+                    <small>This month</small>
+                    </div>
+                    <div class="bg-success text-white p-3 rounded">➡️</div>
+                </div>
+                </div>
+                <div class="col-md-3">
+                <div class="card p-3 stat-card">
+                    <div>
+                    <h6>Pending Approval</h6>
+                    <h3>5</h3>
+                    <small>Requires action</small>
+                    </div>
+                    <div class="bg-warning text-white p-3 rounded">⏳</div>
+                </div>
+                </div>
+                <div class="col-md-3">
+                <div class="card p-3 stat-card">
+                    <div>
+                    <h6>Total Value</h6>
+                    <h3>3,842 €</h3>
+                    <small>This month</small>
+                    </div>
+                    <div class="bg-purple text-white p-3 rounded" style="background:#6f42c1;">💰</div>
+                </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="row g-3">
+
+                <!-- CHART -->
+                <div class="col-lg-8">
+                <div class="card p-3">
+                    <h6>Orders Overview</h6>
+                    <canvas id="ordersChart"></canvas>
+                </div>
+                </div>
+
+                <!-- QUICK ACTIONS -->
+                <div class="col-lg-4">
+                <div class="card p-3">
+                    <h6>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary">+ Add Outgoing Order</button>
+                    <button class="btn btn-outline-primary">+ Add Incoming Order</button>
+                    <button class="btn btn-outline-secondary">Upload Document</button>
+                    <button class="btn btn-outline-secondary">Generate Report</button>
+                    </div>
+                </div>
+                </div>
+
+                <!-- TABLE -->
+                <div class="col-lg-8">
+            </div>
+        </div>
 
     <?php
         include "../../build/footer.php";

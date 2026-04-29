@@ -6,6 +6,9 @@
     require "../../build/functions.php";
 
     $page_title = "GBR Track & Trace";
+
+    $extra_css = "../../styles/track_trace.css";
+
     include "../../build/header.php";
 
     // Get the track_id if it exists
@@ -28,7 +31,6 @@
         "CZK" => "Kč"
     ];
 ?>
-<link rel="stylesheet" href="../../styles/track_trace.css">
 
 <div class="container-fluid">
     <div class="container-sm w-50 border border-secondary-subtle rounded-4 p-4">
@@ -64,7 +66,7 @@ if($is_searching):
                 <br>
                 <div class="container-fluid">
                     <div class="container-sm">
-                        <div class='container justify-content-center main-container'>
+                        <div class='container justify-content-center main-container fade-in-up'>
                             <div class='col align-items-center left'>
                                 <div class='d-inline-grid' style='grid-auto-flow: column;'>
                                     <img src='../../imgs/package.png' style='width: 50px; height: 50px;'>&nbsp;&nbsp;<h1>Order details</h1>

@@ -32,9 +32,9 @@
     if ($id > 0) {
         $sql = "SELECT * FROM orders WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        mysqli_stmt_execute($stmt);
-        $res = mysqli_stmt_get_result($stmt)->fetch_assoc();
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
 
         if (!$res) { 
             die("Order with ID $id not found."); 
@@ -44,16 +44,16 @@
         // Fetch Materials
         $om_sql = "SELECT material_id, quantity as weight FROM order_materials WHERE order_id = ?";
         $om_stmt = mysqli_prepare($conn, $om_sql);
-        mysqli_stmt_bind_param($om_stmt, "i", $id);
-        mysqli_stmt_execute($om_stmt);
-        $order_materials = mysqli_fetch_all(mysqli_stmt_get_result($om_stmt), MYSQLI_ASSOC);
+        $om_stmt->bind_param("i", $id);
+        $om_stmt->execute();
+        $order_materials = $om_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         // Fetch Attachments
         $at_sql = "SELECT file_path FROM order_attachments WHERE order_id = ?";
         $at_stmt = mysqli_prepare($conn, $at_sql);
-        mysqli_stmt_bind_param($at_stmt, "i", $id);
-        mysqli_stmt_execute($at_stmt);
-        $attachments = mysqli_fetch_all(mysqli_stmt_get_result($at_stmt), MYSQLI_ASSOC);
+        $at_stmt->bind_param("i", $id);
+        $at_stmt->execute();
+        $attachments = $at_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // --- 3. HANDLE FORM SUBMISSION ---
@@ -84,16 +84,16 @@
                 $sub_data['netto_w'], $sub_data['approve_status'], $sub_data['order_status'], $id
             );
             $action_type = 'update';
+            $final_order_no = $order_data['order_no']; // Keep existing
         } else {
-            // INSERT NEW - Added order_no and track_id to the query
-            // Generating temporary unique values so the DB doesn't throw a Duplicate Entry error
-            $temp_order_no = "GBR-" . date('Ymd') . "-" . rand(100, 999);
+            // INSERT NEW
+            // Temp order no format updated to match GBR-GUH-2026-RAND
+            $temp_order_no = "GBR-GUH-" . date('Y') . "-" . rand(10000, 99999);
             $temp_track_id = "TRK-" . strtoupper(bin2hex(random_bytes(3)));
 
             $up_sql = "INSERT INTO orders (partner_id, type, date, price, currency, pallet_no, brutto_w, netto_w, approve_status, order_status, order_no, track_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             
-            // Note: Added two "s" for the two new strings at the end
             mysqli_stmt_bind_param($up_stmt, "issdssssssss", 
                 $sub_data['partner_id'], $sub_data['type'], $sub_data['date'], $sub_data['price'], 
                 $sub_data['currency'], $sub_data['pallet_no'], $sub_data['brutto_w'], 
@@ -107,8 +107,9 @@
             if ($id === 0) {
                 $id = mysqli_insert_id($conn);
                 
-                // OPTIONAL: Update the order_no to include the actual ID for a cleaner look
-                $final_order_no = "GBR-" . str_pad($id, 5, "0", STR_PAD_LEFT);
+                // --- UPDATED ORDER NO FORMAT HERE ---
+                // Format: GBR-GUH-2026-XXXXX (where XXXXX is the ID padded to 5 digits)
+                $final_order_no = "GBR-GUH-" . date('Y') . "-" . str_pad($id, 5, "0", STR_PAD_LEFT);
                 mysqli_query($conn, "UPDATE orders SET order_no = '$final_order_no' WHERE id = $id");
             }
 
@@ -143,7 +144,7 @@
                 }
             }
 
-            logActivity($conn, $_SESSION['user_id'], $action_type, 'orders', $id, "User #{$_SESSION['user_id']} created Incoming order No.{$final_order_no}");
+            logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} created order No. {$final_order_no}");
             header("Location: " . $_SERVER['PHP_SELF'] . "?id=$id&success=1");
             exit;
         } else {

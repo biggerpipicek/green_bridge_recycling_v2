@@ -97,21 +97,38 @@
                     <?php
                         //$sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
                         $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id WHERE orders.type IN ('guh-in', 'guh-out')";
+
                         $result = mysqli_query($conn, $sql);
+
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {
-                                if($row['type'] === "guh-in" || $row['type'] === "guh-out") {
-                                    $a_stat = $row['approve_status'];
-                                    $a_badge = $approve_type[$a_stat] ?? "badge bg-secondary";
+                                // Badges and formatting
+                                $a_stat = $row['approve_status'];
+                                $a_badge = $approve_type[$a_stat] ?? "badge bg-secondary";
 
-                                    $o_stat = $row['order_status'];
-                                    $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
+                                $o_stat = $row['order_status'];
+                                $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
 
-                                    $currency = $row['currency'];
-                                    $symbol_currency = $order_currency[$currency] ?? "XXX";
-                                    $date = date("m/d/Y", strtotime($row['date']));
-                                    echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td><a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a></td><td>".$row['price']." ".$symbol_currency."</td><td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td><td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td><td><a href='template/guhring_order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
-                                }
+                                $currency = $row['currency'];
+                                $symbol_currency = $order_currency[$currency] ?? "XXX";
+                                $date = date("m/d/Y", strtotime($row['date']));
+
+                                // --- NEW LOGIC FOR DOCUMENT LINK ---
+                                $document_cell = !empty($row['img_path']) 
+                                    ? "<a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a>" 
+                                    : "<span class='text-muted'>No document</span>";
+                                // ------------------------------------
+
+                                echo "<tr>
+                                        <td>".$row['order_no']."</td>
+                                        <td>".$date."</td>
+                                        <td>".$row['partner_name']."</td>
+                                        <td>".$document_cell."</td>
+                                        <td>".$row['price']." ".$symbol_currency."</td>
+                                        <td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td>
+                                        <td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td>
+                                        <td><a href='template/guhring_order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td>
+                                    </tr>";
                             }
                         } else {
                             echo "<tr><td colspan='8'>No orders found..</td></tr>";

@@ -29,13 +29,36 @@
         "ZL" => "zł",
         "CZK" => "Kč"
     ];
+
+    $sort_by = $_GET['sort'] ?? '';
+    $sort = "";
+    switch($sort_by) {
+        case "orderno_asc":
+            $sort = "ORDER BY order_no ASC";
+            break;
+        case "orderno_desc":
+            $sort = "ORDER BY order_no DESC";
+            break;
+        case "date_asc":
+            $sort = "ORDER BY date ASC";
+            break;
+        case "date_desc":
+            $sort = "ORDER BY date DESC";
+            break;
+        case "price_asc":
+            $sort = "ORDER BY price ASC";
+            break;
+        case "price_desc":
+            $sort = "ORDER BY price DESC";
+            break;
+    }
 ?>
     <div class="container-fluid">
         <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
         <ul class="nav nav-tabs container-sm">
             <li class="nav-item"><a href="orders.php?action=incoming_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'incoming_orders') ? 'active' : ''; ?>">Incoming orders</a></li>
             <li class="nav-item"><a href="orders.php?action=outgoing_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'outgoing_orders') ? 'active' : ''; ?>">Outgoing orders</a></li>
-            <li class="nav-item"><a href="guhring_orders.php?action=go" class="nav-link <?php echo (($_GET['action'] ?? '') === 'go') ? 'active' : ''; ?>">Gühring orders</a></li>
+            <li class="nav-item"><a href="guhring_orders.php?action=go" class="nav-link <?php echo (($_GET['action'] ?? '') === 'go') ? 'active' : ''; ?> active">Gühring orders</a></li>
         </ul>
 
         <br>
@@ -58,10 +81,12 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                         <ul class="dropdown-menu">
-                            <li><a href="guhring_orders.php?action=&sort=date_asc" class="dropdown-item">Date: New → Old</a></li>
-                            <li><a href="guhring_orders.php?action=&sort=date_desc" class="dropdown-item">Date: Old → New</a></li>
-                            <li><a href="guhring_orders.php?action=&sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
-                            <li><a href="guhring_orders.php?action=&sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
+                            <li><a href="guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>
                     </li>
 
@@ -96,7 +121,7 @@
                 <tbody>
                     <?php
                         //$sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
-                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id WHERE orders.type IN ('guh-in', 'guh-out')";
+                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id WHERE orders.type IN ('guh-in', 'guh-out') $sort";
 
                         $result = mysqli_query($conn, $sql);
 

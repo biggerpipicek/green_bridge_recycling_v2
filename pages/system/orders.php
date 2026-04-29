@@ -30,6 +30,29 @@
         "ZL" => "zł",
         "CZK" => "Kč"
     ];
+
+    $sort_by = $_GET['sort'] ?? '';
+    $sort = "";
+    switch($sort_by) {
+        case "orderno_asc":
+            $sort = "ORDER BY order_no ASC";
+            break;
+        case "orderno_desc":
+            $sort = "ORDER BY order_no DESC";
+            break;
+        case "date_asc":
+            $sort = "ORDER BY date ASC";
+            break;
+        case "date_desc":
+            $sort = "ORDER BY date DESC";
+            break;
+        case "price_asc":
+            $sort = "ORDER BY price ASC";
+            break;
+        case "price_desc":
+            $sort = "ORDER BY price DESC";
+            break;
+    }
     ?>
     
     <div class="container-fluid">
@@ -60,10 +83,12 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                         <ul class="dropdown-menu">
-                            <li><a href="?action=<?php echo $action; ?>&sort=date_asc" class="dropdown-item">Date: New → Old</a></li>
-                            <li><a href="?action=<?php echo $action; ?>&sort=date_desc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
                             <li><a href="?action=<?php echo $action; ?>&sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
                             <li><a href="?action=<?php echo $action; ?>&sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
+                            <li><a href="?action=<?php echo $action; ?>&sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>
                     </li>
 
@@ -144,7 +169,7 @@
                     </tr>-->
                     <?php
                         //$sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
-                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id";
+                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id $sort";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {
@@ -221,7 +246,7 @@
                         <td><a href="" type="button" class="btn btn-primary">Check order</a></td>
                     </tr>-->
                     <?php
-                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id";
+                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id $sort";
                         $result = mysqli_query($conn, $sql);
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {

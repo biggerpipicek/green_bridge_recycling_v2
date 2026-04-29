@@ -1,0 +1,14 @@
+@keyframes google-67-tilt {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-8deg); }
+    50%  { transform: rotate(8deg); }
+    75%  { transform: rotate(-1deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.animate-67 {
+    /* Applying your found bezier curve and timing */
+    animation: google-67-tilt 1.8s cubic-bezier(0.6, 0.43, 0.68, 1.11) 1;
+    transform-origin: center;
+    backface-visibility: hidden; /* Keeps the text crisp during rotation */
+}

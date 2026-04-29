@@ -18,7 +18,7 @@
     <?php endif; ?>
     <title><?php echo $page_title; ?></title>
 </head>
-<body>
+<body class="body">
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
             <a href="/green_bridge_recycling_v2/index.php" class="navbar-brand"><b>Home</b></a>

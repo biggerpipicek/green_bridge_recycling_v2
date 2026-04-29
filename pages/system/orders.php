@@ -6,6 +6,9 @@
     require "../../build/functions.php";
 
     $page_title = "GBR Orders";
+
+    $extra_css = "../../styles/orders.css";
+
     include "../../build/header.php";
 
     $action = $_GET['action'] ?? '';
@@ -275,7 +278,7 @@
         </div>
     </div>
 
-    <!-- LAST ADDED ORDER -->
+    <script src="../../js/easteregg.js"></script>
 
     <?php
         include "../../build/footer.php";

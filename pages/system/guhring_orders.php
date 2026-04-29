@@ -5,6 +5,9 @@
     require "../../build/auth.php";
 
     $page_title = "Gühring GBR Orders";
+
+    $extra_css = "../../styles/orders.css";
+    
     include "../../build/header.php";
 
     $action = $_GET['action'] ?? '';
@@ -163,6 +166,8 @@
             </table>
         </div>
     </div>
+    
+    <script src="../../js/easteregg.js"></script>
 
 <?php
     include "../../build/footer.php";

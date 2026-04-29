@@ -16,6 +16,13 @@
     <?php if(isset($extra_css)): ?>
         <link rel="stylesheet" href="<?= $extra_css;?>">
     <?php endif; ?>
+    <?php 
+        // Check if $extra_js exists and is an array
+        if(isset($extra_js) && is_array($extra_js)): 
+            foreach($extra_js as $js_file): ?>
+                <script src="<?= $js_file; ?>"></script>
+            <?php endforeach; 
+        endif; ?>
     <title><?php echo $page_title; ?></title>
 </head>
 <body class="body">

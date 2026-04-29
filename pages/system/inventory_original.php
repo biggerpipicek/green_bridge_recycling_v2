@@ -12,22 +12,22 @@
     $sort = "";
     switch($sort_by) {
         case "az":
-            $sort = "ORDER BY m.name ASC";
+            $sort = "ORDER BY name ASC";
             break;
         case "za":
-            $sort = "ORDER BY m.name DESC";
+            $sort = "ORDER BY name DESC";
             break;
         case "weight_asc":
-            $sort = "ORDER BY stock_weight ASC";
+            $sort = "ORDER BY date ASC";
             break;
         case "weight_desc":
-            $sort = "ORDER BY stock_weight DESC";
+            $sort = "ORDER BY date DESC";
             break;
         case "code_asc":
-            $sort = "ORDER BY m.item_code ASC";
+            $sort = "ORDER BY item_code ASC";
             break;
         case "code_desc":
-            $sort = "ORDER BY m.item_code DESC";
+            $sort = "ORDER BY item_code DESC";
             break;
     }
     ?>
@@ -83,24 +83,29 @@
                     <th>In Stock weight</th>
                 </thead>
                 <tbody>
+                    <!--<tr>
+                        <td>7401</td>
+                        <td>End mills</td>
+                        <td>150 kg</td>
+                    </tr>
+                    <tr>
+                        <td>7402</td>
+                        <td>Inserts</td>
+                        <td>1759 kg</td>
+                    </tr>
+                    <tr>
+                        <td>7403</td>
+                        <td>Pieces</td>
+                        <td>351 kg</td>
+                    </tr>-->
                     <?php
                     
-                        // Calculate stock = SUM of 'in' movements minus SUM of 'out' movements
-                        $sql = "SELECT m.item_code, m.name,
-                                    COALESCE(SUM(CASE WHEN im.direction = 'in'  THEN im.quantity ELSE 0 END), 0)
-                                  - COALESCE(SUM(CASE WHEN im.direction = 'out' THEN im.quantity ELSE 0 END), 0)
-                                    AS stock_weight
-                                FROM materials m
-                                LEFT JOIN inventory_movements im ON im.material_id = m.id
-                                GROUP BY m.id, m.item_code, m.name
-                                $sort";
-
+                        $sql = "SELECT item_code, name from materials $sort";
                         $result = mysqli_query($conn, $sql);
 
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {
-                                $weight = number_format($row['stock_weight'], 2) . " kg";
-                                echo "<tr><td>".$row['item_code']."</td><td>".$row['name']."</td><td>".$weight."</td></tr>";
+                                echo "<tr><td>".$row['item_code']."</td><td>".$row['name']."</td><td>?</td></tr>";
                             }
                         }
 
@@ -109,6 +114,7 @@
             </table>
         </div>
     </div>
+    <!-- 5 LAST ADDED WEIGHTS -->
 
     <?php
         include "../../build/footer.php";

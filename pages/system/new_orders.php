@@ -136,7 +136,7 @@
 
             //logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
 
-            $log_result = logActivity($conn, $_SESSION['user_id'], 'create incoming_order', 'order', $order_id, "User #{$_SESSION['user_id']} created Incoming order No.{$order_no}");
+            $log_result = logActivity($conn, $_SESSION['user_id'], 'create', 'order', $order_id, "User #{$_SESSION['user_id']} created order No.{$order_no}");
 
             if (!$log_result) {
                 // This will stop the script and tell you if the function returned false

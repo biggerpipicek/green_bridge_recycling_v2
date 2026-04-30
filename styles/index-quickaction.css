@@ -1,0 +1,5 @@
+.action-btn:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+    border-color: #dee2e6 !important;
+}

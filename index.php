@@ -8,6 +8,8 @@
 
     $page_title = "GBR Home";
 
+    $extra_css = "styles/index-quickaction.css";
+
     if(session_status() === PHP_SESSION_NONE) {
         session_start();
     }   
@@ -98,7 +100,7 @@
                             <div class="px-3">
                                 <?php
                                     $activity_limit = 5;
-                                    $sql = "SELECT `action`, entity_type, `description` FROM activity_log WHERE entity_id = {$_SESSION['user_id']} ORDER BY id DESC LIMIT {$activity_limit}";
+                                    $sql = "SELECT `action`, entity_type, `description`, created_at FROM activity_log WHERE entity_id = {$_SESSION['user_id']} ORDER BY id DESC LIMIT {$activity_limit}";
                                     $result = mysqli_query($conn, $sql);
                                     $total_rows = mysqli_num_rows($result);
                                     $current_row = 0;
@@ -108,7 +110,7 @@
                                             $current_row++;
                                             $action = $row['action'];
                                             $action_icon = $img_map[$action] ?? "imgs/default.png";
-                                            $time_ago = "2 minutes ago"; // Placeholder
+                                            $time_ago = time_elapsed_string($row['created_at']); // Placeholder
 
                                             echo "
                                             <div class='d-flex align-items-center py-3' style='gap: 15px;'>
@@ -146,9 +148,29 @@
                                 <img src="imgs/thunder.png" alt="Quick Actions" style="width: 24px; height: 24px;">
                                 <h4 class="mb-0" style="font-size: 1.1rem; font-weight: 600; color: #333;">Quick actions</h4>
                             </section>
-                            <div class="p-3">
+                            <div class="p-3 d-flex flex-column" style="gap: 12px;">
                                 <!--<p class="text-muted small">Select an action to get started.</p>-->
-                                
+                                <?php
+                                    // PHP LINKS LIST
+                                    $quick_links = [
+                                        ['name' => "Track & Track", 'url' => "pages/public/track_trace.php", 'icon' => "imgs/pointer.png"],
+                                        ['name' => "Orders", 'url' => "pages/system/orders.php", 'icon' => "imgs/package.png"],
+                                        ['name' => "Inventory", 'url' => "pages/system/inventory.php", 'icon' => "imgs/package.png"],
+                                        ['name' => "Clients", 'url' => "pages/system/clients.php", 'icon' => "imgs/person.png"],
+                                        ['name' => "Tickets", 'url' => "pages/system/tickets.php", 'icon' => "imgs/tickets.png"]
+                                    ];
+
+                                    foreach($quick_links as $link) {
+                                        echo "
+                                        <a href='{$link['url']}' class='btn btn-outline-secondary d-flex align-items-center justify-content-between py-3 px-4 rounded-4 text-dark shadow-sm border-light-subtle action-btn' style='transition: all 0.2s ease'>
+                                            <div class='dflex align-items-center' style='gap: 15px;'>
+                                                <img src='{$link['icon']}' style='width: 24px; height: 24px; opacity: 0.7;' alt='icon'>
+                                                <span style='font-weight: 500; font-size: 1.05rem;'>{$link['name']}</span>
+                                            </div>
+                                            <i class='bi bi-chevron-right text-muted'></i><span style='font-weight: bold; color: #ccc;'>&gt;</span>
+                                        </a>";
+                                    }
+                                ?>
                             </div>
                         </div>
                     </div>

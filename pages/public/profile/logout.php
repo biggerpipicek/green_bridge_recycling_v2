@@ -4,6 +4,10 @@
     require "../../../build/auth.php";
     require "../../../build/functions.php";
 
+    if(session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
     logActivity($conn, $_SESSION['user_id'], 'logout', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} logged out");
 
     setcookie(session_name(), '', 100);

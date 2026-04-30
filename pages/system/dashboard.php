@@ -28,142 +28,131 @@
     include "../../build/header.php";
 
     $filter = $_GET['filter'] ?? '';
+
+    // 1. Get Total Orders All Time
+    $total_sql = "SELECT COUNT(*) as count FROM orders";
+    $total_res = mysqli_fetch_assoc(mysqli_query($conn, $total_sql));
+
+    // 2. Get Outgoing Orders this month (Assume status = 'outgoing')
+    $month_sql = "SELECT COUNT(*) as count FROM orders WHERE status = 'outgoing' AND MONTH(created_at) = MONTH(CURRENT_DATE())";
+    $month_res = mysqli_fetch_assoc(mysqli_query($conn, $month_sql));
+
+    // 3. Pending Approvals
+    $pending_sql = "SELECT COUNT(*) as count FROM orders WHERE status = 'not_approved'";
+    $pending_res = mysqli_fetch_assoc(mysqli_query($conn, $pending_sql));
+
+    // 4. Total Value (Assuming you have a 'price' column)
+    $value_sql = "SELECT SUM(price) as total FROM orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE())";
+    $value_res = mysqli_fetch_assoc(mysqli_query($conn, $value_sql));
 ?>
 
-    <div class="container-fluid">
-        <div class="container-sm">
-            <form action="" method="get">
-                <label for="filter" class="form-label">Select</label>
-                <select name="filter" class="form-select">
-                    <option value="weekly" <?php echo ($filter == "weekly") ? 'selected' : '' ?>>Weekly</option>
-                    <option value="monthly" <?php echo ($filter == "monthly") ? 'selected' : '' ?>>Monthly</option>
-                    <option value="semi-annually" <?php echo ($filter== "semi-annually") ? 'selected' : '' ?>>Semi-Annualy</option>
-                    <option value="annually" <?php echo ($filter == "annually") ? 'selected' : '' ?>>Annually</option>
-                    <option value="user-selected" <?php echo ($filter == "user-selected") ? 'selected' : '' ?>>User Selected</option>
-                </select>
-                <br>
-                <input type="submit" value="Submit" class="btn btn-primary">
-            </form>
-            <br>
-            <?php
-                // FILTER SWITCH
-                switch($filter) {
-                    case 'weekly':
-                        echo "<hr>";
-                        echo "Weekly data";
-                        $p->data = array(array(4,8,10,2,5,7,9), array(6,4,9,3,7,3,10));
-                        break;
-
-                    case 'monthly':
-                        echo "<hr>";
-                        echo "Monthly data";
-                        $p->data = array(array(9,15,13,7), array(11,9,14,8));
-                        break;
-                    
-                    case 'semi-annually':
-                        echo "<hr>";
-                        echo "Semi-annually data";
-                        $p->data = array(array(7,13,11,5,11,5), array(9,7,12,6,12,6));
-                        break;
-                    
-                    case 'annually':
-                        echo "<hr>";
-                        echo "Annually data";
-                        $p->data = array(array(9,15,13,7,9,15,16,11,13,18,16,11), array(11,9,14,8,11,9,14,8,11,9,14,8));
-                        break;
-
-                    case 'user-selected':
-                        echo "<hr>";
-                        echo "User Selected data";
-                        $p->data = array(array(1,2), array(9,3));
-                        break;
-                    default:
-                        break;
-                }
-
-                $out = $p->render('c1');
-                
-                // ECHO CHART
-                echo $out;
-
-            ?>
-        </div>
-        <br>
-        <div class="container-sm">
-
-            <!-- TOP STATS -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                <div class="card p-3 stat-card">
-                    <div>
-                    <h6>Total Orders</h6>
-                    <h3>24</h3>
-                    <small>All time</small>
+    <div class="container-fluid px-4 py-4">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="bi bi-cart text-primary fs-4"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Total Orders</small>
+                            <h4 class="fw-bold mb-0"><?= number_format($total_res['count']) ?></h4>
+                            <small class="text-muted" style="font-size: 0.75rem;">All time</small>
+                        </div>
                     </div>
-                    <div class="bg-primary text-white p-3 rounded">🛒</div>
-                </div>
-                </div>
-                <div class="col-md-3">
-                <div class="card p-3 stat-card">
-                    <div>
-                    <h6>Outgoing Orders</h6>
-                    <h3>12</h3>
-                    <small>This month</small>
-                    </div>
-                    <div class="bg-success text-white p-3 rounded">➡️</div>
-                </div>
-                </div>
-                <div class="col-md-3">
-                <div class="card p-3 stat-card">
-                    <div>
-                    <h6>Pending Approval</h6>
-                    <h3>5</h3>
-                    <small>Requires action</small>
-                    </div>
-                    <div class="bg-warning text-white p-3 rounded">⏳</div>
-                </div>
-                </div>
-                <div class="col-md-3">
-                <div class="card p-3 stat-card">
-                    <div>
-                    <h6>Total Value</h6>
-                    <h3>3,842 €</h3>
-                    <small>This month</small>
-                    </div>
-                    <div class="bg-purple text-white p-3 rounded" style="background:#6f42c1;">💰</div>
-                </div>
                 </div>
             </div>
 
-            <!-- MAIN CONTENT -->
-            <div class="row g-3">
-
-                <!-- CHART -->
-                <div class="col-lg-8">
-                <div class="card p-3">
-                    <h6>Orders Overview</h6>
-                    <canvas id="ordersChart"></canvas>
-                </div>
-                </div>
-
-                <!-- QUICK ACTIONS -->
-                <div class="col-lg-4">
-                <div class="card p-3">
-                    <h6>Quick Actions</h6>
-                    <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary">+ Add Outgoing Order</button>
-                    <button class="btn btn-outline-primary">+ Add Incoming Order</button>
-                    <button class="btn btn-outline-secondary">Upload Document</button>
-                    <button class="btn btn-outline-secondary">Generate Report</button>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-3 bg-success bg-opacity-10 p-3 me-3">
+                            <i class="bi bi-arrow-right-square text-success fs-4"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Outgoing Orders</small>
+                            <h4 class="fw-bold mb-0"><?= $month_res['count'] ?></h4>
+                            <small class="text-success" style="font-size: 0.75rem;">↑ 20% This month</small>
+                        </div>
                     </div>
                 </div>
-                </div>
+            </div>
 
-                <!-- TABLE -->
-                <div class="col-lg-8">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-3 bg-warning bg-opacity-10 p-3 me-3">
+                            <i class="bi bi-clock text-warning fs-4"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Pending Approval</small>
+                            <h4 class="fw-bold mb-0"><?= $pending_res['count'] ?></h4>
+                            <small class="text-warning" style="font-size: 0.75rem;">Requires action</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-3 bg-purple bg-opacity-10 p-3 me-3" style="background-color: #f3e5f5;">
+                            <i class="bi bi-wallet2 fs-4" style="color: #8e24aa;"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Total Value</small>
+                            <h4 class="fw-bold mb-0"><?= number_format($value_res['total'] ?? 0, 2) ?></h4>
+                            <small class="text-success" style="font-size: 0.75rem;">↑ 15% (EUR)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <h6 class="fw-bold mb-4">Orders Overview</h6>
+                <div style="height: 200px; background: #fafafa;" class="rounded d-flex align-items-center justify-content-center text-muted">
+                    Chart Area
+                </div>
             </div>
         </div>
 
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <h6 class="fw-bold mb-3">Recent Outgoing Orders</h6>
+                <table class="table table-sm table-borderless align-middle" style="font-size: 0.85rem;">
+                    <thead class="text-muted">
+                        <tr><th>Order No.</th><th>Customer</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>GBR-out-2026-00002</td>
+                            <td>Shredder</td>
+                            <td><span class="badge bg-danger rounded-pill">Not approved</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-3">
+                <h6 class="fw-bold mb-3">Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-plus"></i> Add Outgoing Order</button>
+                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-plus"></i> Add Incoming Order</button>
+                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-file-earmark-arrow-up"></i> Upload Document</button>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                 <h6 class="fw-bold mb-3">System Activity</h6>
+                 </div>
+        </div>
+    </div>
     <?php
         include "../../build/footer.php";
     ?>

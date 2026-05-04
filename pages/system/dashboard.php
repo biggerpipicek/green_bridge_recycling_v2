@@ -1,158 +1,236 @@
 <?php
-    // MICHAEL D. PHILLIPS - 16.04.2026
-    // DASHBOARD - SHOWING SPECIFIC DATA
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-    require "../../build/auth.php";
-    require "../../build/functions.php";
-    include "../../chartphp/lib/inc/chartphp_dist.php";
+echo "OK - PHP funguje";
 
-    $page_title = "GBR Dashboard";
-    $extra_css = [
-        "../../chartphp/lib/js/chartphp.css",
-        "../../styles/dashboard.css"
-    ];
-    $extra_js = [
-        "../../chartphp/lib/js/jquery.min.js",
-        "../../chartphp/lib/js/chartphp.js"
-    ];
 
-    // p - NEW CHART
-    $p = new chartphp();
-    
-    // SELECT CHART TYPE
-    $p->chart_type = "area";
+require "../../build/auth.php";
+require "../../build/functions.php";
+include "../../chartphp/lib/inc/chartphp_dist.php";
 
-    // RENDER CHART
-    $out = $p->render('c1');
+$page_title = "GBR Dashboard";
+$extra_css = [
+    "../../chartphp/lib/js/chartphp.css",
+    "../../styles/dashboard.css"
+];
+$extra_js = [
+    "../../chartphp/lib/js/jquery.min.js",
+    "../../chartphp/lib/js/chartphp.js"
+];
 
-    include "../../build/header.php";
+// -----------------------------
+// HELPER FUNCTION
+// -----------------------------
+function fetchSingle($conn, $sql) {
+    $res = mysqli_query($conn, $sql);
+    return $res ? mysqli_fetch_assoc($res) : ['count' => 0];
+}
 
-    $filter = $_GET['filter'] ?? '';
+// -----------------------------
+// DATA FETCHING
+// -----------------------------
 
-    // 1. Get Total Orders All Time
-    $total_sql = "SELECT COUNT(*) as count FROM orders";
-    $total_res = mysqli_fetch_assoc(mysqli_query($conn, $total_sql));
+// Total Orders
+$total_res = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders");
 
-    // 2. Get Outgoing Orders this month (Assume status = 'outgoing')
-    $month_sql = "SELECT COUNT(*) as count FROM orders WHERE status = 'outgoing' AND MONTH(created_at) = MONTH(CURRENT_DATE())";
-    $month_res = mysqli_fetch_assoc(mysqli_query($conn, $month_sql));
+// Outgoing this month
+$month_res = fetchSingle($conn, "
+    SELECT COUNT(*) as count 
+    FROM orders 
+    WHERE status = 'outgoing'
+    AND MONTH(created_at) = MONTH(CURRENT_DATE())
+    AND YEAR(created_at) = YEAR(CURRENT_DATE())
+");
 
-    // 3. Pending Approvals
-    $pending_sql = "SELECT COUNT(*) as count FROM orders WHERE status = 'not_approved'";
-    $pending_res = mysqli_fetch_assoc(mysqli_query($conn, $pending_sql));
+// Pending
+$pending_res = fetchSingle($conn, "
+    SELECT COUNT(*) as count 
+    FROM orders 
+    WHERE status = 'not_approved'
+");
 
-    // 4. Total Value (Assuming you have a 'price' column)
-    $value_sql = "SELECT SUM(price) as total FROM orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE())";
-    $value_res = mysqli_fetch_assoc(mysqli_query($conn, $value_sql));
+// Value this month
+$value_res = fetchSingle($conn, "
+    SELECT SUM(price) as total 
+    FROM orders 
+    WHERE MONTH(created_at) = MONTH(CURRENT_DATE())
+    AND YEAR(created_at) = YEAR(CURRENT_DATE())
+");
+
+// -----------------------------
+// MONTH COMPARISON (for %)
+// -----------------------------
+
+$current_month = $month_res['count'] ?? 0;
+
+$prev_res = fetchSingle($conn, "
+    SELECT COUNT(*) as count 
+    FROM orders 
+    WHERE status = 'outgoing'
+    AND MONTH(created_at) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
+    AND YEAR(created_at) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
+");
+
+$previous_month = $prev_res['count'] ?? 0;
+
+$percentage = 0;
+if ($previous_month > 0) {
+    $percentage = (($current_month - $previous_month) / $previous_month) * 100;
+}
+
+// -----------------------------
+// CHART DATA (REAL DATA)
+// -----------------------------
+
+$chart_sql = "
+    SELECT DATE(created_at) as date, COUNT(*) as total
+    FROM orders
+    WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
+    GROUP BY DATE(created_at)
+    ORDER BY date ASC
+";
+
+$chart_result = mysqli_query($conn, $chart_sql);
+
+$chart_data = [];
+if ($chart_result) {
+    while ($row = mysqli_fetch_assoc($chart_result)) {
+        $chart_data[] = array($row['date'], (int)$row['total']);
+    }
+}
+
+// fallback if empty
+if (empty($chart_data)) {
+    $chart_data[] = array(date("Y-m-d"), 0);
+}
+
+// -----------------------------
+// CHART INIT
+// -----------------------------
+$p = new chartphp();
+$p->chart_type = "area";
+$p->data = array($chart_data);
+$p->title = "Orders Trend (Last 14 Days)";
+$out = $p->render('c1');
+
+// -----------------------------
+// RECENT ORDERS
+// -----------------------------
+$recent_sql = "
+    SELECT order_number, customer_name, status 
+    FROM orders 
+    ORDER BY created_at DESC 
+    LIMIT 5
+";
+
+$recent_result = mysqli_query($conn, $recent_sql);
+
+include "../../build/header.php";
 ?>
 
-    <div class="container-fluid px-4 py-4">
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-3 bg-primary bg-opacity-10 p-3 me-3">
-                            <i class="bi bi-cart text-primary fs-4"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Total Orders</small>
-                            <h4 class="fw-bold mb-0"><?= number_format($total_res['count']) ?></h4>
-                            <small class="text-muted" style="font-size: 0.75rem;">All time</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid px-4 py-4">
+    <div class="row g-3 mb-4">
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-3 bg-success bg-opacity-10 p-3 me-3">
-                            <i class="bi bi-arrow-right-square text-success fs-4"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Outgoing Orders</small>
-                            <h4 class="fw-bold mb-0"><?= $month_res['count'] ?></h4>
-                            <small class="text-success" style="font-size: 0.75rem;">↑ 20% This month</small>
-                        </div>
-                    </div>
-                </div>
+        <!-- TOTAL -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <small class="text-muted">Total Orders</small>
+                <h4 class="fw-bold"><?= number_format($total_res['count'] ?? 0) ?></h4>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-3 bg-warning bg-opacity-10 p-3 me-3">
-                            <i class="bi bi-clock text-warning fs-4"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Pending Approval</small>
-                            <h4 class="fw-bold mb-0"><?= $pending_res['count'] ?></h4>
-                            <small class="text-warning" style="font-size: 0.75rem;">Requires action</small>
-                        </div>
-                    </div>
-                </div>
+        <!-- OUTGOING -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <small class="text-muted">Outgoing Orders</small>
+                <h4 class="fw-bold"><?= $current_month ?></h4>
+                <small class="<?= $percentage >= 0 ? 'text-success' : 'text-danger' ?>">
+                    <?= round($percentage, 1) ?>%
+                </small>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-3 bg-purple bg-opacity-10 p-3 me-3" style="background-color: #f3e5f5;">
-                            <i class="bi bi-wallet2 fs-4" style="color: #8e24aa;"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Total Value</small>
-                            <h4 class="fw-bold mb-0"><?= number_format($value_res['total'] ?? 0, 2) ?></h4>
-                            <small class="text-success" style="font-size: 0.75rem;">↑ 15% (EUR)</small>
-                        </div>
-                    </div>
-                </div>
+        <!-- PENDING -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <small class="text-muted">Pending</small>
+                <h4 class="fw-bold text-danger"><?= $pending_res['count'] ?? 0 ?></h4>
+            </div>
+        </div>
+
+        <!-- VALUE -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <small class="text-muted">Value</small>
+                <h4 class="fw-bold">
+                    €<?= number_format($value_res['total'] ?? 0, 2) ?>
+                </h4>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                <h6 class="fw-bold mb-4">Orders Overview</h6>
-                <div style="height: 200px; background: #fafafa;" class="rounded d-flex align-items-center justify-content-center text-muted">
-                    Chart Area
-                </div>
+
+        <!-- CHART -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <h6 class="fw-bold mb-3">Orders Overview</h6>
+                <?= $out ?>
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                <h6 class="fw-bold mb-3">Recent Outgoing Orders</h6>
-                <table class="table table-sm table-borderless align-middle" style="font-size: 0.85rem;">
-                    <thead class="text-muted">
-                        <tr><th>Order No.</th><th>Customer</th><th>Status</th></tr>
+        <!-- RECENT -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <h6 class="fw-bold mb-3">Recent Orders</h6>
+
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>GBR-out-2026-00002</td>
-                            <td>Shredder</td>
-                            <td><span class="badge bg-danger rounded-pill">Not approved</span></td>
-                        </tr>
+
+                    <?php if ($recent_result && mysqli_num_rows($recent_result) > 0): ?>
+                        <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['order_number']) ?></td>
+                                <td><?= htmlspecialchars($row['customer_name']) ?></td>
+                                <td>
+                                    <span class="badge bg-<?= $row['status'] == 'outgoing' ? 'success' : ($row['status'] == 'not_approved' ? 'danger' : 'secondary') ?>">
+                                        <?= $row['status'] ?>
+                                    </span>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr><td colspan="3" class="text-muted">No orders yet</td></tr>
+                    <?php endif; ?>
+
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- ACTIONS -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 mb-4 p-3">
-                <h6 class="fw-bold mb-3">Quick Actions</h6>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-plus"></i> Add Outgoing Order</button>
-                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-plus"></i> Add Incoming Order</button>
-                    <button class="btn btn-outline-primary btn-sm text-start py-2"><i class="bi bi-file-earmark-arrow-up"></i> Upload Document</button>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                <h6 class="fw-bold">Quick Actions</h6>
+                <button class="btn btn-outline-primary btn-sm w-100 mb-2">+ Outgoing</button>
+                <button class="btn btn-outline-primary btn-sm w-100 mb-2">+ Incoming</button>
             </div>
-            
+
             <div class="card border-0 shadow-sm rounded-4 p-3">
-                 <h6 class="fw-bold mb-3">System Activity</h6>
-                 </div>
+                <h6 class="fw-bold">System</h6>
+                <small class="text-muted">No alerts</small>
+            </div>
         </div>
+
     </div>
-    <?php
-        include "../../build/footer.php";
-    ?>
+</div>
+
+<?php include "../../build/footer.php"; ?>

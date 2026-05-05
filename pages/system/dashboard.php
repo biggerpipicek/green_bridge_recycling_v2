@@ -2,9 +2,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-echo "OK - PHP funguje";
-
-
+// -----------------------------
+// INCLUDES & CONFIG
+// -----------------------------
 require "../../build/auth.php";
 require "../../build/functions.php";
 include "../../chartphp/lib/inc/chartphp_dist.php";
@@ -24,36 +24,39 @@ $extra_js = [
 // -----------------------------
 function fetchSingle($conn, $sql) {
     $res = mysqli_query($conn, $sql);
-    return $res ? mysqli_fetch_assoc($res) : ['count' => 0];
+    if (!$res) {
+        return ['count' => 0, 'total' => 0];
+    }
+    return mysqli_fetch_assoc($res);
 }
 
 // -----------------------------
 // DATA FETCHING
 // -----------------------------
 
-// Total Orders
+// 1. Total Orders
 $total_res = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders");
 
-// Outgoing this month
+// 2. Outgoing this month (Changed 'status' to 'type' to match your DB)
 $month_res = fetchSingle($conn, "
     SELECT COUNT(*) as count 
     FROM orders 
-    WHERE status = 'outgoing'
+    WHERE type IN ('out', 'guh-out')
     AND MONTH(created_at) = MONTH(CURRENT_DATE())
     AND YEAR(created_at) = YEAR(CURRENT_DATE())
 ");
 
-// Pending
+// 3. Pending
 $pending_res = fetchSingle($conn, "
     SELECT COUNT(*) as count 
     FROM orders 
-    WHERE status = 'not_approved'
+    WHERE approve_status = 'not approved'
 ");
 
-// Value this month
+// 4. Value this month (Removed GROUP BY for single dashboard total)
 $value_res = fetchSingle($conn, "
-    SELECT SUM(price) as total 
-    FROM orders 
+    SELECT SUM(price) as total
+    FROM orders
     WHERE MONTH(created_at) = MONTH(CURRENT_DATE())
     AND YEAR(created_at) = YEAR(CURRENT_DATE())
 ");
@@ -61,13 +64,12 @@ $value_res = fetchSingle($conn, "
 // -----------------------------
 // MONTH COMPARISON (for %)
 // -----------------------------
-
 $current_month = $month_res['count'] ?? 0;
 
 $prev_res = fetchSingle($conn, "
     SELECT COUNT(*) as count 
     FROM orders 
-    WHERE status = 'outgoing'
+    WHERE type IN ('out', 'guh-out')
     AND MONTH(created_at) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
     AND YEAR(created_at) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
 ");
@@ -80,9 +82,8 @@ if ($previous_month > 0) {
 }
 
 // -----------------------------
-// CHART DATA (REAL DATA)
+// CHART DATA (Orders Trend)
 // -----------------------------
-
 $chart_sql = "
     SELECT DATE(created_at) as date, COUNT(*) as total
     FROM orders
@@ -92,22 +93,20 @@ $chart_sql = "
 ";
 
 $chart_result = mysqli_query($conn, $chart_sql);
-
 $chart_data = [];
+
 if ($chart_result) {
     while ($row = mysqli_fetch_assoc($chart_result)) {
         $chart_data[] = array($row['date'], (int)$row['total']);
     }
 }
 
-// fallback if empty
+// Fallback if empty
 if (empty($chart_data)) {
     $chart_data[] = array(date("Y-m-d"), 0);
 }
 
-// -----------------------------
-// CHART INIT
-// -----------------------------
+// Initialize Chart
 $p = new chartphp();
 $p->chart_type = "area";
 $p->data = array($chart_data);
@@ -115,15 +114,20 @@ $p->title = "Orders Trend (Last 14 Days)";
 $out = $p->render('c1');
 
 // -----------------------------
-// RECENT ORDERS
+// RECENT ORDERS (Select correct columns)
 // -----------------------------
 $recent_sql = "
-    SELECT order_number, customer_name, status 
-    FROM orders 
-    ORDER BY created_at DESC 
+    SELECT 
+        o.order_no, 
+        p.name AS partner_name, 
+        o.type, 
+        o.approve_status,
+        o.order_status 
+    FROM orders o
+    JOIN partners p ON o.partner_id = p.id 
+    ORDER BY o.created_at DESC 
     LIMIT 5
 ";
-
 $recent_result = mysqli_query($conn, $recent_sql);
 
 include "../../build/header.php";
@@ -132,7 +136,6 @@ include "../../build/header.php";
 <div class="container-fluid px-4 py-4">
     <div class="row g-3 mb-4">
 
-        <!-- TOTAL -->
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Total Orders</small>
@@ -140,18 +143,16 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- OUTGOING -->
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Outgoing Orders</small>
                 <h4 class="fw-bold"><?= $current_month ?></h4>
                 <small class="<?= $percentage >= 0 ? 'text-success' : 'text-danger' ?>">
-                    <?= round($percentage, 1) ?>%
+                    <?= ($percentage >= 0 ? '+' : '') . round($percentage, 1) ?>%
                 </small>
             </div>
         </div>
 
-        <!-- PENDING -->
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Pending</small>
@@ -159,10 +160,9 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- VALUE -->
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
-                <small class="text-muted">Value</small>
+                <small class="text-muted">Value (Month)</small>
                 <h4 class="fw-bold">
                     €<?= number_format($value_res['total'] ?? 0, 2) ?>
                 </h4>
@@ -172,7 +172,6 @@ include "../../build/header.php";
 
     <div class="row g-4">
 
-        <!-- CHART -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <h6 class="fw-bold mb-3">Orders Overview</h6>
@@ -180,48 +179,69 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- RECENT -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <h6 class="fw-bold mb-3">Recent Orders</h6>
+
+                <?php
+                    // Define your mappings at the top
+                    $approve_classes = [
+                        "approved" => "badge bg-success",
+                        "not approved" => "badge bg-danger"
+                    ];
+
+                    $order_classes = [
+                        "created" => "badge bg-danger",
+                        "received" => "badge bg-warning",
+                        "in process" => "badge bg-info",
+                        "completed" => "badge bg-success",
+                        "cancelled" => "badge bg-danger"
+                    ];
+                    ?>
 
                 <table class="table table-sm">
                     <thead>
                         <tr>
                             <th>Order</th>
                             <th>Customer</th>
+                            <th>Approval</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-
                     <?php if ($recent_result && mysqli_num_rows($recent_result) > 0): ?>
                         <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
                             <tr>
-                                <td><?= htmlspecialchars($row['order_number']) ?></td>
-                                <td><?= htmlspecialchars($row['customer_name']) ?></td>
+                                <td><?= htmlspecialchars($row['order_no']) ?></td>
+                                <td><?= ucfirst(htmlspecialchars($row['partner_name'])) ?></td>
+                                
                                 <td>
-                                    <span class="badge bg-<?= $row['status'] == 'outgoing' ? 'success' : ($row['status'] == 'not_approved' ? 'danger' : 'secondary') ?>">
-                                        <?= $row['status'] ?>
+                                    <span class="<?= $approve_classes[$row['approve_status']] ?? 'badge bg-secondary' ?>">
+                                        <?= ucfirst(htmlspecialchars($row['approve_status'])) ?>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="<?= $order_classes[$row['order_status']] ?? 'badge bg-secondary' ?>">
+                                        <?= ucfirst(htmlspecialchars($row['order_status'])) ?>
                                     </span>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="3" class="text-muted">No orders yet</td></tr>
+                        <tr><td colspan="4" class="text-muted text-center">No orders yet</td></tr>
                     <?php endif; ?>
-
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- ACTIONS -->
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
                 <h6 class="fw-bold">Quick Actions</h6>
-                <button class="btn btn-outline-primary btn-sm w-100 mb-2">+ Outgoing</button>
-                <button class="btn btn-outline-primary btn-sm w-100 mb-2">+ Incoming</button>
+                <a href="orders.php?action=outgoing_orders" class="btn btn-outline-primary btn-sm w-100 mb-2">+ Outgoing</a>
+                <a href="orders.php?action=incoming_orders" class="btn btn-outline-primary btn-sm w-100 mb-2">+ Incoming</a>
+                <a href="guhring_orders.php?action=go" class="btn btn-outline-primary btn-sm w-100 mb-2">+ Gühring</a>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 p-3">

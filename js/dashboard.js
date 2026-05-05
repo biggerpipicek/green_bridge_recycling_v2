@@ -1,3 +1,4 @@
+/*
 $(document).ready(function() {
     setTimeout(function() {
         var plot = $('#c1').data('jqplot');
@@ -10,3 +11,4 @@ $(document).ready(function() {
         }
     }, 100);
 });
+*/

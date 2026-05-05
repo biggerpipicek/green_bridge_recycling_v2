@@ -129,9 +129,9 @@ if (empty($out_series)) {
 $p = new chartphp();
 $p->chart_type = "area";
 $p->data = array($out_series, $in_series);
-//$p->series_color = array("#ffc107", "#0548ad");
+$p->series_color = array("#ffc107", "#0548ad"); // Add this line
 
-// Explicitly set series labels — this is what actually feeds the legend
+// Explicitly set series labels
 $p->options["series"] = array(
     array("label" => "Outgoing"),
     array("label" => "Incoming")

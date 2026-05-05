@@ -16,7 +16,12 @@ $extra_css = [
 ];
 $extra_js = [
     "../../chartphp/lib/js/jquery.min.js",
-    "../../chartphp/lib/js/chartphp.js"
+    "../../chartphp/lib/js/chartphp.js",
+    "../../chartphp/lib/js/plugins/jqplot.dateAxisRenderer.js",
+    "../../chartphp/lib/js/plugins/jqplot.highlighter.js",
+    "../../chartphp/lib/js/plugins/jqplot.cursor.js",
+    "../../chartphp/lib/js/plugins/jqplot.enhancedLegendRenderer.js",
+    "../../js/dashboard.js"
 ];
 
 // -----------------------------
@@ -42,6 +47,14 @@ $month_res = fetchSingle($conn, "
     SELECT COUNT(*) as count 
     FROM orders 
     WHERE type IN ('out', 'guh-out')
+    AND MONTH(created_at) = MONTH(CURRENT_DATE())
+    AND YEAR(created_at) = YEAR(CURRENT_DATE())
+");
+
+// Incoming this month (NEW)
+$incoming_res = fetchSingle($conn, "
+    SELECT COUNT(*) as count FROM orders 
+    WHERE type IN ('in', 'guh-in')
     AND MONTH(created_at) = MONTH(CURRENT_DATE())
     AND YEAR(created_at) = YEAR(CURRENT_DATE())
 ");
@@ -85,7 +98,10 @@ if ($previous_month > 0) {
 // CHART DATA (Orders Trend)
 // -----------------------------
 $chart_sql = "
-    SELECT DATE(created_at) as date, COUNT(*) as total
+    SELECT 
+        DATE(created_at) as date,
+        SUM(CASE WHEN type IN ('out', 'guh-out') THEN 1 ELSE 0 END) as out_count,
+        SUM(CASE WHEN type IN ('in', 'guh-in') THEN 1 ELSE 0 END) as in_count
     FROM orders
     WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
     GROUP BY DATE(created_at)
@@ -93,24 +109,67 @@ $chart_sql = "
 ";
 
 $chart_result = mysqli_query($conn, $chart_sql);
-$chart_data = [];
+$out_series = [];
+$in_series = [];
 
 if ($chart_result) {
     while ($row = mysqli_fetch_assoc($chart_result)) {
-        $chart_data[] = array($row['date'], (int)$row['total']);
+        $out_series[] = array($row['date'], (int)$row['out_count']);
+        $in_series[] = array($row['date'], (int)$row['in_count']);
     }
 }
 
-// Fallback if empty
-if (empty($chart_data)) {
-    $chart_data[] = array(date("Y-m-d"), 0);
+// Fallback
+if (empty($out_series)) {
+    $out_series[] = [date("Y-m-d"), 0];
+    $in_series[] = [date("Y-m-d"), 0];
 }
 
-// Initialize Chart
+// CHART INIT
 $p = new chartphp();
 $p->chart_type = "area";
-$p->data = array($chart_data);
-$p->title = "Orders Trend (Last 14 Days)";
+$p->data = array($out_series, $in_series);
+//$p->series_color = array("#ffc107", "#0548ad");
+
+// Explicitly set series labels — this is what actually feeds the legend
+$p->options["series"] = array(
+    array("label" => "Outgoing"),
+    array("label" => "Incoming")
+);
+
+$p->options["legend"] = array(
+    "show"      => true,
+    "location"  => "ne",
+    "placement" => "insideGrid"
+);
+
+$p->options["highlighter"] = array(
+    "show"              => true,
+    "showMarker"        => true,
+    "tooltipLocation"   => "n",
+    "useAxesFormatters" => true,
+    "formatString"      => "%s: %d orders"
+);
+
+$p->options["cursor"] = array("show" => true);
+
+// fillToZero stops curves dipping below 0, smooth false prevents bezier weirdness
+$p->options["seriesDefaults"] = array(
+    "fill"        => true,
+    "fillToZero"  => true,
+    "rendererOptions" => array("smooth" => false)
+);
+
+// Lock Y axis to never go below 0
+$p->options["axes"] = array(
+    "yaxis" => array(
+        "min"  => 0,
+        "pad"  => 0,
+        "tickOptions" => array("formatString" => "%d")
+    )
+);
+
+$p->title = "Activity Trend (Last 14 Days)";
 $out = $p->render('c1');
 
 // -----------------------------
@@ -176,6 +235,18 @@ include "../../build/header.php";
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <h6 class="fw-bold mb-3">Orders Overview</h6>
                 <?= $out ?>
+
+                <!-- Custom legend -->
+                <div class="d-flex gap-3 justify-content-center mt-2">
+                    <span class="d-flex align-items-center gap-1">
+                        <span style="display:inline-block; width:14px; height:14px; background:#ffc107; border-radius:3px;"></span>
+                        <small class="text-muted">Outgoing</small>
+                    </span>
+                    <span class="d-flex align-items-center gap-1">
+                        <span style="display:inline-block; width:14px; height:14px; background:#0548ad; border-radius:3px;"></span>
+                        <small class="text-muted">Incoming</small>
+                    </span>
+                </div>
             </div>
         </div>
 

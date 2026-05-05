@@ -13,9 +13,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-    <?php if(isset($extra_css)): ?>
-        <link rel="stylesheet" href="<?= $extra_css;?>">
-    <?php endif; ?>
+    <?php 
+        if(isset($extra_css) && is_array($extra_css)): 
+            foreach($extra_css as $css_file): ?>
+                <link rel="stylesheet" href="<?= $css_file; ?>">
+            <?php endforeach; 
+        endif; 
+    ?>
     <?php 
         // Check if $extra_js exists and is an array
         if(isset($extra_js) && is_array($extra_js)): 

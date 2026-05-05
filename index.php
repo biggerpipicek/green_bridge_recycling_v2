@@ -81,8 +81,10 @@
     <?php else: ?>
     <div class="container-fluid">
         <div class="container-sm">
-            <h1>Hello, <?php echo $_SESSION['user']; ?>!</h1>
-            <h2><i>Recent activities,</i></h2>
+            <div class="card border rounded-4 p-4 shadow-sm text-center">
+                <h1>Hello, <?php echo $_SESSION['user']; ?>!</h1>
+                <h4 class="text-muted"><span>Recent activities,</span></h4>
+            </div>
             <!-- USER'S RECENT ACTIVITIES -->
             <div class="container mt-4">
                 <div class="row">

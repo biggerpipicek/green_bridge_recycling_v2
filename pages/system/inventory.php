@@ -43,20 +43,16 @@
     }
 ?>
 
-    <!-- NAVIGATION -->
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">
         <div class="container-fluid justify-content-between">
 
-            <!-- SEARCH -->
             <form action="" method="get" class="d-flex">
                 <input type="text" name="search" class="form-control me-2" placeholder="Search..">
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
 
-            <!-- RIGHT SIDE -->
             <ul class="navbar-nav">
 
-                <!-- SORT DROPDOWN -->
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                     <ul class="dropdown-menu">
@@ -69,7 +65,6 @@
                     </ul>
                 </li>
 
-                <!-- ACTIONS -->
                 <li class="nav-item">
                     <a href="" class="nav-link">Refresh</a>
                 </li>
@@ -84,7 +79,6 @@
         </div>
     </nav>
     <br>
-    <!-- TABLE WITH ITEM LIST -->
     <div class="container-fluid">
         <div class="container-sm w-50 l-25">
             <table class="table align-middle text-center">
@@ -112,7 +106,15 @@
                         if(mysqli_num_rows($result) > 0) {
                             while($row = mysqli_fetch_assoc($result)) {
                                 $weight = number_format($row['stock_weight'], 2) . " kg";
-                                echo "<tr><td>".$row['item_code']."</td><td>".$row['name']."</td><td>".$weight."</td></tr>";
+                                
+                                // UI enhancement: dim rows with no stock, bold rows with stock
+                                $row_class = ($row['stock_weight'] <= 0) ? 'text-muted' : 'fw-bold text-success';
+                                
+                                echo "<tr class='$row_class'>";
+                                echo "<td>".$row['item_code']."</td>";
+                                echo "<td>".$row['name']."</td>";
+                                echo "<td>".$weight."</td>";
+                                echo "</tr>";
                             }
                         }
 
@@ -122,6 +124,4 @@
         </div>
     </div>
 
-    <?php
-        include "../../build/footer.php";
-    ?>
+<?php include "../../build/footer.php"; ?>

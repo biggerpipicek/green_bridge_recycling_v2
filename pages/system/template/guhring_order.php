@@ -100,6 +100,48 @@
                 $order_materials = mysqli_fetch_all($om_stmt->get_result(), MYSQLI_ASSOC);
             }
         }
+
+        // --- 5. HANDLE FILE UPLOADS ---
+        if (!empty($_FILES['documents']['name'][0])) {
+            // Determine subfolder based on order type
+            $type = $order_data['type'];
+            $subfolder = 'in'; // Default
+
+            if ($type === 'out') {
+                $subfolder = 'out';
+            } elseif ($type === 'guh-in' || $type === 'guh-out') {
+                $subfolder = 'guhring';
+            }
+
+            // Base path for moving files (relative to this PHP file)
+            $upload_base = "../../../order_attachments/" . $subfolder . "/";
+            
+            // Path to save in DB (relative to site root for the <img> tags)
+            $db_base = "order_attachments/" . $subfolder . "/";
+
+            if (!is_dir($upload_base)) {
+                mkdir($upload_base, 0777, true);
+            }
+
+            foreach ($_FILES['documents']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['documents']['error'][$key] === UPLOAD_ERR_OK) {
+                    // Clean filename: timestamp + original name
+                    $file_name = time() . "_" . basename($_FILES['documents']['name'][$key]);
+                    $target_file = $upload_base . $file_name;
+                    $db_path = $db_base . $file_name;
+
+                    if (move_uploaded_file($tmp_name, $target_file)) {
+                        $at_ins = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
+                        mysqli_stmt_bind_param($at_ins, "is", $id, $db_path);
+                        mysqli_stmt_execute($at_ins);
+                    }
+                }
+            }
+            
+            // Refresh attachments list for display
+            mysqli_stmt_execute($at_stmt);
+            $attachments = mysqli_fetch_all(mysqli_stmt_get_result($at_stmt), MYSQLI_ASSOC);
+        }
     }
 
     // --- 5. FETCH ALL MATERIALS FOR DROPDOWNS ---

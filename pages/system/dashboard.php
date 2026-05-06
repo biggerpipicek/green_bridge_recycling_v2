@@ -299,4 +299,6 @@ include "../../build/header.php";
     </div>
 </div>
 
-<?php include "../../build/footer.php"; ?>
+<?php
+    include "../../build/footer.php";
+?>

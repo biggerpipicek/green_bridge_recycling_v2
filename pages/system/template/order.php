@@ -1,8 +1,10 @@
 <?php
     // MICHAEL D. PHILLIPS - 17.04.2026
     // ORDER TEMPLATE PAGE
+    $page_title = "GBR ORDER {$id}";
     require "../../../build/auth.php";
     require "../../../build/functions.php";
+    include "../../../build/header.php";
 
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -34,7 +36,6 @@
     // --- 4. HANDLE FORM SUBMISSION (POST) ---
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
         
-        // Calculate Netto weight from the submitted material rows
         $calculated_netto = isset($_POST['weights']) ? array_sum($_POST['weights']) : 0;
 
         $sub_data = [
@@ -58,7 +59,6 @@
             }
             $description = "Updated Order: " . implode(", ", $changed_summary);
 
-            // Update main order table
             $up_sql = "UPDATE orders SET partner_id=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=? WHERE id=?";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             mysqli_stmt_bind_param($up_stmt, "isdssssssi", 
@@ -69,41 +69,95 @@
 
             if(mysqli_stmt_execute($up_stmt)) {
                 // --- UPDATE MATERIALS TABLE ---
-                // Wipe old rows and re-insert the new ones from the form
                 mysqli_query($conn, "DELETE FROM order_materials WHERE order_id = $id");
+                
+                // --- UPDATE INVENTORY LEDGER ---
+                // Always clear old movements for this order first to prevent double counting
+                mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
+
+                $is_fully_approved = ($sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved');
+                
+                $direction_map = [
+                    'in'      => 'in',
+                    'guh-in'  => 'in',
+                    'out'     => 'out',
+                    'guh-out' => 'out'
+                ];
+                $direction = $direction_map[$order_data['type']] ?? 'in';
+
                 if (!empty($_POST['materials'])) {
                     foreach ($_POST['materials'] as $key => $m_id) {
                         $m_weight = $_POST['weights'][$key];
+                        
+                        // 1. Insert into order_materials
                         $ins_m = mysqli_prepare($conn, "INSERT INTO order_materials (order_id, material_id, quantity) VALUES (?, ?, ?)");
                         mysqli_stmt_bind_param($ins_m, "iid", $id, $m_id, $m_weight);
                         mysqli_stmt_execute($ins_m);
+
+                        // 2. Insert into inventory_movements ONLY if completed and approved
+                        if ($is_fully_approved) {
+                            $ins_move = mysqli_prepare($conn, "INSERT INTO inventory_movements (material_id, order_id, quantity, direction, created_at) VALUES (?, ?, ?, ?, NOW())");
+                            mysqli_stmt_bind_param($ins_move, "iids", $m_id, $id, $m_weight, $direction);
+                            mysqli_stmt_execute($ins_move);
+                        }
                     }
                 }
 
                 logActivity($conn, $_SESSION['user_id'], 'update', 'orders', $id, $description);
                 
-                // Refresh local variables to show updated data in the form immediately
                 $order_data = array_merge($order_data, $sub_data);
-                $success_msg = "Order and materials updated successfully!";
+                $success_msg = "Order and materials updated successfully! " . ($is_fully_approved ? "Stock has been updated." : "Stock not updated (Order must be Approved & Completed).");
                 
-                // Re-fetch order materials so the form reflects the changes
                 $om_stmt->execute();
                 $order_materials = mysqli_fetch_all($om_stmt->get_result(), MYSQLI_ASSOC);
             }
         }
+
+        // --- 5. HANDLE FILE UPLOADS ---
+        if (!empty($_FILES['documents']['name'][0])) {
+            $type = $order_data['type'];
+            $subfolder = 'Incoming'; 
+
+            if ($type === 'out') {
+                $subfolder = 'Outgoing';
+            } elseif ($type === 'guh-in' || $type === 'guh-out') {
+                $subfolder = 'guhring';
+            }
+
+            $upload_base = "../../../order_attachments/" . $subfolder . "/";
+            $db_base = "order_attachments/" . $subfolder . "/";
+
+            if (!is_dir($upload_base)) {
+                mkdir($upload_base, 0777, true);
+            }
+
+            foreach ($_FILES['documents']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['documents']['error'][$key] === UPLOAD_ERR_OK) {
+                    $file_name = time() . "_" . basename($_FILES['documents']['name'][$key]);
+                    $target_file = $upload_base . $file_name;
+                    $db_path = $db_base . $file_name;
+
+                    if (move_uploaded_file($tmp_name, $target_file)) {
+                        $at_ins = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
+                        mysqli_stmt_bind_param($at_ins, "is", $id, $db_path);
+                        mysqli_stmt_execute($at_ins);
+                    }
+                }
+            }
+            
+            $at_stmt->execute();
+            $attachments = mysqli_fetch_all($at_stmt->get_result(), MYSQLI_ASSOC);
+        }
     }
 
-    // --- 5. FETCH ALL MATERIALS FOR DROPDOWNS ---
+    // --- 6. FETCH ALL MATERIALS FOR DROPDOWNS ---
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
-
-    $page_title = "GBR ORDER {$id}";
-    include "../../../build/header.php";
 ?>
 <script src="../../../js/script.js"></script>
 <div class="container-fluid">
     <div class="container-sm">
-        <h1>Incoming Order</h1>
+        <h1>Order <?php echo $order_data['order_no']; ?></h1>
         
         <?php if(isset($success_msg)) echo "<div class='alert alert-success'>$success_msg</div>"; ?>
 
@@ -116,7 +170,6 @@
                         <?php
                             $cust_res = mysqli_query($conn, "SELECT id, name FROM partners");
                             while($cust = mysqli_fetch_assoc($cust_res)) {
-                                // Change: used $order_data here
                                 $selected = ($cust['id'] == $order_data['partner_id']) ? 'selected' : '';
                                 echo "<option value='".$cust['id']."' $selected>".$cust['name']."</option>";
                             }
@@ -232,14 +285,16 @@
                                 <div class="border p-2 rounded bg-light d-flex align-items-center">
                                     <?php 
                                         $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
+                                        $full_web_path = "/green_bridge_recycling_v2/" . $file['file_path'];
+                                        
                                         if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png'])): 
                                     ?>
-                                        <img src="<?= $file['file_path'] ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
+                                        <img src="<?= $full_web_path ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
                                     <?php else: ?>
                                         <span class="me-2">📄</span> 
                                     <?php endif; ?>
 
-                                    <a href="/green_bridge_recycling_v2/<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <a href="<?= $full_web_path ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                         View Document
                                     </a>
                                 </div>
@@ -256,9 +311,9 @@
                     </button>
                 </div>
 
-            </div> </form> </div>
+            </div> 
+        </form> 
+    </div>
 </div>
 
-    <?php
-        include "../../../build/footer.php";
-    ?>
+<?php include "../../../build/footer.php"; ?>

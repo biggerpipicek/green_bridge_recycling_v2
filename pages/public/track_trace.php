@@ -7,7 +7,7 @@
 
     $page_title = "GBR Track & Trace";
 
-    $extra_css = "../../styles/track_trace.css";
+    $extra_css = ["../../styles/track_trace.css"];
 
     include "../../build/header.php";
 

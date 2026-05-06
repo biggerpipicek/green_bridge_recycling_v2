@@ -16,7 +16,7 @@
     <?php 
         if(isset($extra_css) && is_array($extra_css)): 
             foreach($extra_css as $css_file): ?>
-                <link rel="stylesheet" href="<?= $css_file; ?>">
+                <link rel="stylesheet" href="<?php echo $css_file; ?>">
             <?php endforeach; 
         endif; 
     ?>
@@ -24,7 +24,7 @@
         // Check if $extra_js exists and is an array
         if(isset($extra_js) && is_array($extra_js)): 
             foreach($extra_js as $js_file): ?>
-                <script src="<?= $js_file; ?>"></script>
+                <script src="<?php echo $js_file; ?>"></script>
             <?php endforeach; 
         endif; ?>
     <title><?php echo $page_title; ?></title>

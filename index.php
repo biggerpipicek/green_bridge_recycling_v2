@@ -8,7 +8,7 @@
 
     $page_title = "GBR Home";
 
-    $extra_css = "styles/index-quickaction.css";
+    $extra_css = ["styles/index-quickaction.css"];
 
     if(session_status() === PHP_SESSION_NONE) {
         session_start();

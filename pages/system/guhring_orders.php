@@ -6,7 +6,7 @@
 
     $page_title = "Gühring GBR Orders";
 
-    $extra_css = "../../styles/orders.css";
+    $extra_css = ["../../styles/orders.css"];
     
     include "../../build/header.php";
 

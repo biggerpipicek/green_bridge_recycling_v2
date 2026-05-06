@@ -33,7 +33,10 @@
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
             <a href="/green_bridge_recycling_v2/index.php" class="navbar-brand"><b>Home</b></a>
-            <div class="collapse navbar-collapse">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav">
                     <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/dashboard.php" class="nav-link">Dashboard</a></li>
                     <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/orders.php" class="nav-link">Orders</a></li>

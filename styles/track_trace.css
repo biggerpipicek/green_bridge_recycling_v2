@@ -49,3 +49,26 @@
         transform: translateY(0);    /* Ends at original position */
     }
 }
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .ver-line {
+        display: block; /* hide the vertical divider on mobile */
+        height: 1px;
+        width: 90%;
+        position: relative;
+    }
+
+    .row {
+        width: 100%; /* make rows flexible */
+    }
+
+    .left, .right {
+        width: 100%;
+    }
+}

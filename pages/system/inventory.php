@@ -30,7 +30,18 @@
             $sort = "ORDER BY m.item_code DESC";
             break;
     }
-    ?>
+
+    $search_term = $_GET['search'] ?? '';
+    $where_clause = "";
+
+    if (!empty($search_term)) {
+        // Sanitize the input to prevent SQL Injection
+        $safe_search = mysqli_real_escape_string($conn, $search_term);
+        
+        // We search across name OR item code
+        $where_clause = "WHERE (m.name LIKE '%$safe_search%' OR m.item_code LIKE '%$safe_search%')";
+    }
+?>
 
     <!-- NAVIGATION -->
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">
@@ -88,10 +99,11 @@
                         // Calculate stock = SUM of 'in' movements minus SUM of 'out' movements
                         $sql = "SELECT m.item_code, m.name,
                                     COALESCE(SUM(CASE WHEN im.direction = 'in'  THEN im.quantity ELSE 0 END), 0)
-                                  - COALESCE(SUM(CASE WHEN im.direction = 'out' THEN im.quantity ELSE 0 END), 0)
+                                - COALESCE(SUM(CASE WHEN im.direction = 'out' THEN im.quantity ELSE 0 END), 0)
                                     AS stock_weight
                                 FROM materials m
                                 LEFT JOIN inventory_movements im ON im.material_id = m.id
+                                $where_clause
                                 GROUP BY m.id, m.item_code, m.name
                                 $sort";
 

@@ -110,10 +110,10 @@
                                 // UI enhancement: dim rows with no stock, bold rows with stock
                                 $row_class = ($row['stock_weight'] <= 0) ? 'text-muted' : 'fw-bold text-success';
                                 
-                                echo "<tr class='$row_class'>";
-                                echo "<td>".$row['item_code']."</td>";
-                                echo "<td>".$row['name']."</td>";
-                                echo "<td>".$weight."</td>";
+                                echo "<tr>";
+                                echo "<td class='$row_class'>".$row['item_code']."</td>";
+                                echo "<td class='$row_class'>".$row['name']."</td>";
+                                echo "<td class='$row_class'>".$weight."</td>";
                                 echo "</tr>";
                             }
                         }

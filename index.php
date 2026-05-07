@@ -63,6 +63,16 @@
 
     include "build/header.php";
 ?>
+    <div class="container-sm mt-4 d-flex justify-content-center">
+        <br>
+        <?php if(isset($_GET['success'])): ?>
+                <div class='alert alert-success alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button>Log in successful, <?php echo $_SESSION['user']; ?>!</div>
+        <?php endif; ?>
+
+        <?php if(isset($_GET['fail'])): ?>
+                <div class='alert alert-danger alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button><b>Whoops!</b><br>Unable to log in. Wrong username or password.</div>
+        <?php endif; ?>
+    </div>
 
     <?php if(!isset($_SESSION['user'])): ?>
     <div class="container-fluid">
@@ -182,17 +192,6 @@
         </div>
     </div>
     <?php endif; ?>
-    
-    <div class="container-sm mt-4 d-flex justify-content-center">
-        <br>
-        <?php if(isset($_GET['success'])): ?>
-                <div class='alert alert-success alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button>Log in successful, <?php echo $_SESSION['user']; ?>!</div>
-        <?php endif; ?>
-
-        <?php if(isset($_GET['fail'])): ?>
-                <div class='alert alert-danger alert-dismissible w-75'><button type='button' class='btn-close' data-bs-dismiss='alert'></button><b>Whoops!</b><br>Unable to log in. Wrong username or password.</div>
-        <?php endif; ?>
-    </div>
    
    <?php
         include "build/footer.php";

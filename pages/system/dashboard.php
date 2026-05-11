@@ -19,6 +19,21 @@ if (!function_exists('fetchSingle')) {
     }
 }
 
+$page_title = "GBR Dashboard";
+$extra_css = [
+    "../../chartphp/lib/js/chartphp.css",
+    "../../styles/dashboard.css"
+];
+$extra_js = [
+    "../../chartphp/lib/js/jquery.min.js",
+    "../../chartphp/lib/js/chartphp.js",
+    "../../chartphp/lib/js/plugins/jqplot.dateAxisRenderer.js",
+    "../../chartphp/lib/js/plugins/jqplot.highlighter.js",
+    "../../chartphp/lib/js/plugins/jqplot.cursor.js",
+    "../../chartphp/lib/js/plugins/jqplot.enhancedLegendRenderer.js",
+    "../../js/dashboard.js"
+];
+
 // 3. FILTER LOGIC
 $period      = $_GET['period'] ?? 'month';
 $type_filter = $_GET['type'] ?? 'all'; 
@@ -116,7 +131,6 @@ $recent_sql = "
 
 $recent_result = mysqli_query($conn, $recent_sql);
 
-$page_title = "GBR Dashboard";
 include "../../build/header.php";
 ?>
 

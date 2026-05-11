@@ -106,7 +106,14 @@ $p->options["legend"] = ["show" => true, "location" => "ne"];
 $out = $p->render('c1');
 
 // 6. RECENT ORDERS
-$recent_sql = "SELECT o.order_no, p.name AS partner_name, o.type, o.approve_status, o.order_status FROM orders o JOIN partners p ON o.partner_id = p.id ORDER BY o.created_at DESC LIMIT 5";
+$recent_sql = "
+    SELECT o.order_no, p.name AS partner_name, o.type, o.approve_status, o.order_status 
+    FROM orders o 
+    LEFT JOIN partners p ON o.partner_id = p.id 
+    ORDER BY o.created_at DESC 
+    LIMIT 5
+";
+
 $recent_result = mysqli_query($conn, $recent_sql);
 
 $page_title = "GBR Dashboard";
@@ -185,7 +192,7 @@ include "../../build/header.php";
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <h6 class="fw-bold mb-3">Activity Trend</h6>
-                <?= $out ?>
+                <?php echo $out; ?>
             </div>
         </div>
         <div class="col-lg-4">
@@ -197,13 +204,25 @@ include "../../build/header.php";
                             <tr class="text-muted small"><th>Order #</th><th>Partner</th><th>Status</th></tr>
                         </thead>
                         <tbody class="small">
-                            <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($row['order_no']) ?></td>
-                                <td><?= htmlspecialchars($row['partner_name']) ?></td>
-                                <td><span class="badge <?= $row['approve_status'] == 'approved' ? 'bg-success' : 'bg-danger' ?>"><?= $row['approve_status'] ?></span></td>
-                            </tr>
-                            <?php endwhile; ?>
+                            <?php if ($recent_result && mysqli_num_rows($recent_result) > 0): ?>
+                                <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['order_no'] ?? 'N/A') ?></td>
+                                    <td><?= htmlspecialchars($row['partner_name'] ?? 'Unknown Partner') ?></td>
+                                    <td>
+                                        <?php 
+                                            $status = $row['approve_status'] ?? 'pending';
+                                            $badge_class = ($status == 'approved') ? 'bg-success' : 'bg-danger';
+                                        ?>
+                                        <span class="badge <?= $badge_class ?>"><?= ucfirst($status) ?></span>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No recent orders found.</td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

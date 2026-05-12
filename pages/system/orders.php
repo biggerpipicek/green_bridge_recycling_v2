@@ -56,6 +56,9 @@
             $sort = "ORDER BY price DESC";
             break;
     }
+
+    if($_SESSION['user'] == "admin" || $_SESSION['user'] == "adreas" || $_SESSION['user'] == "info"):
+
     ?>
     
     <div class="container-fluid">
@@ -281,5 +284,6 @@
     <script src="../../js/easteregg.js"></script>
 
     <?php
+        endif;
         include "../../build/footer.php";
     ?>

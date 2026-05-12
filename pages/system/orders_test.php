@@ -12,7 +12,7 @@
 
     // 1. ACCESS CONTROL
     // Using an array makes it easy to add/remove people later.
-    $allowed_users = ["admin", "adreas", "info"];
+    $allowed_users = ["admin", "adreas", "mirka", "info", "test_user"];
     $current_user = $_SESSION['user'] ?? null;
 
     if (in_array($current_user, $allowed_users)):

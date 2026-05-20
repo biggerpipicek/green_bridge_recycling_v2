@@ -4,7 +4,15 @@
 
     if(session_status() === PHP_SESSION_NONE) {
         session_start();
-    } 
+    }
+
+    $current_page = $_SERVER['REQUEST_URI'];
+
+    function nav_link($href, $label) {
+        $is_active = (parse_url($href, PHP_URL_PATH) === parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+        $class = 'nav-link' . ($is_active ? ' active' : '');
+        echo "<a href=\"$href\" class=\"$class\">$label</a>";
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +29,6 @@
         endif; 
     ?>
     <?php 
-        // Check if $extra_js exists and is an array
         if(isset($extra_js) && is_array($extra_js)): 
             foreach($extra_js as $js_file): ?>
                 <script src="<?php echo $js_file; ?>"></script>
@@ -38,13 +45,13 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/dashboard.php" class="nav-link">Dashboard</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/orders.php" class="nav-link">Orders</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/inventory.php" class="nav-link">Inventory</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/public/track_trace.php" class="nav-link">Track & Trace</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/clients.php" class="nav-link">Clients</a></li>                    
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/tickets.php" class="nav-link">Tickets</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/public/profile.php" class="nav-link">Profile</a></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/dashboard.php',  'Dashboard');  ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/orders.php',     'Orders');     ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/inventory.php',  'Inventory');  ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/track_trace.php','Track & Trace'); ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Clients');    ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/tickets.php',    'Tickets');    ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/profile.php',    'Profile');    ?></li>
                 </ul>
             </div>
         </div>

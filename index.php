@@ -33,12 +33,12 @@
             
             logActivity($conn, $_SESSION['user_id'], 'login', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} logged in");
 
-            header("Location: index.php?success=1");
+            header("Location: /green_bridge_recycling_v2/index.php?success=1");
 
             exit();
         } else {
 
-            header("Location: index.php?fail=1");
+            header("Location: /green_bridge_recycling_v2/index.php?fail=1");
             logActivity($conn, null, 'login_failed', 'user', 'null', "Failed log in attempt for username: {$user}");
             exit();
         }

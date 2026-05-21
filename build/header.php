@@ -2,10 +2,6 @@
     // MICHAEL D. PHILLIPS - 16.04.2026
     // HEADER
 
-    if(session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
     $current_page = $_SERVER['REQUEST_URI'];
 
     function nav_link($href, $label) {

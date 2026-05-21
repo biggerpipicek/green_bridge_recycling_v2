@@ -1,5 +1,10 @@
 <?php
     // MICHAEL D. PHILLIPS - 16.04.2026
+
+    if(session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
     // AUTHORISATION
     define("DB_HOST", "127.0.0.1");
     define("DB_USER", "root");

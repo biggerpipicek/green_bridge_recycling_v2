@@ -171,7 +171,7 @@
                                     foreach($quick_links as $link) {
                                         echo "
                                         <a href='{$link['url']}' class='btn btn-outline-secondary d-flex align-items-center justify-content-between py-3 px-4 rounded-4 text-dark shadow-sm border-light-subtle action-btn' style='transition: all 0.2s ease'>
-                                            <div class='dflex align-items-center' style='gap: 15px;'>
+                                            <div class='d-flex align-items-center' style='gap: 15px;'>
                                                 <img src='{$link['icon']}' style='width: 24px; height: 24px; opacity: 0.7;' alt='icon'>
                                                 <span style='font-weight: 500; font-size: 1.05rem;'>{$link['name']}</span>
                                             </div>

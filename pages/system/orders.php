@@ -57,7 +57,7 @@
             break;
     }
 
-    if($_SESSION['user'] == "admin" || $_SESSION['user'] == "adreas" || $_SESSION['user'] == "info"):
+    if($_SESSION['user'] == "admin" || $_SESSION['user'] == "adreas" || $_SESSION['user'] == "info" || $_SESSION['user'] == "test_user"):
 
     ?>
     

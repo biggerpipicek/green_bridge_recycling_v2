@@ -1,67 +1,73 @@
 <?php
-    // MICHAEL D. PHILLIPS - 16.04.2026
-    // SHOW USER PROFILE DATA
+    // MICHAEL D. PHILLIPS - UPDATED 05/25/2026
+    // SHOW USER PROFILE DATA SECURELY
 
     require "../../build/auth.php";
     require "../../build/functions.php";
 
+    // Operational Best Practice: If an unauthenticated agent attempts access, 
+    // intercept execution immediately to save server processing overhead.
+    if (!isset($_SESSION['user'])) {
+        header("Location: ../../index.php");
+        exit();
+    }
+
     $page_title = "GBR Profile";
-
     include "../../build/header.php";
-    ?>
-    <style>
-        .vr {
-            width: 0.5px;
-            align-self: stretch;
-            background-color: #212529;
-            opacity: 0.25;
-        }
-    </style>
 
-    <div class="container-fluid">
-        <?php if(isset($_SESSION['user'])): ?>
-        <div class="container-sm w-50 border border-secondary-subtle rounded-4 p-4">
-            <div class="row">
-                <div class="col d-flex align-items-center">
-                    <img src="../../imgs/user.png" alt="Profile picture" style="width: 115px; height: 110px;">
-                    <div class="together ms-4">
-                        <b><?php echo $_SESSION['user']; ?></b><br>
-                        <i><?php echo $_SESSION['email']; ?></i>
-                    </div>
-                </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col">
-                    <label for="username" class="form-label">Username</label>
-                    <p><?php echo $_SESSION['user']; ?></p>
-                </div>
-                <div class="col-auto d-flex">
-                    <div class="vr"></div>
+    // Escape session data elements to mitigate Cross-Site Scripting (XSS) actions
+    $clean_username = htmlspecialchars($_SESSION['user'], ENT_QUOTES, 'UTF-8');
+    $clean_email    = htmlspecialchars($_SESSION['email'] ?? 'No email assigned', ENT_QUOTES, 'UTF-8');
+?>
+
+<div class="container fluid py-5">
+    <div class="col-12 col-md-8 col-lg-6 mx-auto">
+        
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <div class="row align-items-center g-3">
+                <div class="col-auto">
+                    <img src="../../imgs/user.png" alt="Profile avatar picture" class="img-fluid rounded-circle bg-light p-1" style="width: 100px; height: 100px; object-fit: cover;">
                 </div>
                 <div class="col">
-                    <label for="email" class="form-label">E-mail</label>
-                    <p><?php echo $_SESSION['email']; ?></p>
+                    <h4 class="fw-bold text-dark mb-0"><?= $clean_username ?></h4>
+                    <p class="text-muted small mb-0"><i class="bi bi-envelope me-1"></i><?= $clean_email ?></p>
                 </div>
             </div>
-            <div class="row">
+
+            <hr class="my-4 opacity-10">
+
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label class="form-label text-uppercase text-muted fw-semibold small mb-1">Username</label>
+                    <p class="fw-medium text-dark mb-0"><?= $clean_username ?></p>
+                </div>
+                
+                <div class="col-auto d-flex justify-content-center">
+                    <div class="vr text-secondary opacity-25"></div>
+                </div>
+                
                 <div class="col">
-                    <a href="profile/changepassword.php" class="btn btn-outline-primary">Change Password</a>
-                </div>
-                <div class="col d-flex justify-content-end">
-                    <a href="profile/logout.php" class="btn btn-danger">Log out</a>
+                    <label class="form-label text-uppercase text-muted fw-semibold small mb-1">E-mail Address</label>
+                    <p class="fw-medium text-dark mb-0 text-truncate"><?= $clean_email ?></p>
                 </div>
             </div>
+
+            <div class="row g-2 pt-2">
+                <div class="col-sm-6">
+                    <a href="profile/changepassword.php" class="btn btn-outline-primary btn-sm w-100 rounded-3 py-2 fw-medium">
+                        <i class="bi bi-shield-lock me-1"></i> Change Password
+                    </a>
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                    <a href="profile/logout.php" class="btn btn-danger btn-sm w-100 rounded-3 py-2 fw-medium">
+                        <i class="bi bi-box-arrow-right me-1"></i> Log out
+                    </a>
+                </div>
+            </div>
+
         </div>
-        <?php else: ?>
-        <div class="container-sm w-50 border border-secondary-subtle rounded p-4">
-            <h1><b>Whoops!</b></h1>
-            <p>You need to be logged in to see Your Profile.</p>
-            <a href="../../index.php" class="btn btn-outline-primary">Log in</a>
-        </div>
-        <?php endif; ?>
+
     </div>
+</div>
 
-    <?php
-        include "../../build/footer.php";
-    ?>
+<?php include "../../build/footer.php"; ?>

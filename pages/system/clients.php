@@ -1,121 +1,233 @@
 <?php
-    // MICHAEL D. PHILLIPS - 20.04.2026
-    // CLIENT LIST - ADD, REMOVE
+    // MICHAEL D. PHILLIPS - UPDATED SECURITY & FUNCTIONALITY
+    // CLIENT LIST - VIEW, SEARCH, SORT, REMOVE
 
     require "../../build/auth.php";
     require "../../build/functions.php";
+
+    // --- 1. HANDLE ACTION TERMINATIONS (SAFE INLINE DELETION) ---
+    if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
+        $delete_id = (int)$_GET['delete_id'];
+        $delete_stmt = mysqli_prepare($conn, "DELETE FROM partners WHERE id = ?");
+        if ($delete_stmt) {
+            mysqli_stmt_bind_param($delete_stmt, "i", $delete_id);
+            if (mysqli_stmt_execute($delete_stmt)) {
+                logActivity($conn, $_SESSION['user_id'], 'delete', 'client', $delete_id, "Deleted client record index #{$delete_id}");
+            }
+            mysqli_stmt_close($delete_stmt);
+        }
+        // Redirect cleanly to avoid continuous deletion flags on reload
+        header("Location: clients.php");
+        exit();
+    }
 
     $page_title = "GBR Clients";
     include "../../build/header.php";
 
     $client_type = [
-        "supplier" => "badge bg-info",
-        "customer" => "badge bg-warning"
+        "supplier" => "badge bg-info text-dark",
+        "customer" => "badge bg-warning text-dark"
     ];
-    ?>
 
-    <!-- NAVIGATION -->
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-75 mx-auto rounded-3">
-        <div class="container-fluid justify-content-between">
+    // --- 2. COMPOSE SEARCH & SORT CONDITIONALS DYNAMICALLY ---
+    $where_clauses = ["1=1"]; 
+    $bind_types = "";
+    $bind_params = [];
 
-            <!-- SEARCH -->
-            <form action="" method="get" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Search..">
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
+    // Apply Search Logic Safely
+    $search_val = trim($_GET['search'] ?? '');
+    if ($search_val !== '') {
+        $where_clauses[] = "(name LIKE ? OR contact_info LIKE ?)";
+        $bind_types .= "ss";
+        $like_val = "%" . $search_val . "%";
+        $bind_params[] = $like_val;
+        $bind_params[] = $like_val;
+    }
 
-            <!-- RIGHT SIDE -->
-            <ul class="navbar-nav">
+    // Explicit Sort Mapping Whitelist (Mitigates raw input manipulation)
+    $sort_input = $_GET['sort'] ?? 'name_asc';
+    $sort_map = [
+        'name_asc'  => 'name ASC',
+        'name_desc' => 'name DESC',
+        'type_asc'  => 'type ASC',
+        'type_desc' => 'type DESC'
+    ];
+    $order_sql = $sort_map[$sort_input] ?? 'name_ASC';
 
-                <!-- SORT DROPDOWN -->
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="?sort=az" class="dropdown-item">A → Z</a></li>
-                        <li><a href="?sort=za" class="dropdown-item">Z → A</a></li>
-                        <li><a href="?sort=weight_asc" class="dropdown-item">Weight: Low → High</a></li>
-                        <li><a href="?sort=weight_desc" class="dropdown-item">Weight: High → Low</a></li>
-                        <li><a href="?sort=code_asc" class="dropdown-item">Item Code: Low → High</a></li>
-                        <li><a href="?sort=code_desc" class="dropdown-item">Item Code: High → Low</a></li>
+    $where_sql = implode(' AND ', $where_clauses);
+
+    // --- 3. COUNT DATA ENTRIES FOR ACCURATE PAGINATION ---
+    $count_sql = "SELECT COUNT(*) as total FROM partners WHERE $where_sql";
+    $count_stmt = mysqli_prepare($conn, $count_sql);
+    if (!empty($bind_params)) {
+        mysqli_stmt_bind_param($count_stmt, $bind_types, ...$bind_params);
+    }
+    mysqli_stmt_execute($count_stmt);
+    $count_result = mysqli_stmt_get_result($count_stmt);
+    $total_clients = mysqli_fetch_assoc($count_result)['total'] ?? 0;
+    mysqli_stmt_close($count_stmt);
+
+    // Setup Window Limits
+    $client_limit = 10; // Bumped up slightly for improved desktop balance
+    $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+    if ($page < 1) $page = 1;
+    $offset = ($page - 1) * $client_limit;
+    $total_pages = ceil($total_clients / $client_limit);
+
+    // --- 4. EXECUTE FINAL RECORD QUERY ---
+    $sql = "SELECT id, name, type, contact_info FROM partners WHERE $where_sql ORDER BY $order_sql LIMIT ?, ?";
+    $final_bind_types = $bind_types . "ii";
+    $final_bind_params = array_merge($bind_params, [$offset, $client_limit]);
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, $final_bind_types, ...$final_bind_params);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+?>
+
+<div class="container-fluid py-4">
+    <div class="container-sm xl-container">
+        
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark p-3 rounded-4 shadow-sm mb-4">
+            <div class="container-fluid">
+                <form action="" method="GET" class="d-flex me-auto my-1 my-md-0 col-12 col-md-5">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="search" class="form-control" placeholder="Search client name or email..." value="<?= htmlspecialchars($search_val, ENT_QUOTES, 'UTF-8') ?>">
+                        <?php if(!empty($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?= htmlspecialchars($_GET['sort'], ENT_QUOTES, 'UTF-8') ?>">
+                        <?php endif; ?>
+                        <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+
+                <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#partnerNavbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-end" id="partnerNavbarContent">
+                    <ul class="navbar-nav align-items-md-center gap-1 mt-2 mt-md-0">
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle active small" data-bs-toggle="dropdown" role="button">
+                                <i class="bi bi-sort-down me-1"></i> Sort Catalog
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <?php 
+                                    // Generate contextual key queries cleanly
+                                    $base_query = $_GET; 
+                                    unset($base_query['page']); 
+                                    
+                                    $sorts = [
+                                        'name_asc'  => 'Name: A → Z',
+                                        'name_desc' => 'Name: Z → A',
+                                        'type_asc'  => 'Type: Customer First',
+                                        'type_desc' => 'Type: Supplier First'
+                                    ];
+                                    foreach($sorts as $key => $label) {
+                                        $base_query['sort'] = $key;
+                                        $active_item = ($sort_input === $key) ? 'active fw-bold' : '';
+                                        echo "<li><a href='?" . http_build_query($base_query) . "' class='dropdown-item small {$active_item}'>{$label}</a></li>";
+                                    }
+                                ?>
+                            </ul>
+                        </li>
+                        <li class="nav-item border-start border-secondary d-none d-md-block mx-2" style="height: 20px;"></li>
+                        <li class="nav-item">
+                            <a href="clients.php" class="nav-link small"><i class="bi bi-arrow-clockwise me-1"></i>Reset</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="add_client.php" class="btn btn-success btn-sm px-3 rounded-2 fw-medium ms-md-2 my-1 my-md-0 text-white">
+                                <i class="bi bi-plus-circle me-1"></i> Add Partner
+                            </a>
+                        </li>
                     </ul>
-                </li>
+                </div>
+            </div>
+        </nav>
 
-                <!-- ACTIONS -->
-                <li class="nav-item">
-                    <a href="" class="nav-link">Refresh</a>
-                </li>
-                <li class="nav-item">
-                    <a href="add_client.php" class="nav-link">Add</a>
-                </li>
-                <li class="nav-item">
-                    <a href="" class="nav-link">Export</a>
-                </li>
-
-            </ul>
-        </div>
-    </nav>
-    <br>
-
-    <!-- TABLE CLIENT LIST -->
-    <div class="container-fluid">
-        <div class="container-sm w-75">
-            <table class="table align-middle text-center">
-                <thead>
-                    <th>Client</th>
-                    <th>Type</th>
-                    <th>Contact Info</th>
-                    <th>Edit</th>
-                </thead>
-                <tbody>
-                    <!--<tr>
-                        <td>Schredder - Wojciech Kania</td>
-                        <td><div class="badge bg-info">Supplier</div></td>
-                        <td>w.kania@schredder.pl</td>
-                    </tr>-->
-                    <?php
-                        // CLIENT LIST AND PAGINATION - CLIENT LIST LIMITED TO 4
-                        $page = $_GET['page'] ?? 1;
-                        $page = max(1, (int)$page); // SAFETY
-                        $client_limit = 5; // CLIENT LIMIT
-                        $offset = ($page - 1) * $client_limit; // HOW MANY ROWS TO SKIP
-                        $sql = "SELECT id, name, type, contact_info FROM partners LIMIT $client_limit OFFSET $offset";
-                        $result = mysqli_query($conn, $sql);
-
-                        // TOTAL ROWS FOR PAGINATION
-                        $total_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM partners");
-                        $total_row = mysqli_fetch_assoc($total_result);
-                        $total_clients = $total_row['total'];
-
-                        $total_pages = ceil($total_clients / $client_limit);
-
-                        if(mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3 text-muted small text-uppercase">Client Identity Profile</th>
+                            <th class="py-3 text-muted small text-uppercase" style="width: 150px;">Classification</th>
+                            <th class="py-3 text-muted small text-uppercase">Contact Info Mapping</th>
+                            <th class="pe-4 py-3 text-muted small text-uppercase text-end" style="width: 180px;">Action Directory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if(mysqli_num_rows($result) > 0): ?>
+                            <?php while ($row = mysqli_fetch_assoc($result)): 
                                 $type = $row['type'];
-                                $badge = $client_type[$type] ?? "badge bg-secondary";
-                                echo "<tr><td>".$row['name']."</td><td><span class='{$badge}'>".ucfirst($type)."</span></td><td>".$row['contact_info']."</td><td><a href='template/client.php?id={$row['id']}' class='btn btn-outline-primary'>Edit</a> <a href='' class='btn btn-outline-danger'>Delete</a></td></tr>";
-                            }
-                        }
-                    ?>
-                </tbody>
-            </table>
-            <ul class="pagination justify-content-center">
-                <!-- PREVIOUS -->
-                <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                    <a href="?page=<?= $page - 1 ?>" class="page-link">Previous</a>
-                </li>
-                <!-- NUMBERS -->
-                 <?php for($i = 1; $i <= $total_pages; $i++): ?>
-                    <li class="page-item <?= ($i == $page ) ? 'active' : '' ?>">
-                        <a href="?page=<?= $i ?>" class="page-link"><?= $i ?></a>
-                    </li>
-                <?php endfor; ?>
-                <!-- NEXT -->
-                <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : '' ?>">
-                    <a href="?page=<?= $page + 1 ?>" class="page-link">Next</a>
-                </li>
-            </ul>
+                                $badge_class = $client_type[$type] ?? "badge bg-secondary text-white";
+                                
+                                // Neutralizing Output Streams Explicitly (Mitigates Stored XSS Attacks)
+                                $clean_id      = htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8');
+                                $clean_name    = htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8');
+                                $clean_contact = htmlspecialchars($row['contact_info'], ENT_QUOTES, 'UTF-8');
+                            ?>
+                            <tr>
+                                <td class="ps-4 fw-semibold text-dark"><?= $clean_name ?></td>
+                                <td>
+                                    <span class="<?= $badge_class ?> text-uppercase px-2.5 py-1.5 fw-bold" style="font-size: 0.72rem;">
+                                        <?= ucfirst($type) ?>
+                                    </span>
+                                </td>
+                                <td class="text-muted small"><i class="bi bi-envelope me-1.5"></i><?= $clean_contact ?></td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group btn-group-sm rounded-2">
+                                        <a href="template/client.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">
+                                            Edit
+                                        </a>
+                                        <a href="clients.php?delete_id=<?= $clean_id ?>" class="btn btn-outline-danger px-3" onclick="return confirm('Warning: Are you absolutely certain you want to permanently delete client profile \'<?= addslashes($clean_name) ?>\'? This action cannot be undone.');">
+                                            Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="bi bi-folder-x display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                    No active system partner accounts match current filter criteria.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        <?php if ($total_pages > 1): ?>
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center gap-1">
+                    <?php 
+                        $url_params = $_GET;
+                        
+                        // Handle Previous Button Route String
+                        $url_params['page'] = max(1, $page - 1);
+                        echo '<li class="page-item ' . ($page <= 1 ? 'disabled' : '') . '"><a class="page-link rounded-3 px-3" href="?' . http_build_query($url_params) . '">Previous</a></li>';
+
+                        // Individual Page Iterations maintaining Search and Filter persistence
+                        for ($i = 1; $i <= $total_pages; $i++) {
+                            $url_params['page'] = $i;
+                            $active_item = ($page === $i) ? 'active' : '';
+                            echo '<li class="page-item ' . $active_item . '"><a class="page-link rounded-3 px-2.5" href="?' . http_build_query($url_params) . '">' . $i . '</a></li>';
+                        }
+
+                        // Next Route Processing String
+                        $url_params['page'] = min($total_pages, $page + 1);
+                        echo '<li class="page-item ' . ($page >= $total_pages ? 'disabled' : '') . '"><a class="page-link rounded-3 px-3" href="?' . http_build_query($url_params) . '">Next</a></li>';
+                    ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
+
     </div>
-<?php
+</div>
+
+<?php 
+    mysqli_stmt_close($stmt);
     include "../../build/footer.php";
 ?>

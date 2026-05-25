@@ -1,6 +1,6 @@
 <?php
-// MICHAEL D. PHILLIPS - UPDATED 05/11/2026
-// DASHBOARD PAGE
+// MICHAEL D. PHILLIPS - UPDATED 05/25/2026
+// DASHBOARD PAGE (DYNAMIC CHART UPDATE & SECURITY FIX)
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -10,12 +10,23 @@ require "../../build/auth.php";
 require "../../build/functions.php"; 
 include "../../chartphp/lib/inc/chartphp_dist.php";
 
-// 2. HELPER FUNCTION
-if (!function_exists('fetchSingle')) {
-    function fetchSingle($conn, $sql) {
-        $res = mysqli_query($conn, $sql);
+// 2. SECURE HELPER FUNCTION FOR DYNAMIC QUERIES
+if (!function_exists('fetchSingleSecure')) {
+    function fetchSingleSecure($conn, $sql, $types = "", $params = []) {
+        $stmt = mysqli_prepare($conn, $sql);
+        if (!$stmt) return ['count' => 0, 'total' => 0];
+        
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
         if (!$res) return ['count' => 0, 'total' => 0];
-        return mysqli_fetch_assoc($res) ?? ['count' => 0, 'total' => 0];
+        
+        $data = mysqli_fetch_assoc($res) ?? ['count' => 0, 'total' => 0];
+        mysqli_stmt_close($stmt);
+        return $data;
     }
 }
 
@@ -34,8 +45,9 @@ $extra_js = [
     "../../js/dashboard.js"
 ];
 
-// 3. FILTER LOGIC
-$period      = $_GET['period'] ?? 'month';
+// 3. FILTER LOGIC & VALIDATION
+// Changed default from 'month' to 'week' (7 days) as requested
+$period      = $_GET['period'] ?? 'week'; 
 $type_filter = $_GET['type'] ?? 'all'; 
 $from_date   = $_GET['from'] ?? '';
 $to_date     = $_GET['to'] ?? '';
@@ -48,10 +60,17 @@ if ($type_filter === 'out') {
     $type_where = "type IN ('in', 'guh-in')";
 }
 
+// Prepare arrays for secure parameter binding
+$bind_types = "";
+$bind_params = [];
+
 // Determine Date Range SQL
 if (!empty($from_date) && !empty($to_date)) {
-    // Priority: Custom Date Range
-    $date_where = "DATE(created_at) BETWEEN '$from_date' AND '$to_date'";
+    // Custom Date Range using safe placeholders
+    $date_where = "DATE(created_at) BETWEEN ? AND ?";
+    $bind_types .= "ss";
+    $bind_params[] = $from_date;
+    $bind_params[] = $to_date;
 } else {
     // Fallback: Preset Intervals
     $intervals = [
@@ -61,7 +80,7 @@ if (!empty($from_date) && !empty($to_date)) {
         'semi'     => 'INTERVAL 6 MONTH',
         'annually' => 'INTERVAL 1 YEAR'
     ];
-    $sql_interval = $intervals[$period] ?? 'INTERVAL 30 DAY';
+    $sql_interval = $intervals[$period] ?? 'INTERVAL 7 DAY';
     $date_where = "created_at >= DATE_SUB(NOW(), $sql_interval)";
 }
 
@@ -70,47 +89,71 @@ if (!empty($from_date) && !empty($to_date)) {
 // ---------------------------------------------------------
 
 // A. Filtered Stats (Main big numbers)
-$filtered_stats = fetchSingle($conn, "
+$filtered_stats_sql = "
     SELECT COUNT(*) as count, SUM(price) as total 
     FROM orders 
     WHERE $type_where AND $date_where
-");
+";
+$filtered_stats = fetchSingleSecure($conn, $filtered_stats_sql, $bind_types, $bind_params);
 
 // B. Global Dashboard Stats (Fixed top row)
-$total_res   = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders");
-$pending_res = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders WHERE approve_status = 'not approved'");
-$value_res   = fetchSingle($conn, "
+$total_res   = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders");
+$pending_res = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE approve_status = 'not approved'");
+$value_res   = fetchSingleSecure($conn, "
     SELECT SUM(price) as total FROM orders 
     WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) 
     AND YEAR(created_at) = YEAR(CURRENT_DATE())
 ");
 
 // C. Month Comparison
-$month_res     = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+$month_res     = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
 $current_month = $month_res['count'];
-$prev_res      = fetchSingle($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY) AND DATE_SUB(NOW(), INTERVAL 30 DAY)");
+$prev_res      = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY) AND DATE_SUB(NOW(), INTERVAL 30 DAY)");
 $prev_month    = $prev_res['count'];
 
 $percentage = ($prev_month > 0) ? (($current_month - $prev_month) / $prev_month) * 100 : 0;
 
 // ---------------------------------------------------------
-// 5. CHART DATA (Stays as 14-day trend)
+// 5. CHART DATA (Now updates dynamically based on timeline filters)
 // ---------------------------------------------------------
 $chart_sql = "
     SELECT DATE(created_at) as date,
            SUM(CASE WHEN type IN ('out', 'guh-out') THEN 1 ELSE 0 END) as out_count,
            SUM(CASE WHEN type IN ('in', 'guh-in') THEN 1 ELSE 0 END) as in_count
     FROM orders
-    WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
-    GROUP BY DATE(created_at) ORDER BY date ASC";
+    WHERE $date_where
+    GROUP BY DATE(created_at) 
+    ORDER BY date ASC";
 
-$chart_result = mysqli_query($conn, $chart_sql);
-$out_series = []; $in_series = [];
-while ($row = mysqli_fetch_assoc($chart_result)) {
-    $out_series[] = [$row['date'], (int)$row['out_count']];
-    $in_series[]  = [$row['date'], (int)$row['in_count']];
+// Execute chart query safely using prepared statements
+$chart_stmt = mysqli_prepare($conn, $chart_sql);
+if ($chart_stmt) {
+    if (!empty($bind_params)) {
+        mysqli_stmt_bind_param($chart_stmt, $bind_types, ...$bind_params);
+    }
+    mysqli_stmt_execute($chart_stmt);
+    $chart_result = mysqli_stmt_get_result($chart_stmt);
+} else {
+    $chart_result = false;
 }
-if (empty($out_series)) { $out_series[] = [date("Y-m-d"), 0]; $in_series[] = [date("Y-m-d"), 0]; }
+
+$out_series = []; $in_series = [];
+if ($chart_result) {
+    while ($row = mysqli_fetch_assoc($chart_result)) {
+        $out_series[] = [$row['date'], (int)$row['out_count']];
+        $in_series[]  = [$row['date'], (int)$row['in_count']];
+    }
+}
+
+// Fallback if data array is empty
+if (empty($out_series)) { 
+    $out_series[] = [date("Y-m-d"), 0]; 
+    $in_series[]  = [date("Y-m-d"), 0]; 
+}
+
+if ($chart_stmt) {
+    mysqli_stmt_close($chart_stmt);
+}
 
 $p = new chartphp();
 $p->chart_type = "area";
@@ -128,7 +171,6 @@ $recent_sql = "
     ORDER BY o.created_at DESC 
     LIMIT 5
 ";
-
 $recent_result = mysqli_query($conn, $recent_sql);
 
 include "../../build/header.php";
@@ -150,11 +192,11 @@ include "../../build/header.php";
                 </div>
                 <div class="col-md-2">
                     <label class="small text-muted mb-1">From</label>
-                    <input type="date" name="from" class="form-control form-control-sm" value="<?= $from_date ?>">
+                    <input type="date" name="from" class="form-control form-control-sm" value="<?= htmlspecialchars($from_date) ?>">
                 </div>
                 <div class="col-md-2">
                     <label class="small text-muted mb-1">To</label>
-                    <input type="date" name="to" class="form-control form-control-sm" value="<?= $to_date ?>">
+                    <input type="date" name="to" class="form-control form-control-sm" value="<?= htmlspecialchars($to_date) ?>">
                 </div>
                 <div class="col-md-2">
                     <label class="small text-muted mb-1">Type</label>
@@ -228,7 +270,7 @@ include "../../build/header.php";
                                             $status = $row['approve_status'] ?? 'pending';
                                             $badge_class = ($status == 'approved') ? 'bg-success' : 'bg-danger';
                                         ?>
-                                        <span class="badge <?= $badge_class ?>"><?= ucfirst($status) ?></span>
+                                        <span class="badge <?= $badge_class ?>"><?= ucfirst(htmlspecialchars($status)) ?></span>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>

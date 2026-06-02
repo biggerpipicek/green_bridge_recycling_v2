@@ -105,7 +105,7 @@
                         <a href="orders.php?action=<?php echo $action; ?>" class="nav-link">Refresh</a>
                     </li>
                     <li class="nav-item">
-                        <a href="new_orders.php?action=<?php echo $action; ?>" class="nav-link">Add</a>
+                        <a href="add_guhring_order.php" class="nav-link">Add</a>
                     </li>
                     <li class="nav-item">
                         <a href="" class="nav-link">Export</a>

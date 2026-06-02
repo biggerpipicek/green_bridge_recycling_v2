@@ -13,7 +13,7 @@
     // --- 1. INITIALIZE DEFAULT DATA (For New Orders) ---
     $order_data = [
         'partner_id'     => '',
-        'type'           => 'guh-in', // Default to Incoming
+        'type'           => 'guh-in',
         'date'           => date('Y-m-d'),
         'price'          => 0.00,
         'currency'       => 'EUR',
@@ -41,14 +41,12 @@
         }
         $order_data = $res;
 
-        // Fetch Materials
         $om_sql = "SELECT material_id, quantity as weight FROM order_materials WHERE order_id = ?";
         $om_stmt = mysqli_prepare($conn, $om_sql);
         $om_stmt->bind_param("i", $id);
         $om_stmt->execute();
         $order_materials = $om_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-        // Fetch Attachments
         $at_sql = "SELECT file_path FROM order_attachments WHERE order_id = ?";
         $at_stmt = mysqli_prepare($conn, $at_sql);
         $at_stmt->bind_param("i", $id);
@@ -58,8 +56,12 @@
 
     // --- 3. HANDLE FORM SUBMISSION ---
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
-        
+
+        // Always re-read $id from GET to ensure it's correct on update
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
         $calculated_netto = isset($_POST['weights']) ? array_sum($_POST['weights']) : 0;
+        $created_by = $_SESSION['user_id'];
 
         $sub_data = [
             'partner_id'     => $_POST['customer'],
@@ -84,21 +86,20 @@
                 $sub_data['netto_w'], $sub_data['approve_status'], $sub_data['order_status'], $id
             );
             $action_type = 'update';
-            $final_order_no = $order_data['order_no']; // Keep existing
+            $final_order_no = $order_data['order_no'];
         } else {
             // INSERT NEW
-            // Temp order no format updated to match GBR-GUH-2026-RAND
             $temp_order_no = "GBR-GUH-" . date('Y') . "-" . rand(10000, 99999);
             $temp_track_id = "TRK-" . strtoupper(bin2hex(random_bytes(3)));
 
-            $up_sql = "INSERT INTO orders (partner_id, type, date, price, currency, pallet_no, brutto_w, netto_w, approve_status, order_status, order_no, track_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $up_sql = "INSERT INTO orders (partner_id, type, date, price, currency, pallet_no, brutto_w, netto_w, approve_status, order_status, order_no, track_id, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             
-            mysqli_stmt_bind_param($up_stmt, "issdssssssss", 
+            mysqli_stmt_bind_param($up_stmt, "issdssssssssi", 
                 $sub_data['partner_id'], $sub_data['type'], $sub_data['date'], $sub_data['price'], 
                 $sub_data['currency'], $sub_data['pallet_no'], $sub_data['brutto_w'], 
                 $sub_data['netto_w'], $sub_data['approve_status'], $sub_data['order_status'],
-                $temp_order_no, $temp_track_id
+                $temp_order_no, $temp_track_id, $created_by
             );
             $action_type = 'create';
         }
@@ -106,9 +107,6 @@
         if(mysqli_stmt_execute($up_stmt)) {
             if ($id === 0) {
                 $id = mysqli_insert_id($conn);
-                
-                // --- UPDATED ORDER NO FORMAT HERE ---
-                // Format: GBR-GUH-2026-XXXXX (where XXXXX is the ID padded to 5 digits)
                 $final_order_no = "GBR-GUH-" . date('Y') . "-" . str_pad($id, 5, "0", STR_PAD_LEFT);
                 mysqli_query($conn, "UPDATE orders SET order_no = '$final_order_no' WHERE id = $id");
             }
@@ -122,6 +120,24 @@
                     mysqli_stmt_bind_param($ins_m, "iid", $id, $m_id, $m_weight);
                     mysqli_stmt_execute($ins_m);
                 }
+            }
+
+            // ================= INVENTORY MOVEMENTS =================
+            // Always delete first, then re-insert only if completed
+            mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
+
+            if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed') {
+                $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
+                $stmt_mov = mysqli_prepare($conn, $mov_sql);
+
+                foreach ($_POST['materials'] as $key => $m_id) {
+                    $m_weight  = (float)$_POST['weights'][$key];
+                    $direction = ($sub_data['type'] === 'guh-in') ? 'in' : 'out';
+
+                    mysqli_stmt_bind_param($stmt_mov, "iids", $id, $m_id, $m_weight, $direction);
+                    mysqli_stmt_execute($stmt_mov);
+                }
+                mysqli_stmt_close($stmt_mov);
             }
 
             // --- SAVE DOCUMENTS ---
@@ -144,13 +160,16 @@
                 }
             }
 
-            logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} created order No. {$final_order_no}");
+            logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no}");
             header("Location: " . $_SERVER['PHP_SELF'] . "?id=$id&success=1");
             exit;
         } else {
             die("SQL Error: " . mysqli_error($conn));
         }
     }
+
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    error_log("POST received - ID from GET: " . $id . " | Status: " . $_POST['order_status']);
 
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials_list = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
@@ -165,7 +184,7 @@
             <div class='alert alert-success'>Order saved successfully!</div>
         <?php endif; ?>
 
-        <form method="POST" action="" enctype="multipart/form-data" class="container mt-4">
+        <form method="POST" action="?id=<?= $id ?>" enctype="multipart/form-data" class="container mt-4">
             <div class="row g-3">
 
                 <div class="col-md-6">

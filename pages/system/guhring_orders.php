@@ -28,8 +28,8 @@
     $order_currency = [
         "EUR" => "€",
         "USD" => "$",
-        "YEN" => "¥",
-        "ZL" => "zł",
+        "JPY" => "¥",
+        "PLN" => "zł",
         "CZK" => "Kč"
     ];
 

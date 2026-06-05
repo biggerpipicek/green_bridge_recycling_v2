@@ -42,7 +42,7 @@
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav">
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/dashboard.php',  'Dashboard');  ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/orders.php',     'Orders');     ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/guhring_orders.php',     'Orders');     ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/inventory.php',  'Inventory');  ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/track_trace.php','Track & Trace'); ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Clients');    ?></li>

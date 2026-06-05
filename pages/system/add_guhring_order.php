@@ -126,7 +126,7 @@
             // Always delete first, then re-insert only if completed
             mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
 
-            if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed') {
+            if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved') {
                 $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
                 $stmt_mov = mysqli_prepare($conn, $mov_sql);
 
@@ -159,17 +159,17 @@
                     }
                 }
             }
-
+            // ALSO GOOD TO HAVE LOG ACTIVITY HOW MUCH OF WHAT IS MOVED IN/OUT, IF ORDER WAS MARKED AS 'APPROVED' AND 'CREATED'
             logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no}");
             header("Location: " . $_SERVER['PHP_SELF'] . "?id=$id&success=1");
             exit;
         } else {
             die("SQL Error: " . mysqli_error($conn));
         }
+    
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        error_log("POST received - ID from GET: " . $id . " | Status: " . $_POST['order_status']);    
     }
-
-    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    error_log("POST received - ID from GET: " . $id . " | Status: " . $_POST['order_status']);
 
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials_list = mysqli_fetch_all($m_res, MYSQLI_ASSOC);

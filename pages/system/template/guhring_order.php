@@ -91,6 +91,24 @@
                     }
                 }
 
+                // ================= INVENTORY MOVEMENTS =================
+                mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
+
+                if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved') {
+                    $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
+                    $stmt_mov = mysqli_prepare($conn, $mov_sql);
+
+                    foreach ($_POST['materials'] as $key => $m_id) {
+                        $m_weight  = (float)$_POST['weights'][$key];
+                        $direction = ($sub_data['type'] === 'guh-in') ? 'in' : 'out';
+
+                        mysqli_stmt_bind_param($stmt_mov, "iids", $id, $m_id, $m_weight, $direction);
+                        mysqli_stmt_execute($stmt_mov);
+                    }
+                    mysqli_stmt_close($stmt_mov);
+                }
+
+                // ALSO GOOD TO HAVE LOG ACTIVITY HOW MUCH OF WHAT IS MOVED IN/OUT
                 logActivity($conn, $_SESSION['user_id'], 'update', 'orders', $id, $description);
                 
                 $order_data = array_merge($order_data, $sub_data);

@@ -111,61 +111,93 @@
         </nav>
         <br>
         <!-- TABLE WITH GUHRING ORDERS -->
-        <div class="container-sm pt-4">
-            <table class="table align-middle text-center">
-                <thead>
-                    <th>Order No.</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Documents</th>
-                    <th>Price</th>
-                    <th>Order Status</th>
-                    <th>Approve Status</th>
-                    <th>Check Order</th>
-                </thead>
-                <tbody>
-                    <?php
-                        //$sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id JOIN order_attachments ON orders.id = order_attachments.order_id";
-                        $sql = "SELECT orders.id, orders.order_no, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status FROM orders JOIN partners ON orders.partner_id = partners.id LEFT JOIN order_attachments ON orders.id = order_attachments.order_id WHERE orders.type IN ('guh-in', 'guh-out') $sort";
+        <div class="container">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3 text-muted small text-uppercase">Order No.</th>
+                                <th class="py-3 text-muted small text-uppercase">Date</th>
+                                <th class="py-3 text-muted small text-uppercase">Customer</th>
+                                <th class="py-3 text-muted small text-uppercase">Documents</th>
+                                <th class="py-3 text-muted small text-uppercase">Price</th>
+                                <th class="py-3 text-muted small text-uppercase">Order Status</th>
+                                <th class="py-3 text-muted small text-uppercase">Approve Status</th>
+                                <th class="pe-4 py-3 text-muted small text-uppercase text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                                $sql = "SELECT orders.id, orders.order_no, orders.track_id, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status 
+                                        FROM orders 
+                                        JOIN partners ON orders.partner_id = partners.id 
+                                        LEFT JOIN order_attachments ON orders.id = order_attachments.order_id 
+                                        WHERE orders.type IN ('guh-in', 'guh-out') $sort";
 
-                        $result = mysqli_query($conn, $sql);
+                                $result = mysqli_query($conn, $sql);
 
-                        if(mysqli_num_rows($result) > 0) {
-                            while($row = mysqli_fetch_assoc($result)) {
-                                // Badges and formatting
-                                $a_stat = $row['approve_status'];
-                                $a_badge = $approve_type[$a_stat] ?? "badge bg-secondary";
+                                if(mysqli_num_rows($result) > 0):
+                                    while($row = mysqli_fetch_assoc($result)):
+                                        $a_stat = $row['approve_status'];
+                                        $a_badge = $approve_type[$a_stat] ?? "badge bg-secondary";
 
-                                $o_stat = $row['order_status'];
-                                $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
+                                        $o_stat = $row['order_status'];
+                                        $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
 
-                                $currency = $row['currency'];
-                                $symbol_currency = $order_currency[$currency] ?? "XXX";
-                                $date = date("m/d/Y", strtotime($row['date']));
+                                        $currency = $row['currency'];
+                                        $symbol_currency = $order_currency[$currency] ?? "XXX";
+                                        $date = date("d M Y", strtotime($row['date']));
 
-                                // --- NEW LOGIC FOR DOCUMENT LINK ---
-                                $document_cell = !empty($row['img_path']) 
-                                    ? "<a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a>" 
-                                    : "<span class='text-muted'>No document</span>";
-                                // ------------------------------------
-
-                                echo "<tr>
-                                        <td>".$row['order_no']."</td>
-                                        <td>".$date."</td>
-                                        <td>".$row['partner_name']."</td>
-                                        <td>".$document_cell."</td>
-                                        <td>".$row['price']." ".$symbol_currency."</td>
-                                        <td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td>
-                                        <td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td>
-                                        <td><a href='template/guhring_order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td>
-                                    </tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='8'>No orders found..</td></tr>";
-                        }
-                    ?>
-                </tbody>
-            </table>
+                                        $clean_id       = htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8');
+                                        $clean_order_no = htmlspecialchars($row['order_no'], ENT_QUOTES, 'UTF-8');
+                                        $clean_partner  = htmlspecialchars($row['partner_name'], ENT_QUOTES, 'UTF-8');
+                                        $clean_price    = htmlspecialchars($row['price'], ENT_QUOTES, 'UTF-8');
+                            ?>
+                            <tr>
+                                <td class="ps-4 fw-semibold text-dark"><?= $clean_order_no ?></td>
+                                <td class="text-muted small"><?= $date ?></td>
+                                <td class="fw-semibold text-dark"><?= $clean_partner ?></td>
+                                <td>
+                                    <?php if(!empty($row['img_path'])): ?>
+                                        <a href="/green_bridge_recycling_v2/<?= htmlspecialchars($row['img_path'], ENT_QUOTES, 'UTF-8') ?>" 
+                                        target="_blank" class="btn btn-outline-secondary btn-sm px-3">
+                                            <i class="bi bi-file-earmark me-1"></i>View
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted small">No document</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="fw-semibold"><?= $clean_price ?> <?= $symbol_currency ?></td>
+                                <td><span class="<?= $o_badge ?>"><?= ucfirst($row['order_status']) ?></span></td>
+                                <td><span class="<?= $a_badge ?>"><?= ucfirst($row['approve_status']) ?></span></td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group btn-group-sm rounded-2">
+                                        <a href="template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">
+                                            Edit
+                                        </a>
+                                        <a href="/green_bridge_recycling_v2/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>" 
+                                        class="btn btn-outline-secondary px-3" target="_blank">
+                                            Track
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php
+                                    endwhile;
+                                else:
+                            ?>
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-folder-x display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                    No orders found matching current filter criteria.
+                                </td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
     

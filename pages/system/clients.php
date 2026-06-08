@@ -88,61 +88,53 @@
 <div class="container-fluid py-4">
     <div class="container-sm xl-container">
         
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark p-3 rounded-4 shadow-sm mb-4">
-            <div class="container-fluid">
-                <form action="" method="GET" class="d-flex me-auto my-1 my-md-0 col-12 col-md-5">
-                    <div class="input-group input-group-sm">
-                        <input type="text" name="search" class="form-control" placeholder="Search client name or email..." value="<?= htmlspecialchars($search_val, ENT_QUOTES, 'UTF-8') ?>">
-                        <?php if(!empty($_GET['sort'])): ?>
-                            <input type="hidden" name="sort" value="<?= htmlspecialchars($_GET['sort'], ENT_QUOTES, 'UTF-8') ?>">
-                        <?php endif; ?>
-                        <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search"></i></button>
-                    </div>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">
+            <div class="container-fluid justify-content-between">
+
+                <form action="" method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search.." value="<?= htmlspecialchars($search_val, ENT_QUOTES, 'UTF-8') ?>">
+                    <?php if(!empty($_GET['sort'])): ?>
+                        <input type="hidden" name="sort" value="<?= htmlspecialchars($_GET['sort'], ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
+                    <button type="submit" class="btn btn-primary">Search</button>
                 </form>
 
-                <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#partnerNavbarContent">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <ul class="navbar-nav">
 
-                <div class="collapse navbar-collapse justify-content-end" id="partnerNavbarContent">
-                    <ul class="navbar-nav align-items-md-center gap-1 mt-2 mt-md-0">
-                        <li class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle active small" data-bs-toggle="dropdown" role="button">
-                                <i class="bi bi-sort-down me-1"></i> Sort Catalog
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow">
-                                <?php 
-                                    // Generate contextual key queries cleanly
-                                    $base_query = $_GET; 
-                                    unset($base_query['page']); 
-                                    
-                                    $sorts = [
-                                        'name_asc'  => 'Name: A → Z',
-                                        'name_desc' => 'Name: Z → A',
-                                        'type_asc'  => 'Type: Customer First',
-                                        'type_desc' => 'Type: Supplier First'
-                                    ];
-                                    foreach($sorts as $key => $label) {
-                                        $base_query['sort'] = $key;
-                                        $active_item = ($sort_input === $key) ? 'active fw-bold' : '';
-                                        echo "<li><a href='?" . http_build_query($base_query) . "' class='dropdown-item small {$active_item}'>{$label}</a></li>";
-                                    }
-                                ?>
-                            </ul>
-                        </li>
-                        <li class="nav-item border-start border-secondary d-none d-md-block mx-2" style="height: 20px;"></li>
-                        <li class="nav-item">
-                            <a href="clients.php" class="nav-link small"><i class="bi bi-arrow-clockwise me-1"></i>Reset</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="add_client.php" class="btn btn-success btn-sm px-3 rounded-2 fw-medium ms-md-2 my-1 my-md-0 text-white">
-                                <i class="bi bi-plus-circle me-1"></i> Add Partner
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort Catalog</a>
+                        <ul class="dropdown-menu">
+                            <?php 
+                                $base_query = $_GET; 
+                                unset($base_query['page']); 
+                                $sorts = [
+                                    'name_asc'  => 'Name: A → Z',
+                                    'name_desc' => 'Name: Z → A',
+                                    'type_asc'  => 'Type: Customer First',
+                                    'type_desc' => 'Type: Supplier First'
+                                ];
+                                foreach($sorts as $key => $label) {
+                                    $base_query['sort'] = $key;
+                                    $active_item = ($sort_input === $key) ? 'active fw-bold' : '';
+                                    echo "<li><a href='?" . http_build_query($base_query) . "' class='dropdown-item {$active_item}'>{$label}</a></li>";
+                                }
+                            ?>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="clients.php" class="nav-link">Reset</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="add_client.php" class="nav-link">Add Partner</a>
+                    </li>
+
+                </ul>
             </div>
         </nav>
+
+        <br>
 
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
             <div class="table-responsive">

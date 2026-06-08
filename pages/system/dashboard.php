@@ -47,8 +47,11 @@ $extra_js = [
 
 // 3. FILTER LOGIC & VALIDATION
 // Changed default from 'month' to 'week' (7 days) as requested
-$period      = $_GET['period'] ?? 'week'; 
-$type_filter = $_GET['type'] ?? 'all'; 
+$allowed_periods = ['day', 'week', 'month', 'semi', 'annually'];
+$allowed_types   = ['all', 'in', 'out'];
+
+$period      = in_array($_GET['period'] ?? '', $allowed_periods) ? $_GET['period'] : 'week';
+$type_filter = in_array($_GET['type'] ?? '', $allowed_types)    ? $_GET['type']   : 'all';
 $from_date   = $_GET['from'] ?? '';
 $to_date     = $_GET['to'] ?? '';
 
@@ -165,7 +168,7 @@ $out = $p->render('c1');
 
 // 6. RECENT ORDERS
 $recent_sql = "
-    SELECT o.order_no, p.name AS partner_name, o.type, o.approve_status, o.order_status 
+    SELECT o.id, o.order_no, p.name AS partner_name, o.type, o.approve_status, o.order_status 
     FROM orders o 
     LEFT JOIN partners p ON o.partner_id = p.id 
     ORDER BY o.created_at DESC 
@@ -262,17 +265,28 @@ include "../../build/header.php";
                         <tbody class="small">
                             <?php if ($recent_result && mysqli_num_rows($recent_result) > 0): ?>
                                 <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['order_no'] ?? 'N/A') ?></td>
-                                    <td><?= htmlspecialchars($row['partner_name'] ?? 'Unknown Partner') ?></td>
-                                    <td>
-                                        <?php 
-                                            $status = $row['approve_status'] ?? 'pending';
-                                            $badge_class = ($status == 'approved') ? 'bg-success' : 'bg-danger';
-                                        ?>
-                                        <span class="badge <?= $badge_class ?>"><?= ucfirst(htmlspecialchars($status)) ?></span>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>
+                                            <a href="/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=<?= $row['id'] ?>" 
+                                            class="text-decoration-none fw-bold">
+                                                <?= htmlspecialchars($row['order_no'] ?? 'N/A') ?>
+                                            </a>
+                                        </td>
+                                        <td><?= htmlspecialchars($row['partner_name'] ?? 'Unknown Partner') ?></td>
+                                        <td>
+                                            <?php 
+                                                $status = $row['order_status'] ?? 'created';
+                                                $badge_class = match($status) {
+                                                    'completed' => 'bg-success',
+                                                    'cancelled' => 'bg-danger',
+                                                    'in process' => 'bg-warning text-dark',
+                                                    'received'  => 'bg-info text-dark',
+                                                    default     => 'bg-secondary'
+                                                };
+                                            ?>
+                                            <span class="badge <?= $badge_class ?>"><?= ucfirst(htmlspecialchars($status)) ?></span>
+                                        </td>
+                                    </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>

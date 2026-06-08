@@ -49,7 +49,7 @@
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/guhring_orders.php',     'Orders');     ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/inventory.php',  'Inventory');  ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/track_trace.php','Track & Trace'); ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Clients');    ?></li>
+                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Partners');    ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/tickets.php',    'Tickets');    ?></li>
                     <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/profile.php',    'Profile');    ?></li>
                 </ul>

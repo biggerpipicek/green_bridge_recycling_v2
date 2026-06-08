@@ -79,49 +79,62 @@
         </div>
     </nav>
     <br>
-    <div class="container-fluid">
-        <div class="container-sm w-50 l-25">
-            <table class="table align-middle text-center">
-                <thead>
-                    <th>Item code</th>
-                    <th>Item name</th>
-                    <th>In Stock weight</th>
-                </thead>
-                <tbody>
-                    <?php
-                    
-                        // Calculate stock = SUM of 'in' movements minus SUM of 'out' movements
-                        $sql = "SELECT m.item_code, m.name,
-                                    COALESCE(SUM(CASE WHEN im.direction = 'in'  THEN im.quantity ELSE 0 END), 0)
-                                - COALESCE(SUM(CASE WHEN im.direction = 'out' THEN im.quantity ELSE 0 END), 0)
-                                    AS stock_weight
-                                FROM materials m
-                                LEFT JOIN inventory_movements im ON im.material_id = m.id
-                                $where_clause
-                                GROUP BY m.id, m.item_code, m.name
-                                $sort";
+        <div class="container">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3 text-muted small text-uppercase">Item Code</th>
+                                <th class="py-3 text-muted small text-uppercase">Item Name</th>
+                                <th class="pe-4 py-3 text-muted small text-uppercase text-end">In Stock Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                                $sql = "SELECT m.item_code, m.name,
+                                            COALESCE(SUM(CASE WHEN im.direction = 'in'  THEN im.quantity ELSE 0 END), 0)
+                                        - COALESCE(SUM(CASE WHEN im.direction = 'out' THEN im.quantity ELSE 0 END), 0)
+                                            AS stock_weight
+                                        FROM materials m
+                                        LEFT JOIN inventory_movements im ON im.material_id = m.id
+                                        $where_clause
+                                        GROUP BY m.id, m.item_code, m.name
+                                        $sort";
 
-                        $result = mysqli_query($conn, $sql);
+                                $result = mysqli_query($conn, $sql);
 
-                        if(mysqli_num_rows($result) > 0) {
-                            while($row = mysqli_fetch_assoc($result)) {
-                                $weight = number_format($row['stock_weight'], 2) . " kg";
-                                
-                                // UI enhancement: dim rows with no stock, bold rows with stock
-                                $row_class = ($row['stock_weight'] <= 0) ? 'text-muted' : 'fw-bold text-success';
-                                
-                                echo "<tr>";
-                                echo "<td class='$row_class'>".$row['item_code']."</td>";
-                                echo "<td class='$row_class'>".$row['name']."</td>";
-                                echo "<td class='$row_class'>".$weight."</td>";
-                                echo "</tr>";
-                            }
-                        }
-
-                    ?>
-                </tbody>
-            </table>
+                                if(mysqli_num_rows($result) > 0):
+                                    while($row = mysqli_fetch_assoc($result)):
+                                        $weight = number_format($row['stock_weight'], 2) . " kg";
+                                        $has_stock = $row['stock_weight'] > 0;
+                                        $clean_code = htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8');
+                                        $clean_name = htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8');
+                            ?>
+                            <tr>
+                                <td class="ps-4 fw-semibold text-dark"><?= $clean_code ?></td>
+                                <td class="<?= $has_stock ? 'fw-semibold text-dark' : 'text-muted' ?>"><?= $clean_name ?></td>
+                                <td class="pe-4 text-end">
+                                    <span class="badge <?= $has_stock ? 'bg-success' : 'bg-secondary' ?> px-3 py-2">
+                                        <?= $weight ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php
+                                    endwhile;
+                                else:
+                            ?>
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="bi bi-folder-x display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                    No inventory items match current filter criteria.
+                                </td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
 
 <?php include "../../build/footer.php"; ?>

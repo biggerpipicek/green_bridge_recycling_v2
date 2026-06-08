@@ -78,7 +78,7 @@
 
         if ($id > 0) {
             // UPDATE EXISTING
-            $up_sql = "UPDATE orders SET partner_id=?, type=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=? WHERE id=?";
+            $up_sql = "UPDATE orders SET partner_id=?, type=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=?, updated_at=NOW() WHERE id=?";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             mysqli_stmt_bind_param($up_stmt, "issdssssssi", 
                 $sub_data['partner_id'], $sub_data['type'], $sub_data['date'], $sub_data['price'], 

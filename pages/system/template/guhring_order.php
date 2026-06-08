@@ -60,7 +60,7 @@
             $description = "Updated Order: " . implode(", ", $changed_summary);
 
             // Update main order table - added type=? and updated bind_param string
-            $up_sql = "UPDATE orders SET partner_id=?, type=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=? WHERE id=?";
+            $up_sql = "UPDATE orders SET partner_id=?, type=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=?, updated_at=NOW() WHERE id=?";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             
             // Param types: i=int, s=string, d=double. 
@@ -91,22 +91,7 @@
                     }
                 }
 
-                // ================= INVENTORY MOVEMENTS =================
-                mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
-
-                if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved') {
-                    $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
-                    $stmt_mov = mysqli_prepare($conn, $mov_sql);
-
-                    foreach ($_POST['materials'] as $key => $m_id) {
-                        $m_weight  = (float)$_POST['weights'][$key];
-                        $direction = ($sub_data['type'] === 'guh-in') ? 'in' : 'out';
-
-                        mysqli_stmt_bind_param($stmt_mov, "iids", $id, $m_id, $m_weight, $direction);
-                        mysqli_stmt_execute($stmt_mov);
-                    }
-                    mysqli_stmt_close($stmt_mov);
-                }
+                
 
                 // ALSO GOOD TO HAVE LOG ACTIVITY HOW MUCH OF WHAT IS MOVED IN/OUT
                 logActivity($conn, $_SESSION['user_id'], 'update', 'orders', $id, $description);
@@ -117,6 +102,23 @@
                 $om_stmt->execute();
                 $order_materials = mysqli_fetch_all($om_stmt->get_result(), MYSQLI_ASSOC);
             }
+        }
+
+        // ================= INVENTORY MOVEMENTS =================
+        mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
+
+        if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved') {
+            $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
+            $stmt_mov = mysqli_prepare($conn, $mov_sql);
+
+            foreach ($_POST['materials'] as $key => $m_id) {
+                $m_weight  = (float)$_POST['weights'][$key];
+                $direction = ($sub_data['type'] === 'guh-in') ? 'in' : 'out';
+
+                mysqli_stmt_bind_param($stmt_mov, "iids", $id, $m_id, $m_weight, $direction);
+                mysqli_stmt_execute($stmt_mov);
+            }
+            mysqli_stmt_close($stmt_mov);
         }
 
         // --- 5. HANDLE FILE UPLOADS ---

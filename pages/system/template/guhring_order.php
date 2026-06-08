@@ -91,7 +91,13 @@
                     }
                 }
 
-                
+                // --- LOG STATUS HISTORY ---
+                if (isset($difference['order_status'])) {
+                    $hist_sql = "INSERT INTO order_status_history (order_id, status, changed_by) VALUES (?, ?, ?)";
+                    $hist_stmt = mysqli_prepare($conn, $hist_sql);
+                    mysqli_stmt_bind_param($hist_stmt, "isi", $id, $sub_data['order_status'], $_SESSION['user_id']);
+                    mysqli_stmt_execute($hist_stmt);
+                }
 
                 // ALSO GOOD TO HAVE LOG ACTIVITY HOW MUCH OF WHAT IS MOVED IN/OUT
                 logActivity($conn, $_SESSION['user_id'], 'update', 'orders', $id, $description);

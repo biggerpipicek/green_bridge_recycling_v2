@@ -140,6 +140,20 @@
                 mysqli_stmt_close($stmt_mov);
             }
 
+            // --- LOG STATUS HISTORY ---
+            if ($action_type === 'create') {
+                $hist_sql = "INSERT INTO order_status_history (order_id, status, changed_by) VALUES (?, ?, ?)";
+                $hist_stmt = mysqli_prepare($conn, $hist_sql);
+                mysqli_stmt_bind_param($hist_stmt, "isi", $id, $sub_data['order_status'], $_SESSION['user_id']);
+                mysqli_stmt_execute($hist_stmt);
+            }
+            if ($action_type === 'update' && $sub_data['order_status'] !== $order_data['order_status']) {
+                $hist_sql = "INSERT INTO order_status_history (order_id, status, changed_by) VALUES (?, ?, ?)";
+                $hist_stmt = mysqli_prepare($conn, $hist_sql);
+                mysqli_stmt_bind_param($hist_stmt, "isi", $id, $sub_data['order_status'], $_SESSION['user_id']);
+                mysqli_stmt_execute($hist_stmt);
+            }
+
             // --- SAVE DOCUMENTS ---
             if (!empty($_FILES['documents']['name'][0])) {
                 $upload_dir = "../../uploads/orders/";

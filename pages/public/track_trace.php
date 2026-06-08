@@ -15,6 +15,8 @@
     $track_id = $_GET['track_id'] ?? '';
     $is_searching = isset($_GET['track_id']); // Check if the user actually clicked 'Track'
 
+    $history = []; // Will be populated after order is found
+
     $order_type = [
         "created" => "badge bg-danger",
         "received" => "badge bg-warning",
@@ -47,7 +49,7 @@
 if($is_searching): 
     if(!empty($track_id)): 
         // Use Prepared Statements to prevent SQL Injection
-        $stmt = mysqli_prepare($conn, "SELECT order_no, partner_id, partners.name AS partner_name, order_status, track_id, orders.created_at, price, currency, pallet_no, brutto_w 
+        $stmt = mysqli_prepare($conn, "SELECT orders.id, order_no, partner_id, partners.name AS partner_name, order_status, track_id, orders.created_at, price, currency, pallet_no, brutto_w 
                                       FROM orders 
                                       JOIN partners ON orders.partner_id = partners.id 
                                       WHERE track_id = ?");
@@ -58,6 +60,19 @@ if($is_searching):
         if(mysqli_num_rows($result) > 0):
             while($row = mysqli_fetch_assoc($result)):
                 $date = date("d M Y", strtotime($row['created_at']));
+                // Fetch status history for this order
+                $order_id_for_history = $row['id'] ?? null;
+                if ($order_id_for_history) {
+                    $hist_sql = "SELECT osh.status, osh.changed_at, u.username as changed_by 
+                                FROM order_status_history osh
+                                LEFT JOIN users u ON u.id = osh.changed_by
+                                WHERE osh.order_id = ?
+                                ORDER BY osh.changed_at ASC";
+                    $hist_stmt = mysqli_prepare($conn, $hist_sql);
+                    mysqli_stmt_bind_param($hist_stmt, "i", $order_id_for_history);
+                    mysqli_stmt_execute($hist_stmt);
+                    $history = mysqli_fetch_all(mysqli_stmt_get_result($hist_stmt), MYSQLI_ASSOC);
+                }
                 $currency = $row['currency'];
                 $symbol_currency = $order_currency[$currency] ?? "XXX";
                 $o_stat = $row['order_status'];
@@ -135,6 +150,43 @@ if($is_searching):
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- STATUS TIMELINE -->
+                <div class="container-sm mt-4">
+                    <h5 class="mb-3">📋 Status Timeline</h5>
+                    <?php if(!empty($history)): ?>
+                    <div class="d-flex flex-column gap-2">
+                        <?php foreach($history as $i => $h): 
+                            $is_last = ($i === array_key_last($history));
+                            $badge_color = match($h['status']) {
+                                'completed' => 'success',
+                                'cancelled' => 'danger',
+                                'in process' => 'warning',
+                                'received'  => 'info',
+                                default     => 'secondary'
+                            };
+                        ?>
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="rounded-circle bg-<?= $badge_color ?> <?= $is_last ? '' : 'opacity-75' ?>" 
+                                     style="width:14px;height:14px;margin-top:4px;flex-shrink:0;"></div>
+                                <?php if(!$is_last): ?>
+                                    <div style="width:2px;height:30px;background:#dee2e6;"></div>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <span class="badge bg-<?= $badge_color ?>"><?= ucfirst($h['status']) ?></span>
+                                <small class="text-muted ms-2">
+                                    <?= date('d M Y, H:i', strtotime($h['changed_at'])) ?>
+                                    <?= $h['changed_by'] ? '— ' . htmlspecialchars($h['changed_by']) : '' ?>
+                                </small>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                        <p class="text-muted small">No status history recorded yet.</p>
+                    <?php endif; ?>
                 </div>
 <?php 
             endwhile;

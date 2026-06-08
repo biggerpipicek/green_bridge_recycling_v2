@@ -9,6 +9,10 @@
         $class = 'nav-link' . ($is_active ? ' active' : '');
         echo "<a href=\"$href\" class=\"$class\">$label</a>";
     }
+
+    if (isset($_SESSION['user_id'])) {
+        mysqli_query($conn, "UPDATE users SET last_activity = NOW() WHERE id = " . $_SESSION['user_id']);
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">

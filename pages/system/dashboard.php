@@ -42,7 +42,8 @@ $extra_js = [
     "../../chartphp/lib/js/plugins/jqplot.highlighter.js",
     "../../chartphp/lib/js/plugins/jqplot.cursor.js",
     "../../chartphp/lib/js/plugins/jqplot.enhancedLegendRenderer.js",
-    "../../js/dashboard.js"
+    "../../js/dashboard.js",
+    "https://cdn.jsdelivr.net/npm/chart.js"
 ];
 
 // 3. FILTER LOGIC & VALIDATION
@@ -158,13 +159,19 @@ if ($chart_stmt) {
     mysqli_stmt_close($chart_stmt);
 }
 
-$p = new chartphp();
-$p->chart_type = "area";
-$p->data = [$out_series, $in_series];
-$p->series_color = ["#ffc107", "#0548ad"];
-$p->options["series"] = [["label" => "Outgoing"], ["label" => "Incoming"]];
-$p->options["legend"] = ["show" => true, "location" => "ne"];
-$out = $p->render('c1');
+$out_labels = [];
+$out_data = [];
+$in_data = [];
+
+foreach (array_map(null, $out_series, $in_series) as [$o, $i]) {
+    $out_labels[] = $o[0];
+    $out_data[]   = $o[1];
+    $in_data[]    = $i[1];
+}
+
+$labels_json   = json_encode($out_labels);
+$out_json      = json_encode($out_data);
+$in_json       = json_encode($in_data);
 
 // 6. RECENT ORDERS
 $recent_sql = "
@@ -251,7 +258,42 @@ include "../../build/header.php";
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <h6 class="fw-bold mb-3">Activity Trend</h6>
-                <?php echo $out; ?>
+                <canvas id="activityChart" height="300"></canvas>
+                    <script>
+                    new Chart(document.getElementById('activityChart'), {
+                        type: 'line',
+                        data: {
+                            labels: <?= $labels_json ?>,
+                            datasets: [
+                                {
+                                    label: 'Outgoing',
+                                    data: <?= $out_json ?>,
+                                    borderColor: '#ffc107',
+                                    backgroundColor: 'rgba(255,193,7,0.15)',
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Incoming',
+                                    data: <?= $in_json ?>,
+                                    borderColor: '#0548ad',
+                                    backgroundColor: 'rgba(5,72,173,0.15)',
+                                    fill: true,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            },
+                            plugins: {
+                                legend: { position: 'top' }
+                            }
+                        }
+                    });
+                    </script>
             </div>
         </div>
         <div class="col-lg-4">

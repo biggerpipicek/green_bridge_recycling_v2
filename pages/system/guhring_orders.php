@@ -36,34 +36,74 @@
     $sort_by = $_GET['sort'] ?? '';
     $sort = "";
     switch($sort_by) {
-        case "orderno_asc":
-            $sort = "ORDER BY order_no ASC";
-            break;
-        case "orderno_desc":
-            $sort = "ORDER BY order_no DESC";
-            break;
-        case "date_asc":
-            $sort = "ORDER BY date ASC";
-            break;
-        case "date_desc":
-            $sort = "ORDER BY date DESC";
-            break;
-        case "price_asc":
-            $sort = "ORDER BY price ASC";
-            break;
-        case "price_desc":
-            $sort = "ORDER BY price DESC";
-            break;
+        case "orderno_asc":  $sort = "ORDER BY o.order_no ASC";   break;
+        case "orderno_desc": $sort = "ORDER BY o.order_no DESC";  break;
+        case "date_asc":     $sort = "ORDER BY o.date ASC";       break;
+        case "date_desc":    $sort = "ORDER BY o.date DESC";      break;
+        case "price_asc":    $sort = "ORDER BY o.price ASC";      break;
+        case "price_desc":   $sort = "ORDER BY o.price DESC";     break;
+        default:             $sort = "ORDER BY o.date DESC";      break;
     }
+
+    // --- SEARCH ---
+    $search_val = trim($_GET['search'] ?? '');
+    $where_extra = "";
+    $bind_types  = "";
+    $bind_params = [];
+
+    if ($search_val !== '') {
+        $where_extra = "AND (o.order_no LIKE ? OR p.name LIKE ?)";
+        $bind_types  = "ss";
+        $like = "%" . $search_val . "%";
+        $bind_params[] = $like;
+        $bind_params[] = $like;
+    }
+
+    // --- PAGINATION ---
+    $limit      = 15;
+    $page       = (isset($_GET['page']) && is_numeric($_GET['page'])) ? max(1, (int)$_GET['page']) : 1;
+    $offset     = ($page - 1) * $limit;
+
+    // Count total (no LIMIT)
+    $count_sql  = "SELECT COUNT(DISTINCT o.id) AS total
+                   FROM orders o
+                   JOIN partners p ON o.partner_id = p.id
+                   WHERE o.type IN ('guh-in', 'guh-out') $where_extra";
+    $count_stmt = mysqli_prepare($conn, $count_sql);
+    if (!empty($bind_params)) {
+        mysqli_stmt_bind_param($count_stmt, $bind_types, ...$bind_params);
+    }
+    mysqli_stmt_execute($count_stmt);
+    $total_orders = mysqli_stmt_get_result($count_stmt)->fetch_assoc()['total'] ?? 0;
+    $total_pages  = ceil($total_orders / $limit);
+    mysqli_stmt_close($count_stmt);
+
+    // Main query — GROUP BY fixes the duplicate-row problem
+    $sql = "SELECT o.id, o.order_no, o.track_id, o.date,
+                   p.name AS partner_name,
+                   MIN(oa.file_path) AS img_path,
+                   o.price, o.currency, o.type,
+                   o.approve_status, o.order_status
+            FROM orders o
+            JOIN partners p ON o.partner_id = p.id
+            LEFT JOIN order_attachments oa ON o.id = oa.order_id
+            WHERE o.type IN ('guh-in', 'guh-out') $where_extra
+            GROUP BY o.id
+            $sort
+            LIMIT ? OFFSET ?";
+
+    $final_types  = $bind_types . "ii";
+    $final_params = array_merge($bind_params, [$limit, $offset]);
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, $final_types, ...$final_params);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 ?>
     <div class="container-fluid">
-        <!-- INCOMIG/OUTGOING ORDERS NAVIGATION -->
+        <!-- INCOMING/OUTGOING ORDERS NAVIGATION -->
         <ul class="nav nav-tabs container-sm">
-            <!--
-            <li class="nav-item"><a href="orders.php?action=incoming_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'incoming_orders') ? 'active' : ''; ?>">Incoming orders</a></li>
-            <li class="nav-item"><a href="orders.php?action=outgoing_orders" class="nav-link <?php echo (($_GET['action'] ?? '') === 'outgoing_orders') ? 'active' : ''; ?>">Outgoing orders</a></li>
-            -->
-            <li class="nav-item"><a href="guhring_orders.php?action=go" class="nav-link <?php echo (($_GET['action'] ?? '') === 'go') ? 'active' : ''; ?> active">Gühring orders</a></li>
+            <li class="nav-item"><a href="guhring_orders.php?action=go" class="nav-link active">Gühring orders</a></li>
         </ul>
 
         <br>
@@ -75,42 +115,32 @@
                 <!-- SEARCH -->
                 <form action="" method="get" class="d-flex">
                     <input type="hidden" name="action" value="">
-                    <input type="text" name="search" class="form-control me-2" placeholder="Search..">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search.." value="<?= htmlspecialchars($search_val, ENT_QUOTES, 'UTF-8') ?>">
                     <button type="submit" class="btn btn-primary">Search</button>
                 </form>
 
                 <!-- RIGHT SIDE -->
                 <ul class="navbar-nav">
-
-                    <!-- SORT DROPDOWN -->
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                         <ul class="dropdown-menu">
-                            <li><a href="guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
-                            <li><a href="guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
-                            <li><a href="guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
-                            <li><a href="guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
-                            <li><a href="guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
-                            <li><a href="guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=date_asc"      class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="guhring_orders.php?sort=date_desc"     class="dropdown-item">Date: New → Old</a></li>
+                            <li><a href="guhring_orders.php?sort=price_asc"     class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=price_desc"    class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_asc"   class="dropdown-item">Order No.: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_desc"  class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>
                     </li>
-
-                    <!-- ACTIONS -->
-                    <li class="nav-item">
-                        <a href="guhring_orders.php" class="nav-link">Refresh</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="add_guhring_order.php?action=" class="nav-link">Add</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="" class="nav-link">Export</a>
-                    </li>
-
+                    <li class="nav-item"><a href="guhring_orders.php"      class="nav-link">Refresh</a></li>
+                    <li class="nav-item"><a href="add_guhring_order.php"   class="nav-link">Add</a></li>
+                    <li class="nav-item"><a href=""                        class="nav-link">Export</a></li>
                 </ul>
             </div>
         </nav>
         <br>
-        <!-- TABLE WITH GUHRING ORDERS -->
+
+        <!-- TABLE -->
         <div class="container">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                 <div class="table-responsive">
@@ -128,81 +158,87 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                                $sql = "SELECT orders.id, orders.order_no, orders.track_id, orders.date, partners.name AS partner_name, order_attachments.file_path AS img_path, orders.price, orders.currency, orders.type, orders.approve_status, orders.order_status 
-                                        FROM orders 
-                                        JOIN partners ON orders.partner_id = partners.id 
-                                        LEFT JOIN order_attachments ON orders.id = order_attachments.order_id 
-                                        WHERE orders.type IN ('guh-in', 'guh-out') $sort";
+                            <?php if (mysqli_num_rows($result) > 0): ?>
+                                <?php while ($row = mysqli_fetch_assoc($result)):
+                                    $a_badge = $approve_type[$row['approve_status']] ?? "badge bg-secondary";
+                                    $o_badge = $order_type[$row['order_status']]     ?? "badge bg-secondary";
+                                    $symbol  = $order_currency[$row['currency']]     ?? $row['currency'];
+                                    $date    = date("d M Y", strtotime($row['date']));
 
-                                $result = mysqli_query($conn, $sql);
-
-                                if(mysqli_num_rows($result) > 0):
-                                    while($row = mysqli_fetch_assoc($result)):
-                                        $a_stat = $row['approve_status'];
-                                        $a_badge = $approve_type[$a_stat] ?? "badge bg-secondary";
-
-                                        $o_stat = $row['order_status'];
-                                        $o_badge = $order_type[$o_stat] ?? "badge bg-secondary";
-
-                                        $currency = $row['currency'];
-                                        $symbol_currency = $order_currency[$currency] ?? "XXX";
-                                        $date = date("d M Y", strtotime($row['date']));
-
-                                        $clean_id       = htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8');
-                                        $clean_order_no = htmlspecialchars($row['order_no'], ENT_QUOTES, 'UTF-8');
-                                        $clean_partner  = htmlspecialchars($row['partner_name'], ENT_QUOTES, 'UTF-8');
-                                        $clean_price    = htmlspecialchars($row['price'], ENT_QUOTES, 'UTF-8');
-                            ?>
-                            <tr>
-                                <td class="ps-4 fw-semibold text-dark"><?= $clean_order_no ?></td>
-                                <td class="text-muted small"><?= $date ?></td>
-                                <td class="fw-semibold text-dark"><?= $clean_partner ?></td>
-                                <td>
-                                    <?php if(!empty($row['img_path'])): ?>
-                                        <a href="/green_bridge_recycling_v2/<?= htmlspecialchars($row['img_path'], ENT_QUOTES, 'UTF-8') ?>" 
-                                        target="_blank" class="btn btn-outline-secondary btn-sm px-3">
-                                            <i class="bi bi-file-earmark me-1"></i>View
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="text-muted small">No document</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="fw-semibold"><?= $clean_price ?> <?= $symbol_currency ?></td>
-                                <td><span class="<?= $o_badge ?>"><?= ucfirst($row['order_status']) ?></span></td>
-                                <td><span class="<?= $a_badge ?>"><?= ucfirst($row['approve_status']) ?></span></td>
-                                <td class="pe-4 text-end">
-                                    <div class="btn-group btn-group-sm rounded-2">
-                                        <a href="template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">
-                                            Edit
-                                        </a>
-                                        <a href="/green_bridge_recycling_v2/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>" 
-                                        class="btn btn-outline-secondary px-3" target="_blank">
-                                            Track
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php
-                                    endwhile;
-                                else:
-                            ?>
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="bi bi-folder-x display-6 d-block mb-2 text-secondary opacity-50"></i>
-                                    No orders found matching current filter criteria.
-                                </td>
-                            </tr>
+                                    $clean_id       = htmlspecialchars($row['id'],           ENT_QUOTES, 'UTF-8');
+                                    $clean_order_no = htmlspecialchars($row['order_no'],     ENT_QUOTES, 'UTF-8');
+                                    $clean_partner  = htmlspecialchars($row['partner_name'], ENT_QUOTES, 'UTF-8');
+                                    $clean_price    = htmlspecialchars($row['price'],        ENT_QUOTES, 'UTF-8');
+                                ?>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark"><?= $clean_order_no ?></td>
+                                    <td class="text-muted small"><?= $date ?></td>
+                                    <td class="fw-semibold text-dark"><?= $clean_partner ?></td>
+                                    <td>
+                                        <?php if (!empty($row['img_path'])): ?>
+                                            <a href="/green_bridge_recycling_v2/<?= htmlspecialchars($row['img_path'], ENT_QUOTES, 'UTF-8') ?>"
+                                               target="_blank" class="btn btn-outline-secondary btn-sm px-3">
+                                                <i class="bi bi-file-earmark me-1"></i>View
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="text-muted small">No document</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="fw-semibold"><?= $clean_price ?> <?= $symbol ?></td>
+                                    <td><span class="<?= $o_badge ?>"><?= ucfirst($row['order_status']) ?></span></td>
+                                    <td><span class="<?= $a_badge ?>"><?= ucfirst($row['approve_status']) ?></span></td>
+                                    <td class="pe-4 text-end">
+                                        <div class="btn-group btn-group-sm rounded-2">
+                                            <a href="template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">Edit</a>
+                                            <a href="/green_bridge_recycling_v2/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                               class="btn btn-outline-secondary px-3" target="_blank">Track</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="bi bi-folder-x display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                        No orders found matching current filter criteria.
+                                    </td>
+                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- PAGINATION -->
+            <?php if ($total_pages > 1): ?>
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center gap-1">
+                        <?php
+                            $url_params = $_GET;
+                            unset($url_params['page']);
+
+                            $url_params['page'] = max(1, $page - 1);
+                            echo '<li class="page-item ' . ($page <= 1 ? 'disabled' : '') . '"><a class="page-link rounded-3 px-3" href="?' . http_build_query($url_params) . '">Previous</a></li>';
+
+                            for ($i = 1; $i <= $total_pages; $i++) {
+                                $url_params['page'] = $i;
+                                $active = ($page === $i) ? 'active' : '';
+                                echo '<li class="page-item ' . $active . '"><a class="page-link rounded-3 px-3" href="?' . http_build_query($url_params) . '">' . $i . '</a></li>';
+                            }
+
+                            $url_params['page'] = min($total_pages, $page + 1);
+                            echo '<li class="page-item ' . ($page >= $total_pages ? 'disabled' : '') . '"><a class="page-link rounded-3 px-3" href="?' . http_build_query($url_params) . '">Next</a></li>';
+                        ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+
         </div>
     </div>
-    
+
     <script src="../../js/easteregg.js"></script>
 
 <?php
+    mysqli_stmt_close($stmt);
     include "../../build/footer.php";
 ?>

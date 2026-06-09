@@ -164,7 +164,7 @@
                     $file_ext = pathinfo($name, PATHINFO_EXTENSION);
                     $new_filename = "order_" . $id . "_" . time() . "_" . $key . "." . $file_ext;
                     $target_file = $upload_dir . $new_filename;
-                    $db_path = "uploads/orders/" . $new_filename;
+                    $db_path = "order_attachments/guhring/" . $new_filename;
 
                     if (move_uploaded_file($tmp_name, $target_file)) {
                         $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");

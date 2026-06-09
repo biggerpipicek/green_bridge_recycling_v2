@@ -91,11 +91,11 @@
     <?php if(!isset($_SESSION['user'])): ?>
     <div class="container-fluid">
         <div class="container-sm">
-            <form action="" method="post" class="border border-secondary-subtle rounded-4 p-4">
+            <form action="" method="post" class="border border-secondary-subtle rounded-4 p-4" autocomplete="on">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" name="username" id="username" class="form-control" required>
+                <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
                 <br>
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label" aoutocomplete="password">Password</label>
                 <input type="password" name="password" id="password" class="form-control" required>
                 <br>
                 <input type="submit" value="Log in" class="btn btn-primary">

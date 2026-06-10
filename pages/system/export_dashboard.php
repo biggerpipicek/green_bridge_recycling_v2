@@ -180,7 +180,7 @@ class GBR_PDF extends FPDF {
 
     function Header() {
         // Top bar
-        $this->SetFillColor(5, 72, 173);
+        $this->SetFillColor(19, 150, 15);
         $this->Rect(0, 0, 210, 18, 'F');
 
         $this->SetFont('Arial', 'B', 13);
@@ -205,7 +205,7 @@ class GBR_PDF extends FPDF {
 
     function SectionTitle($title) {
         $this->SetFillColor(240, 243, 250);
-        $this->SetTextColor(5, 72, 173);
+        $this->SetTextColor(19, 150, 15);
         $this->SetFont('Arial', 'B', 10);
         $this->SetX(10);
         $this->Cell(190, 7, $title, 0, 1, 'L', true);
@@ -312,7 +312,7 @@ $pdf->Ln(1);
 // Table header
 $col_w = [90, 40, 55];
 $headers = ['Partner Name', 'Orders', 'Total Value (€)'];
-$pdf->SetFillColor(5, 72, 173);
+$pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);
@@ -350,7 +350,7 @@ $pdf->Ln(1);
 
 $col_w2 = [45, 35, 35, 40, 40];
 $headers2 = ['Date', 'Outgoing', 'Incoming', 'Total Orders', 'Daily Revenue (€)'];
-$pdf->SetFillColor(5, 72, 173);
+$pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);
@@ -381,8 +381,8 @@ foreach ($chart_rows as $row) {
 }
 
 // Totals row
-$pdf->SetFillColor(230, 236, 250);
-$pdf->SetTextColor(5, 72, 173);
+$pdf->SetFillColor(230, 255, 235);
+$pdf->SetTextColor(19, 150, 15);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);
 $pdf->Cell($col_w2[0], 7, 'TOTAL',                                     0, 0, 'L', true);
@@ -416,7 +416,7 @@ $pdf->Ln(1);
 
 $col_w3 = [28, 52, 22, 28, 25, 33];
 $headers3 = ['Order #', 'Partner', 'Type', 'Approval', 'Status', 'Price (€)'];
-$pdf->SetFillColor(5, 72, 173);
+$pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 7);
 $pdf->SetX(10);
@@ -432,7 +432,7 @@ foreach ($orders_rows as $row) {
     $pdf->SetFillColor($odd ? 248 : 255, $odd ? 250 : 255, $odd ? 255 : 255);
     $pdf->SetTextColor(30, 30, 40);
     $pdf->SetX(10);
-    $pdf->Cell($col_w3[0], 5.5, mb_substr($row['order_no'] ?? 'N/A', 0, 16),           0, 0, 'L', true);
+    $pdf->Cell($col_w3[0], 5.5, mb_substr($row['order_no'] ?? 'N/A', 0, 18),           0, 0, 'L', true);
     $pdf->Cell($col_w3[1], 5.5, mb_substr($row['partner_name'] ?? 'Unknown', 0, 30),    0, 0, 'L', true);
     $pdf->Cell($col_w3[2], 5.5, strtoupper($row['type'] ?? ''),                         0, 0, 'C', true);
     $pdf->Cell($col_w3[3], 5.5, ucfirst($row['approve_status'] ?? ''),                  0, 0, 'C', true);

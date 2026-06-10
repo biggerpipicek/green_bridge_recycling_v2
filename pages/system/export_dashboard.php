@@ -168,6 +168,16 @@ class GBR_PDF extends FPDF {
     // Colour palette matching the dashboard
     // Primary blue: 5, 72, 173  |  Amber: 255, 193, 7  |  Green: 40, 167, 69
 
+    // Convert UTF-8 string to Latin-1 for FPDF compatibility
+    function u($str) {
+        return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $str ?? '');
+    }
+
+    // Override Cell to auto-convert all text
+    function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='') {
+        parent::Cell($w, $h, $this->u((string)$txt), $border, $ln, $align, $fill, $link);
+    }
+
     function Header() {
         // Top bar
         $this->SetFillColor(5, 72, 173);
@@ -176,7 +186,7 @@ class GBR_PDF extends FPDF {
         $this->SetFont('Arial', 'B', 13);
         $this->SetTextColor(255, 255, 255);
         $this->SetXY(10, 5);
-        $this->Cell(130, 8, 'Green Bridge Recycling — Dashboard Export', 0, 0, 'L');
+        $this->Cell(130, 8, 'Green Bridge Recycling - Dashboard Export', 0, 0, 'L');
 
         $this->SetFont('Arial', '', 8);
         $this->SetXY(140, 5);

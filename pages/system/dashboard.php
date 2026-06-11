@@ -1,6 +1,6 @@
 <?php
 // MICHAEL D. PHILLIPS - UPDATED 06/10/2026
-// DASHBOARD PAGE — CHARTS EXPANDED + PDF EXPORT
+// DASHBOARD PAGE — CHARTS EXPANDED + PDF EXPORT + MULTI-CURRENCY
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -27,6 +27,43 @@ if (!function_exists('fetchSingleSecure')) {
     }
 }
 
+// ---------------------------------------------------------
+// 3. EXCHANGE RATES — fetch once, reuse everywhere
+//    Frankfurter.app is free, no API key needed.
+//    Returns rates relative to EUR (e.g. USD: 1.08 means 1 EUR = 1.08 USD,
+//    so to convert USD → EUR we divide by the rate).
+// ---------------------------------------------------------
+$fx_rates  = ['EUR' => 1.0]; // fallback: everything is 1:1
+$fx_source = 'fallback';
+
+$fx_json = @file_get_contents('https://api.frankfurter.app/latest?base=EUR&symbols=USD,CZK,PLN,JPY');
+if ($fx_json) {
+    $fx_data = json_decode($fx_json, true);
+    if (!empty($fx_data['rates'])) {
+        foreach ($fx_data['rates'] as $code => $rate) {
+            $fx_rates[$code] = (float)$rate;
+        }
+        $fx_source = $fx_data['date'] ?? 'live';
+    }
+}
+
+// Helper: convert any amount to EUR
+function toEur($amount, $currency, $rates) {
+    $currency = strtoupper(trim($currency));
+    if ($currency === 'EUR' || !isset($rates[$currency])) return (float)$amount;
+    return (float)$amount / $rates[$currency];
+}
+
+// Helper: format price with original + converted label
+// Returns e.g. "CZK 22,037.00 → EUR 882.15"  or just "EUR 12,000.00" if already EUR
+function fmtPrice($amount, $currency, $rates) {
+    $currency = strtoupper(trim($currency ?? 'EUR'));
+    $orig     = $currency . ' ' . number_format((float)$amount, 2);
+    if ($currency === 'EUR') return $orig;
+    $eur = toEur($amount, $currency, $rates);
+    return $orig . ' → EUR ' . number_format($eur, 2);
+}
+
 $page_title = "GBR Dashboard";
 $extra_css = [
     "../../chartphp/lib/js/chartphp.css",
@@ -43,7 +80,7 @@ $extra_js = [
     "https://cdn.jsdelivr.net/npm/chart.js"
 ];
 
-// 3. FILTER LOGIC & VALIDATION
+// 4. FILTER LOGIC & VALIDATION
 $allowed_periods = ['day', 'week', 'month', 'semi', 'annually'];
 $allowed_types   = ['all', 'in', 'out'];
 
@@ -52,7 +89,6 @@ $type_filter = in_array($_GET['type'] ?? '', $allowed_types)    ? $_GET['type'] 
 $from_date   = $_GET['from'] ?? '';
 $to_date     = $_GET['to'] ?? '';
 
-// Determine Transaction Type SQL
 $type_where = "1=1";
 if ($type_filter === 'out') {
     $type_where = "type IN ('out', 'guh-out')";
@@ -60,14 +96,12 @@ if ($type_filter === 'out') {
     $type_where = "type IN ('in', 'guh-in')";
 }
 
-// Prepare arrays for secure parameter binding
 $bind_types  = "";
 $bind_params = [];
 
-// Determine Date Range SQL
 if (!empty($from_date) && !empty($to_date)) {
-    $date_where   = "DATE(created_at) BETWEEN ? AND ?";
-    $bind_types  .= "ss";
+    $date_where    = "DATE(created_at) BETWEEN ? AND ?";
+    $bind_types   .= "ss";
     $bind_params[] = $from_date;
     $bind_params[] = $to_date;
 } else {
@@ -83,25 +117,40 @@ if (!empty($from_date) && !empty($to_date)) {
 }
 
 // ---------------------------------------------------------
-// 4. DATA FETCHING
+// 5. DATA FETCHING
 // ---------------------------------------------------------
 
-// A. Filtered Stats
-$filtered_stats_sql = "
-    SELECT COUNT(*) as count, SUM(price) as total
-    FROM orders
-    WHERE $type_where AND $date_where
-";
-$filtered_stats = fetchSingleSecure($conn, $filtered_stats_sql, $bind_types, $bind_params);
+// A. Filtered Stats — fetch price + currency per order, sum in PHP using live rates
+$filtered_orders_sql = "SELECT price, currency FROM orders WHERE $type_where AND $date_where";
+$filtered_stmt = mysqli_prepare($conn, $filtered_orders_sql);
+$filtered_eur_total = 0.0;
+$filtered_count     = 0;
+if ($filtered_stmt) {
+    if (!empty($bind_params)) mysqli_stmt_bind_param($filtered_stmt, $bind_types, ...$bind_params);
+    mysqli_stmt_execute($filtered_stmt);
+    $filtered_res = mysqli_stmt_get_result($filtered_stmt);
+    while ($r = mysqli_fetch_assoc($filtered_res)) {
+        $filtered_eur_total += toEur($r['price'], $r['currency'] ?? 'EUR', $fx_rates);
+        $filtered_count++;
+    }
+    mysqli_stmt_close($filtered_stmt);
+}
 
 // B. Global Stats
 $total_res   = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders");
 $pending_res = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE approve_status = 'not approved'");
-$value_res   = fetchSingleSecure($conn, "
-    SELECT SUM(price) as total FROM orders
-    WHERE MONTH(created_at) = MONTH(CURRENT_DATE())
-    AND YEAR(created_at) = YEAR(CURRENT_DATE())
-");
+
+// Monthly revenue — converted to EUR in PHP
+$monthly_stmt = mysqli_prepare($conn, "SELECT price, currency FROM orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
+$monthly_eur = 0.0;
+if ($monthly_stmt) {
+    mysqli_stmt_execute($monthly_stmt);
+    $monthly_res = mysqli_stmt_get_result($monthly_stmt);
+    while ($r = mysqli_fetch_assoc($monthly_res)) {
+        $monthly_eur += toEur($r['price'], $r['currency'] ?? 'EUR', $fx_rates);
+    }
+    mysqli_stmt_close($monthly_stmt);
+}
 
 // C. Month Comparison
 $month_res     = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
@@ -111,7 +160,7 @@ $prev_month    = $prev_res['count'];
 $percentage    = ($prev_month > 0) ? (($current_month - $prev_month) / $prev_month) * 100 : 0;
 
 // ---------------------------------------------------------
-// 5. CHART DATA: Activity Trend
+// 6. CHART DATA: Activity Trend
 // ---------------------------------------------------------
 $chart_sql = "
     SELECT DATE(created_at) as date,
@@ -124,9 +173,7 @@ $chart_sql = "
 
 $chart_stmt = mysqli_prepare($conn, $chart_sql);
 if ($chart_stmt) {
-    if (!empty($bind_params)) {
-        mysqli_stmt_bind_param($chart_stmt, $bind_types, ...$bind_params);
-    }
+    if (!empty($bind_params)) mysqli_stmt_bind_param($chart_stmt, $bind_types, ...$bind_params);
     mysqli_stmt_execute($chart_stmt);
     $chart_result = mysqli_stmt_get_result($chart_stmt);
 } else {
@@ -157,7 +204,7 @@ $out_json    = json_encode($out_data);
 $in_json     = json_encode($in_data);
 
 // ---------------------------------------------------------
-// 6. CHART DATA: Top Partners by Order Count (filtered period)
+// 7. CHART DATA: Top Partners by Order Count
 // ---------------------------------------------------------
 $partners_sql = "
     SELECT p.name AS partner_name, COUNT(o.id) AS order_count
@@ -168,12 +215,10 @@ $partners_sql = "
     ORDER BY order_count DESC
     LIMIT 8";
 
-$partners_stmt = mysqli_prepare($conn, $partners_sql);
+$partners_stmt  = mysqli_prepare($conn, $partners_sql);
 $partner_labels = []; $partner_data = [];
 if ($partners_stmt) {
-    if (!empty($bind_params)) {
-        mysqli_stmt_bind_param($partners_stmt, $bind_types, ...$bind_params);
-    }
+    if (!empty($bind_params)) mysqli_stmt_bind_param($partners_stmt, $bind_types, ...$bind_params);
     mysqli_stmt_execute($partners_stmt);
     $partners_result = mysqli_stmt_get_result($partners_stmt);
     while ($row = mysqli_fetch_assoc($partners_result)) {
@@ -186,38 +231,36 @@ $partner_labels_json = json_encode($partner_labels);
 $partner_data_json   = json_encode($partner_data);
 
 // ---------------------------------------------------------
-// 7. CHART DATA: Revenue Over Time (filtered period)
+// 8. CHART DATA: Revenue Over Time — converted to EUR per day in PHP
 // ---------------------------------------------------------
-$revenue_sql = "
-    SELECT DATE(o.created_at) as date, SUM(o.price) as revenue
+$rev_raw_sql = "
+    SELECT DATE(o.created_at) as date, o.price, o.currency
     FROM orders o
     WHERE $type_where AND $date_where
-    GROUP BY DATE(o.created_at)
-    ORDER BY date ASC";
+    ORDER BY o.created_at ASC";
 
-$revenue_stmt = mysqli_prepare($conn, $revenue_sql);
-$revenue_labels = []; $revenue_data = [];
-if ($revenue_stmt) {
-    if (!empty($bind_params)) {
-        mysqli_stmt_bind_param($revenue_stmt, $bind_types, ...$bind_params);
+$rev_raw_stmt = mysqli_prepare($conn, $rev_raw_sql);
+$rev_by_day   = [];
+if ($rev_raw_stmt) {
+    if (!empty($bind_params)) mysqli_stmt_bind_param($rev_raw_stmt, $bind_types, ...$bind_params);
+    mysqli_stmt_execute($rev_raw_stmt);
+    $rev_raw_result = mysqli_stmt_get_result($rev_raw_stmt);
+    while ($row = mysqli_fetch_assoc($rev_raw_result)) {
+        $d = $row['date'];
+        if (!isset($rev_by_day[$d])) $rev_by_day[$d] = 0.0;
+        $rev_by_day[$d] += toEur($row['price'], $row['currency'] ?? 'EUR', $fx_rates);
     }
-    mysqli_stmt_execute($revenue_stmt);
-    $revenue_result = mysqli_stmt_get_result($revenue_stmt);
-    while ($row = mysqli_fetch_assoc($revenue_result)) {
-        $revenue_labels[] = $row['date'];
-        $revenue_data[]   = round((float)$row['revenue'], 2);
-    }
-    mysqli_stmt_close($revenue_stmt);
+    mysqli_stmt_close($rev_raw_stmt);
 }
-if (empty($revenue_labels)) {
-    $revenue_labels[] = date("Y-m-d");
-    $revenue_data[]   = 0;
-}
+if (empty($rev_by_day)) $rev_by_day[date("Y-m-d")] = 0.0;
+
+$revenue_labels = array_keys($rev_by_day);
+$revenue_data   = array_map(fn($v) => round($v, 2), array_values($rev_by_day));
 $revenue_labels_json = json_encode($revenue_labels);
 $revenue_data_json   = json_encode($revenue_data);
 
 // ---------------------------------------------------------
-// 8. CHART DATA: In vs Out Ratio (doughnut, filtered period)
+// 9. CHART DATA: In vs Out Ratio
 // ---------------------------------------------------------
 $ratio_in_res  = fetchSingleSecure($conn,
     "SELECT COUNT(*) as count FROM orders WHERE type IN ('in','guh-in') AND $date_where",
@@ -231,10 +274,11 @@ $ratio_in  = (int)$ratio_in_res['count'];
 $ratio_out = (int)$ratio_out_res['count'];
 
 // ---------------------------------------------------------
-// 9. RECENT ORDERS
+// 10. RECENT ORDERS — include currency
 // ---------------------------------------------------------
 $recent_sql = "
-    SELECT o.id, o.order_no, p.name AS partner_name, o.type, o.approve_status, o.order_status
+    SELECT o.id, o.order_no, p.name AS partner_name, o.type,
+           o.approve_status, o.order_status, o.price, o.currency
     FROM orders o
     LEFT JOIN partners p ON o.partner_id = p.id
     ORDER BY o.created_at DESC
@@ -242,7 +286,7 @@ $recent_sql = "
 ";
 $recent_result = mysqli_query($conn, $recent_sql);
 
-// Build export query string (pass all current filters through)
+// Build export query string
 $export_params = http_build_query(array_filter([
     'period' => $period,
     'type'   => $type_filter,
@@ -299,6 +343,18 @@ include "../../build/header.php";
                     </a>
                 </div>
             </form>
+            <!-- FX rate notice -->
+            <div class="mt-2 pt-2 border-top d-flex align-items-center gap-2 flex-wrap">
+                <small class="text-muted">
+                    <span class="badge bg-light text-dark border me-1">FX</span>
+                    Rates (→ EUR, <?= htmlspecialchars($fx_source) ?>):
+                    <?php foreach ($fx_rates as $code => $rate): ?>
+                        <?php if ($code !== 'EUR'): ?>
+                            <span class="me-2">1 EUR = <?= number_format($rate, 4) ?> <?= $code ?></span>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </small>
+            </div>
         </div>
     </div>
 
@@ -313,7 +369,7 @@ include "../../build/header.php";
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Filtered Count</small>
-                <h4 class="fw-bold"><?= number_format($filtered_stats['count']) ?></h4>
+                <h4 class="fw-bold"><?= number_format($filtered_count) ?></h4>
                 <small class="<?= $percentage >= 0 ? 'text-success' : 'text-danger' ?>">
                     <?= ($percentage >= 0 ? '↑ ' : '↓ ') . round(abs($percentage), 1) ?>% vs prev. month
                 </small>
@@ -327,8 +383,9 @@ include "../../build/header.php";
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
-                <small class="text-muted">Monthly Revenue</small>
-                <h4 class="fw-bold">€<?= number_format($value_res['total'] ?? 0, 2) ?></h4>
+                <small class="text-muted">Monthly Revenue (EUR)</small>
+                <h4 class="fw-bold">€<?= number_format($monthly_eur, 2) ?></h4>
+                <small class="text-muted">Filtered total: €<?= number_format($filtered_eur_total, 2) ?></small>
             </div>
         </div>
     </div>
@@ -378,7 +435,7 @@ include "../../build/header.php";
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
                         <thead>
-                            <tr class="text-muted small"><th>Order #</th><th>Partner</th><th>Status</th></tr>
+                            <tr class="text-muted small"><th>Order #</th><th>Partner</th><th>Price</th><th>Status</th></tr>
                         </thead>
                         <tbody class="small">
                             <?php if ($recent_result && mysqli_num_rows($recent_result) > 0): ?>
@@ -391,6 +448,16 @@ include "../../build/header.php";
                                             </a>
                                         </td>
                                         <td><?= htmlspecialchars($row['partner_name'] ?? 'Unknown Partner') ?></td>
+                                        <td class="small text-nowrap">
+                                            <?php
+                                                $cur = strtoupper($row['currency'] ?? 'EUR');
+                                                $amt = (float)$row['price'];
+                                            ?>
+                                            <?= htmlspecialchars($cur) ?> <?= number_format($amt, 2) ?>
+                                            <?php if ($cur !== 'EUR'): ?>
+                                                <br><span class="text-muted">→ €<?= number_format(toEur($amt, $cur, $fx_rates), 2) ?></span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td>
                                             <?php
                                                 $status = $row['order_status'] ?? 'created';
@@ -408,7 +475,7 @@ include "../../build/header.php";
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-3">No recent orders found.</td>
+                                    <td colspan="4" class="text-center text-muted py-3">No recent orders found.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -449,9 +516,7 @@ include "../../build/header.php";
                         options: {
                             indexAxis: 'y',
                             responsive: true,
-                            scales: {
-                                x: { beginAtZero: true, ticks: { stepSize: 1 } }
-                            },
+                            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
                             plugins: { legend: { display: false } }
                         }
                     });
@@ -460,10 +525,10 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- Revenue Over Time Line Chart -->
+        <!-- Revenue Over Time Line Chart (EUR) -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-                <h6 class="fw-bold mb-3">Revenue Over Time</h6>
+                <h6 class="fw-bold mb-3">Revenue Over Time <span class="text-muted fw-normal small">(EUR)</span></h6>
                 <canvas id="revenueChart" height="260"></canvas>
                 <script>
                 new Chart(document.getElementById('revenueChart'), {
@@ -471,7 +536,7 @@ include "../../build/header.php";
                     data: {
                         labels: <?= $revenue_labels_json ?>,
                         datasets: [{
-                            label: 'Revenue (€)',
+                            label: 'Revenue (EUR)',
                             data: <?= $revenue_data_json ?>,
                             borderColor: '#28a745',
                             backgroundColor: 'rgba(40,167,69,0.12)',
@@ -485,9 +550,7 @@ include "../../build/header.php";
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    callback: val => '€' + val.toLocaleString()
-                                }
+                                ticks: { callback: val => '€' + val.toLocaleString() }
                             }
                         },
                         plugins: { legend: { display: false } }

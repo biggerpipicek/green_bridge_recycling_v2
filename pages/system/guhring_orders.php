@@ -134,7 +134,7 @@
                     </li>
                     <li class="nav-item"><a href="guhring_orders.php" class="nav-link">Refresh</a></li>
                     <li class="nav-item"><a href="add_guhring_order.php" class="nav-link">Add</a></li>
-                    <li class="nav-item"><a href="export_guhring_order.php" class="nav-link">Export</a></li>
+                    <li class="nav-item"><a href="export_guhring_orders.php" class="nav-link">Export</a></li>
                 </ul>
             </div>
         </nav>

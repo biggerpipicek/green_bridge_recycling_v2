@@ -68,7 +68,7 @@ class GUH_PDF extends FPDF {
     }
 
     function Header() {
-        $this->SetFillColor(5, 72, 173);
+        $this->SetFillColor(19, 150, 15);
         $this->Rect(0, 0, 210, 18, 'F');
         $this->SetFont('Arial', 'B', 13);
         $this->SetTextColor(255, 255, 255);
@@ -90,7 +90,7 @@ class GUH_PDF extends FPDF {
 
     function SectionTitle($title) {
         $this->SetFillColor(240, 243, 250);
-        $this->SetTextColor(5, 72, 173);
+        $this->SetTextColor(19, 150, 15);
         $this->SetFont('Arial', 'B', 10);
         $this->SetX(10);
         $this->Cell(190, 7, $title, 0, 1, 'L', true);
@@ -143,11 +143,11 @@ class GUH_PDF extends FPDF {
 
     // Reusable order block header row
     function OrderRowHeader() {
-        $this->SetFillColor(5, 72, 173);
+        $this->SetFillColor(19, 150, 15);
         $this->SetTextColor(255, 255, 255);
         $this->SetFont('Arial', 'B', 7);
         $this->SetX(10);
-        $col_w = [26, 22, 42, 24, 26, 26, 24];
+        $col_w = [34, 20, 34, 24, 26, 26, 26];
         $headers = ['Order No.', 'Date', 'Customer', 'Price', 'Order Status', 'Approve', 'Netto/Brutto (kg)'];
         foreach ($col_w as $i => $w) {
             $align = ($i === 2) ? 'L' : 'C';
@@ -223,7 +223,7 @@ $pdf->SetY($stat_y + 24);
 $pdf->SectionTitle('Orders - Full List (' . count($orders_rows) . ' total)');
 $pdf->Ln(1);
 
-$col_w = [26, 22, 42, 24, 26, 26, 24];
+$col_w = [34, 20, 34, 24, 26, 26, 26];
 
 $pdf->OrderRowHeader();
 $pdf->SetFont('Arial', '', 7);

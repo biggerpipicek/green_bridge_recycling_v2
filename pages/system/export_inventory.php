@@ -42,7 +42,7 @@ class INV_PDF extends FPDF {
     }
 
     function Header() {
-        $this->SetFillColor(5, 72, 173);
+        $this->SetFillColor(19, 150, 15);
         $this->Rect(0, 0, 210, 18, 'F');
         $this->SetFont('Arial', 'B', 13);
         $this->SetTextColor(255, 255, 255);
@@ -64,7 +64,7 @@ class INV_PDF extends FPDF {
 
     function SectionTitle($title) {
         $this->SetFillColor(240, 243, 250);
-        $this->SetTextColor(5, 72, 173);
+        $this->SetTextColor(19, 150, 15);
         $this->SetFont('Arial', 'B', 10);
         $this->SetX(10);
         $this->Cell(190, 7, $title, 0, 1, 'L', true);
@@ -151,7 +151,7 @@ $pdf->Ln(1);
 
 $col_w = [35, 110, 45];
 $headers = ['Item Code', 'Item Name', 'In Stock (kg)'];
-$pdf->SetFillColor(5, 72, 173);
+$pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);
@@ -182,7 +182,7 @@ foreach ($rows as $row) {
 
 // Totals row
 $pdf->SetFillColor(230, 236, 250);
-$pdf->SetTextColor(5, 72, 173);
+$pdf->SetTextColor(19, 150, 15);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);
 $pdf->Cell($col_w[0] + $col_w[1], 7, 'TOTAL STOCK WEIGHT', 0, 0, 'L', true);

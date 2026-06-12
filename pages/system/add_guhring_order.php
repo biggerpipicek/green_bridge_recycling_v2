@@ -167,8 +167,8 @@
                     $db_path = "order_attachments/guhring/" . $new_filename;
 
                     if (move_uploaded_file($tmp_name, $target_file)) {
-                        $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
-                        mysqli_stmt_bind_param($ins_at, "is", $id, $db_path);
+                        $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path, uploaded_by) VALUES (?, ?, ?)");
+                        mysqli_stmt_bind_param($ins_at, "is", $id, $db_path, $_SESSION['user_id']);
                         mysqli_stmt_execute($ins_at);
                     }
                 }

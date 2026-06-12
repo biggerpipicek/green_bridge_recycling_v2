@@ -1,0 +1,13 @@
+{
+    "name": "m-icha/green_bridge_recycling_v2",
+    "description": "composer require chillerlan/php-qrcode",
+    "authors": [
+        {
+            "name": "biggerpipicek",
+            "email": "kczay123@gmail.com"
+        }
+    ],
+    "require": {
+        "chillerlan/php-qrcode": "^6.0"
+    }
+}

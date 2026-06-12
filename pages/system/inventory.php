@@ -72,7 +72,7 @@
                     <a href="add_inventory.php" class="nav-link">Add</a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link">Export</a>
+                    <a href="export_inventory.php" class="nav-link">Export</a>
                 </li>
 
             </ul>

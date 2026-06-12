@@ -124,17 +124,17 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                         <ul class="dropdown-menu">
-                            <li><a href="guhring_orders.php?sort=date_asc"      class="dropdown-item">Date: Old → New</a></li>
-                            <li><a href="guhring_orders.php?sort=date_desc"     class="dropdown-item">Date: New → Old</a></li>
-                            <li><a href="guhring_orders.php?sort=price_asc"     class="dropdown-item">Price: Low → High</a></li>
-                            <li><a href="guhring_orders.php?sort=price_desc"    class="dropdown-item">Price: High → Low</a></li>
-                            <li><a href="guhring_orders.php?sort=orderno_asc"   class="dropdown-item">Order No.: Low → High</a></li>
-                            <li><a href="guhring_orders.php?sort=orderno_desc"  class="dropdown-item">Order No.: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
+                            <li><a href="guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
+                            <li><a href="guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a href="guhring_orders.php"      class="nav-link">Refresh</a></li>
-                    <li class="nav-item"><a href="add_guhring_order.php"   class="nav-link">Add</a></li>
-                    <li class="nav-item"><a href=""                        class="nav-link">Export</a></li>
+                    <li class="nav-item"><a href="guhring_orders.php" class="nav-link">Refresh</a></li>
+                    <li class="nav-item"><a href="add_guhring_order.php" class="nav-link">Add</a></li>
+                    <li class="nav-item"><a href="export_guhring_order.php" class="nav-link">Export</a></li>
                 </ul>
             </div>
         </nav>

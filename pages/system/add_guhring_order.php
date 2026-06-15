@@ -1,6 +1,11 @@
 <?php
     // MICHAEL D. PHILLIPS - 17.04.2026
     // ORDER TEMPLATE PAGE (FIXED FOR CREATE/UPDATE + ORDER TYPE + DOCUMENTS)
+
+     // --- GENERATE QR CODE ---
+    require_once "../../vendor/autoload.php";
+    use chillerlan\QRCode\{QRCode, QROptions};
+    use chillerlan\QRCode\Output\QROutputInterface;
     require "../../build/auth.php";
     require "../../build/functions.php";
 
@@ -109,6 +114,32 @@
                 $id = mysqli_insert_id($conn);
                 $final_order_no = "GBR-GUH-" . date('Y') . "-" . str_pad($id, 5, "0", STR_PAD_LEFT);
                 mysqli_query($conn, "UPDATE orders SET order_no = '$final_order_no' WHERE id = $id");
+
+
+                if (!extension_loaded('gd')) {
+                    die("GD extension is NOT loaded!");
+                }
+
+                $qr_dir = "../../uploads/qrcodes/";
+                if (!is_dir($qr_dir)) mkdir($qr_dir, 0777, true);
+
+                $qr_url      = "http://localhost/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=" . $id;
+                $qr_filename = "qr_order_" . $id . ".png";
+                $qr_path     = $qr_dir . $qr_filename;
+                $qr_db_path  = $qr_filename;
+
+                $options = new QROptions([
+                    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+                    'eccLevel'   => QRCode::ECC_M,
+                    'scale'      => 8,
+                ]);
+
+                // Passing $qr_path directly inside render() handles both encoding and file saving correctly
+                (new QRCode($options))->render($qr_url, $qr_path);
+
+                $qr_stmt = mysqli_prepare($conn, "INSERT INTO order_qrcodes (order_id, file_path) VALUES (?, ?)");
+                mysqli_stmt_bind_param($qr_stmt, "is", $id, $qr_db_path);
+                mysqli_stmt_execute($qr_stmt);
             }
 
             // --- SAVE MATERIALS ---

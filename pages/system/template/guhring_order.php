@@ -170,6 +170,14 @@
         }
     }
 
+    // --- FETCH QR-CODE SVG LINKED TO THIS ORDER ---
+    $qr_sql = "SELECT file_path FROM order_qrcodes WHERE order_id = ?";
+    $qr_stmt = mysqli_prepare($conn, $qr_sql);
+    mysqli_stmt_bind_param($qr_stmt, "i", $id);
+    mysqli_stmt_execute($qr_stmt);
+    $qr_res = mysqli_stmt_get_result($qr_stmt);
+    $qr_data = mysqli_fetch_assoc($qr_res);
+
     // --- 5. FETCH ALL MATERIALS FOR DROPDOWNS ---
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
@@ -318,7 +326,7 @@
                                         $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
                                         if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png'])): 
                                     ?>
-                                        <img src="<?= $file['file_path'] ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
+                                        <img src="/green_bridge_recycling_v2/<?= $file['file_path'] ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
                                     <?php else: ?>
                                         <span class="me-2">📄</span> 
                                     <?php endif; ?>
@@ -337,7 +345,17 @@
                 <div class="col-6 mt-4">
                     <label for="" class="form-label"><strong>QR Code</strong></label>
                     <div class="d-flex  flex-wrap gap-2">
-                        <a href="../../../qr-code/qrcode-test.png" target="_blank"><img src="../../../qr-code/qrcode-test.png" alt="QR Code" width="150" height="150" class="p-2 border rounded-4"></a>
+                        <?php if (!empty($qr_data)): ?>
+                            <a href="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
+                                <img id="qrcode_img" src="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">
+                            </a>
+                        <?php else: ?>
+                            <p class="text-muted small">No QR code generated for this order.</p>
+                        <?php endif; ?>
+                    </div>
+                    <br>
+                    <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
+                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="printQRCode(); return false;">Print QR Code</a>
                     </div>
                 </div>
 
@@ -351,6 +369,55 @@
         </form> 
     </div>
 </div>
+
+<script>
+    function printQRCode() {
+        // 1. Grab the element
+        const imgElement = document.getElementById('qrcode_img');
+        if (!imgElement) return;
+
+        // 2. Get the image source (works if the ID is on the <img> tag or a wrapper div)
+        const qrCodeSrc = imgElement.src || imgElement.querySelector('img').src;
+
+        // 3. Open the print window
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print QR Code</title>
+                    <style>
+                        body { 
+                            margin: 0; 
+                            display: flex; 
+                            justify-content: center; 
+                            align-items: center; 
+                            height: 100vh; 
+                        }
+                        img { 
+                            width: 400px; 
+                            height: 400px; 
+                            object-fit: contain; 
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="${qrCodeSrc}" id="print_target" />
+
+                    <script>
+                        // CRITICAL: Wait for the PNG file to fully load before printing
+                        document.getElementById('print_target').onload = function() {
+                            window.print();
+                            window.close();
+                        };
+                    </script>
+                </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+    }
+</script>
 
 <?php
     include "../../../build/footer.php";

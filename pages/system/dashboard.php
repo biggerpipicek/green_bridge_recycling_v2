@@ -29,14 +29,12 @@ if (!function_exists('fetchSingleSecure')) {
 
 // ---------------------------------------------------------
 // 3. EXCHANGE RATES — fetch once, reuse everywhere
-//    Frankfurter.app is free, no API key needed.
-//    Returns rates relative to EUR (e.g. USD: 1.08 means 1 EUR = 1.08 USD,
-//    so to convert USD → EUR we divide by the rate).
 // ---------------------------------------------------------
-$fx_rates  = ['EUR' => 1.0]; // fallback: everything is 1:1
+$fx_rates  = ['EUR' => 1.0];
 $fx_source = 'fallback';
 
-$fx_json = @file_get_contents('https://api.frankfurter.app/latest?base=EUR&symbols=USD,CZK,PLN,JPY');
+$fx_ctx  = stream_context_create(['http' => ['header' => 'Cache-Control: no-cache']]);
+$fx_json = @file_get_contents('https://api.frankfurter.app/latest?base=EUR&symbols=USD,CZK,PLN,JPY', false, $fx_ctx);
 if ($fx_json) {
     $fx_data = json_decode($fx_json, true);
     if (!empty($fx_data['rates'])) {
@@ -55,7 +53,6 @@ function toEur($amount, $currency, $rates) {
 }
 
 // Helper: format price with original + converted label
-// Returns e.g. "CZK 22,037.00 → EUR 882.15"  or just "EUR 12,000.00" if already EUR
 function fmtPrice($amount, $currency, $rates) {
     $currency = strtoupper(trim($currency ?? 'EUR'));
     $orig     = $currency . ' ' . number_format((float)$amount, 2);
@@ -120,7 +117,6 @@ if (!empty($from_date) && !empty($to_date)) {
 // 5. DATA FETCHING
 // ---------------------------------------------------------
 
-// A. Filtered Stats — fetch price + currency per order, sum in PHP using live rates
 $filtered_orders_sql = "SELECT price, currency FROM orders WHERE $type_where AND $date_where";
 $filtered_stmt = mysqli_prepare($conn, $filtered_orders_sql);
 $filtered_eur_total = 0.0;
@@ -136,11 +132,9 @@ if ($filtered_stmt) {
     mysqli_stmt_close($filtered_stmt);
 }
 
-// B. Global Stats
 $total_res   = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders");
 $pending_res = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE approve_status = 'not approved'");
 
-// Monthly revenue — converted to EUR in PHP
 $monthly_stmt = mysqli_prepare($conn, "SELECT price, currency FROM orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
 $monthly_eur = 0.0;
 if ($monthly_stmt) {
@@ -152,7 +146,6 @@ if ($monthly_stmt) {
     mysqli_stmt_close($monthly_stmt);
 }
 
-// C. Month Comparison
 $month_res     = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
 $current_month = $month_res['count'];
 $prev_res      = fetchSingleSecure($conn, "SELECT COUNT(*) as count FROM orders WHERE type IN ('out', 'guh-out') AND created_at BETWEEN DATE_SUB(NOW(), INTERVAL 60 DAY) AND DATE_SUB(NOW(), INTERVAL 30 DAY)");
@@ -204,7 +197,7 @@ $out_json    = json_encode($out_data);
 $in_json     = json_encode($in_data);
 
 // ---------------------------------------------------------
-// 7. CHART DATA: Top Partners by Order Count
+// 7. CHART DATA: Top Partners
 // ---------------------------------------------------------
 $partners_sql = "
     SELECT p.name AS partner_name, COUNT(o.id) AS order_count
@@ -231,7 +224,7 @@ $partner_labels_json = json_encode($partner_labels);
 $partner_data_json   = json_encode($partner_data);
 
 // ---------------------------------------------------------
-// 8. CHART DATA: Revenue Over Time — converted to EUR per day in PHP
+// 8. CHART DATA: Revenue Over Time
 // ---------------------------------------------------------
 $rev_raw_sql = "
     SELECT DATE(o.created_at) as date, o.price, o.currency
@@ -274,7 +267,7 @@ $ratio_in  = (int)$ratio_in_res['count'];
 $ratio_out = (int)$ratio_out_res['count'];
 
 // ---------------------------------------------------------
-// 10. RECENT ORDERS — include currency
+// 10. RECENT ORDERS
 // ---------------------------------------------------------
 $recent_sql = "
     SELECT o.id, o.order_no, p.name AS partner_name, o.type,
@@ -286,7 +279,6 @@ $recent_sql = "
 ";
 $recent_result = mysqli_query($conn, $recent_sql);
 
-// Build export query string
 $export_params = http_build_query(array_filter([
     'period' => $period,
     'type'   => $type_filter,
@@ -487,7 +479,6 @@ include "../../build/header.php";
 
     <!-- ROW 2: Top Partners | Revenue Over Time | In vs Out Ratio -->
     <div class="row g-4">
-        <!-- Top Partners Bar Chart -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
                 <h6 class="fw-bold mb-3">Top Partners by Order Count</h6>
@@ -525,7 +516,6 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- Revenue Over Time Line Chart (EUR) -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
                 <h6 class="fw-bold mb-3">Revenue Over Time <span class="text-muted fw-normal small">(EUR)</span></h6>
@@ -560,7 +550,6 @@ include "../../build/header.php";
             </div>
         </div>
 
-        <!-- In vs Out Ratio Doughnut -->
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">In vs Out Ratio</h6>

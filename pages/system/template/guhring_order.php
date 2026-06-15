@@ -334,6 +334,13 @@
                     </div>
                 </div>
 
+                <div class="col-6 mt-4">
+                    <label for="" class="form-label"><strong>QR Code</strong></label>
+                    <div class="d-flex  flex-wrap gap-2">
+                        <a href="../../../qr-code/qrcode-test.png" target="_blank"><img src="../../../qr-code/qrcode-test.png" alt="QR Code" width="150" height="150" class="p-2 border rounded-4"></a>
+                    </div>
+                </div>
+
                 <div class="col-12 mt-4">
                     <button type="submit" class="btn btn-primary w-100 py-2">
                         Update Order & Save Changes

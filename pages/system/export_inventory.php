@@ -6,6 +6,8 @@ require "../../build/auth.php";
 require "../../build/functions.php";
 require "../../build/fpdf.php"; // adjust path if needed
 
+logActivity($conn, $_SESSION['user_id'], 'checking', 'inventory', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported inventory");
+
 // ---------------------------------------------------------
 // FETCH ALL INVENTORY ITEMS (same query as inventory.php)
 // ---------------------------------------------------------

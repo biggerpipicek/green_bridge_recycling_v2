@@ -83,6 +83,8 @@
     mysqli_stmt_bind_param($stmt, $final_bind_types, ...$final_bind_params);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
+
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'partners', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked partners");
 ?>
 
 <div class="container-fluid py-4">

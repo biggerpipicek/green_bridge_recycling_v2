@@ -36,6 +36,8 @@
         $success_msg = "Ticket created successfully!";
     }
 
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'tickets', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked tickets");
+
     $page_title = "GBR Tickets";
     include "../../build/header.php";
 ?>

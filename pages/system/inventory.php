@@ -41,6 +41,8 @@
         // We search across name OR item code
         $where_clause = "WHERE (m.name LIKE '%$safe_search%' OR m.item_code LIKE '%$safe_search%')";
     }
+
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'inventory', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked inventory");
 ?>
 
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark w-50 mx-auto rounded-3">

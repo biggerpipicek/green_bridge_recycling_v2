@@ -6,6 +6,8 @@ require "../../build/auth.php";
 require "../../build/functions.php";
 require "../../build/fpdf.php"; // adjust path if needed
 
+logActivity($conn, $_SESSION['user_id'], 'checking', 'orders', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported guhring orders");
+
 $order_currency = [
     "EUR" => "EUR",
     "USD" => "USD",

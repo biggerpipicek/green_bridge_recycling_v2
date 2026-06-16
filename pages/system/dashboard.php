@@ -286,6 +286,8 @@ $export_params = http_build_query(array_filter([
     'to'     => $to_date,
 ]));
 
+logActivity($conn, $_SESSION['user_id'], 'checking', 'dashboard', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked dashboard");
+
 include "../../build/header.php";
 ?>
 

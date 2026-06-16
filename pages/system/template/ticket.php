@@ -44,6 +44,8 @@
 
     $page_title = "GBR Ticket #" . $id;
 
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'ticket', $id, "User #{$_SESSION['user_id']} checked ticket {$id}");
+
     include "../../../build/header.php";
 
 ?>

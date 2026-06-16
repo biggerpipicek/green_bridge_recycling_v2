@@ -18,6 +18,8 @@
     // Escape session data elements to mitigate Cross-Site Scripting (XSS) actions
     $clean_username = htmlspecialchars($_SESSION['user'], ENT_QUOTES, 'UTF-8');
     $clean_email    = htmlspecialchars($_SESSION['email'] ?? 'No email assigned', ENT_QUOTES, 'UTF-8');
+
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked their profile");
 ?>
 
 <div class="container fluid py-5">

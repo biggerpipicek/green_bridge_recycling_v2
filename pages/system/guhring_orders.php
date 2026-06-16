@@ -99,6 +99,8 @@
     mysqli_stmt_bind_param($stmt, $final_types, ...$final_params);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
+
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'orders', $_SESSION['user_id'], "User #{$_SESSION['user_id']} checked guhring orders");
 ?>
     <div class="container-fluid">
         <!-- INCOMING/OUTGOING ORDERS NAVIGATION -->

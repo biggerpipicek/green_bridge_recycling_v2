@@ -6,6 +6,8 @@ require "../../build/auth.php";
 require "../../build/functions.php";
 require "../../build/fpdf.php";   // adjust path if needed
 
+logActivity($conn, $_SESSION['user_id'], 'checking', 'dashboard', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported dashboard");
+
 // ---------------------------------------------------------
 // 1. FILTER VALIDATION
 // ---------------------------------------------------------

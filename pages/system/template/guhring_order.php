@@ -182,6 +182,9 @@
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
 
+
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'orders', $id, "User #{$_SESSION['user_id']} checked order {$id}");
+
     $page_title = "GBR ORDER {$id}";
     include "../../../build/header.php";
 ?>
@@ -349,13 +352,22 @@
                             <a href="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
                                 <img id="qrcode_img" src="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">
                             </a>
+                            <br>
+                            <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="printQRCode(); return false;">Print QR Code</a>
+                            </div>
                         <?php else: ?>
                             <p class="text-muted small">No QR code generated for this order.</p>
                         <?php endif; ?>
                     </div>
-                    <br>
-                    <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
-                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="printQRCode(); return false;">Print QR Code</a>
+                </div>
+
+                <div class="col-6 mt-4">
+                    <label for="" class="form-label"><strong>Write a Report</strong></label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
+                            <a href="/green_bridge_recycling_v2/pages/system/template/report.php?id=<?= $id; ?>" class="btn btn-sm btn-outline-primary" target="_blank">Write a Report</a>
+                        </div>
                     </div>
                 </div>
 
@@ -381,40 +393,38 @@
 
         // 3. Open the print window
         const printWindow = window.open('', '_blank');
-        
+
         printWindow.document.write(`
             <html>
                 <head>
                     <title>Print QR Code</title>
                     <style>
-                        body { 
-                            margin: 0; 
-                            display: flex; 
-                            justify-content: center; 
-                            align-items: center; 
-                            height: 100vh; 
+                        body {
+                            margin: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
                         }
-                        img { 
-                            width: 400px; 
-                            height: 400px; 
-                            object-fit: contain; 
+                        img {
+                            width: 400px;
+                            height: 400px;
+                            object-fit: contain;
                         }
                     </style>
                 </head>
                 <body>
                     <img src="${qrCodeSrc}" id="print_target" />
-
                     <script>
-                        // CRITICAL: Wait for the PNG file to fully load before printing
                         document.getElementById('print_target').onload = function() {
                             window.print();
                             window.close();
                         };
-                    </script>
+                    <\/script>
                 </body>
             </html>
         `);
-        
+
         printWindow.document.close();
     }
 </script>

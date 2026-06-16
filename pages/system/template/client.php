@@ -53,8 +53,9 @@
         } else {
             $info_msg = "No changes made.";
         }
-    } 
+    }
 
+    logActivity($conn, $_SESSION['user_id'], 'checking', 'partners', $client_id, "User #{$_SESSION['user_id']} checked partner {$client_id}");
 
     include "../../../build/header.php";
 

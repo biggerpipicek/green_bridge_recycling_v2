@@ -3,6 +3,7 @@
     // GÜHRING ORDERS LIST
 
     require "../../build/auth.php";
+    require "../../build/functions.php";
 
     $page_title = "Gühring GBR Orders";
 

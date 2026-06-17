@@ -43,7 +43,7 @@
         case "date_desc":    $sort = "ORDER BY o.date DESC";      break;
         case "price_asc":    $sort = "ORDER BY o.price ASC";      break;
         case "price_desc":   $sort = "ORDER BY o.price DESC";     break;
-        default:             $sort = "ORDER BY o.date DESC";      break;
+        default:             $sort = "ORDER BY o.created_at DESC";      break;
     }
 
     // --- SEARCH ---

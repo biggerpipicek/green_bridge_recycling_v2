@@ -123,7 +123,7 @@
                 $qr_dir = "../../uploads/qrcodes/";
                 if (!is_dir($qr_dir)) mkdir($qr_dir, 0777, true);
 
-                $qr_url      = "http://localhost/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=" . $id;
+                $qr_url      = "http://172.30.110.148/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=" . $id;
                 $qr_filename = "qr_order_" . $id . ".png";
                 $qr_path     = $qr_dir . $qr_filename;
                 $qr_db_path  = $qr_filename;

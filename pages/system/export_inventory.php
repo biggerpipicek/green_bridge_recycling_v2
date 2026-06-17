@@ -183,7 +183,7 @@ foreach ($rows as $row) {
 }
 
 // Totals row
-$pdf->SetFillColor(230, 236, 250);
+$pdf->SetFillColor(232, 250, 230);
 $pdf->SetTextColor(19, 150, 15);
 $pdf->SetFont('Arial', 'B', 8);
 $pdf->SetX(10);

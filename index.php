@@ -195,7 +195,7 @@
                                         ['name' => "Track & Trace", 'url' => "pages/public/track_trace.php", 'icon' => "imgs/pointer.png"],
                                         ['name' => "Orders",         'url' => "pages/system/guhring_orders.php",      'icon' => "imgs/package.png"],
                                         ['name' => "Inventory",      'url' => "pages/system/inventory.php",   'icon' => "imgs/package.png"],
-                                        ['name' => "Clients",        'url' => "pages/system/clients.php",     'icon' => "imgs/person.png"],
+                                        ['name' => "Partners",        'url' => "pages/system/clients.php",     'icon' => "imgs/person.png"],
                                         ['name' => "Tickets",        'url' => "pages/system/tickets.php",     'icon' => "imgs/tickets.png"]
                                     ];
 

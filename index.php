@@ -51,7 +51,7 @@
             header("Location: /green_bridge_recycling_v2/index.php?success=1");
             exit();
         } else {
-            logActivity($conn, null, 'login_failed', 'user', 'null', "Failed log in attempt for username: {$user}");
+            logActivity($conn, '0', 'login_failed', 'user', 'null', "Failed log in attempt for username: {$user}");
             header("Location: /green_bridge_recycling_v2/index.php?fail=1");
             exit();
         }
@@ -67,7 +67,8 @@
         "activity_check"  => "imgs/person.png",
         "login_failed"    => "imgs/person.png",
         "logout"          => "imgs/person.png",
-        "update"          => "imgs/package.png"
+        "update"          => "imgs/package.png",
+        "checking"        => "imgs/search.png"
     ];
 
     include "build/header.php";

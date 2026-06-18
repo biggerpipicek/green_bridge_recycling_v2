@@ -84,7 +84,8 @@
         "activity_check"  => "imgs/person.png",
         "login_failed"    => "imgs/person.png",
         "logout"          => "imgs/person.png",
-        "update"          => "imgs/package.png"
+        "update"          => "imgs/package.png",
+        "checking"        => "imgs/search.png"
     ];
 
     // Log page access smoothly

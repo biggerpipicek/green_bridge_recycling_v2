@@ -63,7 +63,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label fw-semibold text-muted small">Description</label>
-                    <textarea name="description" id="description" class="form-control rounded-3" rows="4" placeholder="Provide complete technical details..." required></textarea>
+                    <textarea name="description" id="description" class="form-control rounded-3" rows="4" placeholder="Provide details..." required></textarea>
                 </div>
                 <div class="row g-3 align-items-end mb-3">
                     <div class="col-md-6">

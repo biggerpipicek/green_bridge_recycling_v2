@@ -9,6 +9,7 @@
         }
         footer {
             /*background-color: red;*/
+            z-index: 4;
             border-top: 1px solid #c4c8cb;
             background: white;
             position: fixed;

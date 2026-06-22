@@ -48,11 +48,15 @@
             
             logActivity($conn, $_SESSION['user_id'], 'login', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} logged in");
 
-            header("Location: /green_bridge_recycling_v2/index.php?success=1");
+            // Redirect back to the page they originally wanted, if any
+            $redirect_to = isset($_POST['redirect']) && !empty($_POST['redirect'])
+                ? $_POST['redirect']
+                : '/index.php?success=1';
+            header("Location: " . $redirect_to);
             exit();
         } else {
             logActivity($conn, '0', 'login_failed', 'user', 'null', "Failed log in attempt for username: {$user}");
-            header("Location: /green_bridge_recycling_v2/index.php?fail=1");
+            header("Location: index.php?fail=1");
             exit();
         }
     }
@@ -92,7 +96,14 @@
     <?php if(!isset($_SESSION['user'])): ?>
     <div class="container-fluid">
         <div class="container-sm">
+            <?php if(isset($_GET['redirect'])): ?>
+                <div class="alert alert-info alert-dismissible mb-3">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    Please log in to access that page.
+                </div>
+            <?php endif; ?>
             <form action="" method="post" class="border border-secondary-subtle rounded-4 p-4" autocomplete="on">
+                <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
                 <br>

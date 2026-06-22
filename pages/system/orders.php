@@ -194,7 +194,7 @@
 
                                     // --- NEW LOGIC FOR DOCUMENT LINK ---
                                     $document_cell = !empty($row['img_path']) 
-                                    ? "<a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a>" 
+                                    ? "<a href='".$row['img_path']."' target='_blank'>Document</a>" 
                                     : "<span class='text-muted'>No document</span>";
                                     echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td>".$document_cell."</td><td>".$row['price']." ".$symbol_currency."</td><td><span class='{$o_badge}'>".ucfirst($row['order_status'])."</span></td><td><span class='{$a_badge}'>".ucfirst($row['approve_status'])."</span></td><td><a href='template/order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
                                 }
@@ -264,7 +264,7 @@
                                     $date = date("m/d/Y", strtotime($row['date']));
                                     // --- NEW LOGIC FOR DOCUMENT LINK ---
                                     $document_cell = !empty($row['img_path']) 
-                                    ? "<a href='/green_bridge_recycling_v2/".$row['img_path']."' target='_blank'>Document</a>" 
+                                    ? "<a href='".$row['img_path']."' target='_blank'>Document</a>" 
                                     : "<span class='text-muted'>No document</span>";
                                     echo "<tr><td>".$row['order_no']."</td><td>".$date."</td><td>".$row['partner_name']."</td><td>".$document_cell."</td><td>".$row['price']." ".$row['currency']."</td><td><span class='{$badge}'>".ucfirst($stat)."</span></td><td><a href='template/order.php?id=".$row['id']."' class='btn btn-outline-primary'>Check</a></td></tr>";
                                 }

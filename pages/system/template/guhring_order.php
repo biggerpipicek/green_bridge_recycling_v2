@@ -329,12 +329,12 @@
                                         $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
                                         if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png'])): 
                                     ?>
-                                        <img src="/green_bridge_recycling_v2/<?= $file['file_path'] ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
+                                        <img src="/<?= $file['file_path'] ?>" style="height: 30px; width: 30px; object-fit: cover;" class="me-2 rounded">
                                     <?php else: ?>
                                         <span class="me-2">📄</span> 
                                     <?php endif; ?>
 
-                                    <a href="/green_bridge_recycling_v2/<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <a href="/<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                         View Document
                                     </a>
                                 </div>
@@ -349,8 +349,8 @@
                     <label for="" class="form-label"><strong>QR Code</strong></label>
                     <div class="d-flex  flex-wrap gap-2">
                         <?php if (!empty($qr_data)): ?>
-                            <a href="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
-                                <img id="qrcode_img" src="/green_bridge_recycling_v2/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">
+                            <a href="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
+                                <img id="qrcode_img" src="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">
                             </a>
                             <br>
                             <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
@@ -366,7 +366,7 @@
                     <label for="" class="form-label"><strong>Write a Report</strong></label>
                     <div class="d-flex flex-wrap gap-2">
                         <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
-                            <a href="/green_bridge_recycling_v2/pages/system/template/report.php?id=<?= $id; ?>" class="btn btn-sm btn-outline-primary" target="_blank">Write a Report</a>
+                            <a href="/pages/system/template/report.php?id=<?= $id; ?>" class="btn btn-sm btn-outline-primary" target="_blank">Write a Report</a>
                         </div>
                     </div>
                 </div>

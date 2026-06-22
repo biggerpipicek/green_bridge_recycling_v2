@@ -2,7 +2,6 @@
     // MICHAEL D. PHILLIPS - 17.04.2026
     // ORDER TEMPLATE PAGE (FIXED FOR CREATE/UPDATE + ORDER TYPE + DOCUMENTS)
 
-     // --- GENERATE QR CODE ---
     require_once "../../vendor/autoload.php";
     use chillerlan\QRCode\{QRCode, QROptions};
     use chillerlan\QRCode\Output\QROutputInterface;
@@ -10,10 +9,7 @@
     require "../../build/functions.php";
 
     $page_title = "Guhring Add Order";
-
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-    include "../../build/header.php";
 
     // --- 1. INITIALIZE DEFAULT DATA (For New Orders) ---
     $order_data = [
@@ -62,7 +58,6 @@
     // --- 3. HANDLE FORM SUBMISSION ---
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
-        // Always re-read $id from GET to ensure it's correct on update
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
         $calculated_netto = isset($_POST['weights']) ? array_sum($_POST['weights']) : 0;
@@ -82,7 +77,6 @@
         ];
 
         if ($id > 0) {
-            // UPDATE EXISTING
             $up_sql = "UPDATE orders SET partner_id=?, type=?, date=?, price=?, currency=?, pallet_no=?, brutto_w=?, netto_w=?, approve_status=?, order_status=?, updated_at=NOW() WHERE id=?";
             $up_stmt = mysqli_prepare($conn, $up_sql);
             mysqli_stmt_bind_param($up_stmt, "issdssssssi", 
@@ -93,13 +87,11 @@
             $action_type = 'update';
             $final_order_no = $order_data['order_no'];
         } else {
-            // INSERT NEW
             $temp_order_no = "GBR-GUH-" . date('Y') . "-" . rand(10000, 99999);
             $temp_track_id = "TRK-" . strtoupper(bin2hex(random_bytes(3)));
 
             $up_sql = "INSERT INTO orders (partner_id, type, date, price, currency, pallet_no, brutto_w, netto_w, approve_status, order_status, order_no, track_id, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $up_stmt = mysqli_prepare($conn, $up_sql);
-            
             mysqli_stmt_bind_param($up_stmt, "issdssssssssi", 
                 $sub_data['partner_id'], $sub_data['type'], $sub_data['date'], $sub_data['price'], 
                 $sub_data['currency'], $sub_data['pallet_no'], $sub_data['brutto_w'], 
@@ -115,15 +107,11 @@
                 $final_order_no = "GBR-GUH-" . date('Y') . "-" . str_pad($id, 5, "0", STR_PAD_LEFT);
                 mysqli_query($conn, "UPDATE orders SET order_no = '$final_order_no' WHERE id = $id");
 
-
-                if (!extension_loaded('gd')) {
-                    die("GD extension is NOT loaded!");
-                }
-
+                // --- GENERATE QR CODE ---
                 $qr_dir = "../../uploads/qrcodes/";
                 if (!is_dir($qr_dir)) mkdir($qr_dir, 0777, true);
 
-                $qr_url      = "http://172.30.110.148/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=" . $id;
+                $qr_url      = "https://gbrguh.eu/pages/system/template/guhring_order.php?id=" . $id;
                 $qr_filename = "qr_order_" . $id . ".png";
                 $qr_path     = $qr_dir . $qr_filename;
                 $qr_db_path  = $qr_filename;
@@ -134,7 +122,6 @@
                     'scale'      => 8,
                 ]);
 
-                // Passing $qr_path directly inside render() handles both encoding and file saving correctly
                 (new QRCode($options))->render($qr_url, $qr_path);
 
                 $qr_stmt = mysqli_prepare($conn, "INSERT INTO order_qrcodes (order_id, file_path) VALUES (?, ?)");
@@ -153,18 +140,14 @@
                 }
             }
 
-            // ================= INVENTORY MOVEMENTS =================
-            // Always delete first, then re-insert only if completed
+            // --- INVENTORY MOVEMENTS ---
             mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
-
             if (!empty($_POST['materials']) && $sub_data['order_status'] === 'completed' && $sub_data['approve_status'] === 'approved') {
                 $mov_sql = "INSERT INTO inventory_movements (order_id, material_id, quantity, direction) VALUES (?, ?, ?, ?)";
                 $stmt_mov = mysqli_prepare($conn, $mov_sql);
-
                 foreach ($_POST['materials'] as $key => $m_id) {
                     $m_weight  = (float)$_POST['weights'][$key];
                     $direction = ($sub_data['type'] === 'guh-in') ? 'in' : 'out';
-
                     mysqli_stmt_bind_param($stmt_mov, "iids", $id, $m_id, $m_weight, $direction);
                     mysqli_stmt_execute($stmt_mov);
                 }
@@ -187,10 +170,12 @@
 
             // --- SAVE DOCUMENTS ---
             if (!empty($_FILES['documents']['name'][0])) {
-                $upload_dir = "../../uploads/orders/";
+                // FIX: upload dir and DB path must match
+                $upload_dir = "../../order_attachments/guhring/";
                 if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
                 foreach ($_FILES['documents']['name'] as $key => $name) {
+                    if ($_FILES['documents']['error'][$key] !== UPLOAD_ERR_OK) continue;
                     $tmp_name = $_FILES['documents']['tmp_name'][$key];
                     $file_ext = pathinfo($name, PATHINFO_EXTENSION);
                     $new_filename = "order_" . $id . "_" . time() . "_" . $key . "." . $file_ext;
@@ -198,26 +183,28 @@
                     $db_path = "order_attachments/guhring/" . $new_filename;
 
                     if (move_uploaded_file($tmp_name, $target_file)) {
-                        $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path, uploaded_by) VALUES (?, ?, ?)");
-                        mysqli_stmt_bind_param($ins_at, "is", $id, $db_path, $_SESSION['user_id']);
+                        $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
+                        mysqli_stmt_bind_param($ins_at, "is", $id, $db_path);
                         mysqli_stmt_execute($ins_at);
                     }
                 }
             }
-            // ALSO GOOD TO HAVE LOG ACTIVITY HOW MUCH OF WHAT IS MOVED IN/OUT, IF ORDER WAS MARKED AS 'APPROVED' AND 'CREATED'
+
             logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no}");
-            header("Location: " . $_SERVER['PHP_SELF'] . "?id=$id&success=1");
+
+            // FIX: absolute redirect URL so it always works regardless of current path
+            header("Location: /pages/system/add_guhring_order.php?id=$id&success=1");
             exit;
         } else {
             die("SQL Error: " . mysqli_error($conn));
         }
-    
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-        error_log("POST received - ID from GET: " . $id . " | Status: " . $_POST['order_status']);    
     }
 
+    // --- header AFTER post handling so redirect can work ---
     $m_res = mysqli_query($conn, "SELECT id, name FROM materials ORDER BY name ASC");
     $materials_list = mysqli_fetch_all($m_res, MYSQLI_ASSOC);
+
+    include "../../build/header.php";
 ?>
 
 <script src="../../js/script.js"></script>
@@ -244,7 +231,6 @@
                     <label class="form-label">Customer / Partner</label>
 
                     <?php
-                        // If editing an existing order, pre-load the partner name for display
                         $preloaded_partner_name = '';
                         if (!empty($order_data['partner_id'])) {
                             $pl = mysqli_prepare($conn, "SELECT name FROM partners WHERE id = ?");
@@ -255,10 +241,8 @@
                         }
                     ?>
 
-                    <!-- Hidden field that actually gets submitted with the form -->
                     <input type="hidden" name="customer" id="customer_id" value="<?= htmlspecialchars($order_data['partner_id']) ?>" required>
 
-                    <!-- Visible search input -->
                     <div class="position-relative">
                         <input type="text"
                                id="partner_search"
@@ -267,14 +251,12 @@
                                autocomplete="off"
                                value="<?= htmlspecialchars($preloaded_partner_name) ?>">
 
-                        <!-- Dropdown results list -->
                         <ul id="partner_results"
                             class="list-group position-absolute w-100 shadow-sm"
                             style="z-index:1000; display:none; max-height:220px; overflow-y:auto; top:100%; left:0;">
                         </ul>
                     </div>
 
-                    <!-- Selected partner badge -->
                     <div id="partner_selected" class="mt-1" style="<?= empty($order_data['partner_id']) ? 'display:none' : '' ?>">
                         <span class="badge bg-success fs-6 px-3 py-2">
                             ✓ <span id="partner_selected_name"><?= htmlspecialchars($preloaded_partner_name) ?></span>
@@ -282,7 +264,6 @@
                         </span>
                     </div>
 
-                    <!-- Inline "add new partner" panel — hidden until no results found -->
                     <div id="add_partner_panel" class="border rounded-3 p-3 mt-2 bg-light" style="display:none;">
                         <p class="mb-2 text-muted small">Partner not found — add a new one:</p>
                         <div class="mb-2">
@@ -411,7 +392,7 @@
                         <?php if(!empty($attachments)): ?>
                             <?php foreach($attachments as $file): ?>
                                 <div class="border p-1 rounded bg-light d-flex align-items-center">
-                                    <a href="../../<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-link text-decoration-none">
+                                    <a href="/<?= $file['file_path'] ?>" target="_blank" class="btn btn-sm btn-link text-decoration-none">
                                         View Attachment
                                     </a>
                                 </div>
@@ -447,39 +428,29 @@
     const newEmail      = document.getElementById('new_partner_email');
     const newType       = document.getElementById('new_partner_type');
 
-    // Paths — adjust if your directory structure differs
-    const SEARCH_URL = '../../build/ajax_search_partners.php';
-    const ADD_URL    = 'add_client.php';
+    const SEARCH_URL = '/build/ajax_search_partners.php';
+    const ADD_URL    = '/pages/system/add_client.php';
 
     let debounceTimer = null;
 
-    // ── SEARCH ──────────────────────────────────────────────────────────────
     searchInput.addEventListener('input', function () {
         const q = this.value.trim();
-
         clearTimeout(debounceTimer);
         resultsList.style.display = 'none';
         resultsList.innerHTML = '';
-
-        if (q.length < 2) {
-            addPanel.style.display = 'none';
-            return;
-        }
+        if (q.length < 2) { addPanel.style.display = 'none'; return; }
 
         debounceTimer = setTimeout(() => {
             fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(partners => {
                     resultsList.innerHTML = '';
-
                     if (partners.length === 0) {
                         addPanel.style.display = 'block';
                         newName.value = q;
                         return;
                     }
-
                     addPanel.style.display = 'none';
-
                     partners.forEach(p => {
                         const li = document.createElement('li');
                         li.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
@@ -488,8 +459,6 @@
                         li.addEventListener('mousedown', () => selectPartner(p.id, p.name));
                         resultsList.appendChild(li);
                     });
-
-                    // Always offer "add new" at the bottom even when there are results
                     const liAdd = document.createElement('li');
                     liAdd.className = 'list-group-item list-group-item-action text-primary small';
                     liAdd.style.cursor = 'pointer';
@@ -501,10 +470,9 @@
                         newName.focus();
                     });
                     resultsList.appendChild(liAdd);
-
                     resultsList.style.display = 'block';
                 })
-                .catch(() => { /* silent fail — don't break the order form */ });
+                .catch(() => {});
         }, 300);
     });
 
@@ -512,7 +480,6 @@
         setTimeout(() => { resultsList.style.display = 'none'; }, 150);
     });
 
-    // ── SELECT A PARTNER ────────────────────────────────────────────────────
     function selectPartner(id, name) {
         hiddenId.value = id;
         searchInput.value = name;
@@ -522,7 +489,6 @@
         addPanel.style.display = 'none';
     }
 
-    // ── CLEAR SELECTION ─────────────────────────────────────────────────────
     clearBtn.addEventListener('click', () => {
         hiddenId.value = '';
         searchInput.value = '';
@@ -531,37 +497,29 @@
         searchInput.focus();
     });
 
-    // ── ADD NEW PARTNER ─────────────────────────────────────────────────────
     addBtn.addEventListener('click', () => {
         errorDiv.style.display = 'none';
-
         const name  = newName.value.trim();
         const email = newEmail.value.trim();
         const type  = newType.value;
-
         if (!name || !email || !type) {
             errorDiv.textContent = 'Please fill in all fields.';
             errorDiv.style.display = 'block';
             return;
         }
-
         addBtn.disabled = true;
         addBtn.textContent = 'Adding\u2026';
-
         const body = new FormData();
         body.append('ajax', '1');
         body.append('name', name);
         body.append('con_info', email);
         body.append('type', type);
-
         fetch(ADD_URL, { method: 'POST', body })
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
                     selectPartner(res.id, res.name);
-                    newName.value = '';
-                    newEmail.value = '';
-                    newType.value = '';
+                    newName.value = ''; newEmail.value = ''; newType.value = '';
                     addPanel.style.display = 'none';
                 } else {
                     errorDiv.textContent = res.error || 'Something went wrong.';
@@ -572,18 +530,12 @@
                 errorDiv.textContent = 'Network error \u2014 please try again.';
                 errorDiv.style.display = 'block';
             })
-            .finally(() => {
-                addBtn.disabled = false;
-                addBtn.textContent = 'Add Partner';
-            });
+            .finally(() => { addBtn.disabled = false; addBtn.textContent = 'Add Partner'; });
     });
 
-    // ── CANCEL ADD PANEL ────────────────────────────────────────────────────
     cancelBtn.addEventListener('click', () => {
         addPanel.style.display = 'none';
-        newName.value = '';
-        newEmail.value = '';
-        newType.value = '';
+        newName.value = ''; newEmail.value = ''; newType.value = '';
         errorDiv.style.display = 'none';
     });
 

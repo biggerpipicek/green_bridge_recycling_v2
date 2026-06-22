@@ -310,7 +310,7 @@ include "../../build/header.php";
                                 <?php while ($row = mysqli_fetch_assoc($recent_result)): ?>
                                     <tr>
                                         <td>
-                                            <a href="/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=<?= $row['id'] ?>" 
+                                            <a href="pages/system/template/guhring_order.php?id=<?= $row['id'] ?>" 
                                             class="text-decoration-none fw-bold">
                                                 <?= htmlspecialchars($row['order_no'] ?? 'N/A') ?>
                                             </a>

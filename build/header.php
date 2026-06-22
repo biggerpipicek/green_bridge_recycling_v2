@@ -5,9 +5,10 @@
     $current_page = $_SERVER['REQUEST_URI'];
 
     function nav_link($href, $label) {
-        $is_active = (parse_url($href, PHP_URL_PATH) === parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+        $abs_href = '/' . ltrim($href, '/');
+        $is_active = (parse_url($abs_href, PHP_URL_PATH) === parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $class = 'nav-link' . ($is_active ? ' active' : '');
-        echo "<a href=\"$href\" class=\"$class\">$label</a>";
+        echo "<a href=\"$abs_href\" class=\"$class\">$label</a>";
     }
 
     if (isset($_SESSION['user_id'])) {
@@ -17,6 +18,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/x-icon" href="https://www.gbrguh.eu/imgs/internal/logo_test.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -39,19 +41,19 @@
 <body class="body">
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
-            <a href="/green_bridge_recycling_v2/index.php" class="navbar-brand"><b>Home</b></a>
+            <a href="/index.php" class="navbar-brand"><b>Home</b></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/dashboard.php',  'Dashboard');  ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/guhring_orders.php',     'Orders');     ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/inventory.php',  'Inventory');  ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/track_trace.php','Track & Trace'); ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Partners');    ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/tickets.php',    'Tickets');    ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/profile.php',    'Profile');    ?></li>
+                    <li class="nav-item"><?php nav_link('pages/system/dashboard.php',  'Dashboard');  ?></li>
+                    <li class="nav-item"><?php nav_link('pages/system/guhring_orders.php',     'Orders');     ?></li>
+                    <li class="nav-item"><?php nav_link('pages/system/inventory.php',  'Inventory');  ?></li>
+                    <li class="nav-item"><?php nav_link('pages/public/track_trace.php','Track & Trace'); ?></li>
+                    <li class="nav-item"><?php nav_link('pages/system/clients.php',    'Partners');    ?></li>
+                    <li class="nav-item"><?php nav_link('pages/system/tickets.php',    'Tickets');    ?></li>
+                    <li class="nav-item"><?php nav_link('pages/public/profile.php',    'Profile');    ?></li>
                 </ul>
             </div>
         </div>

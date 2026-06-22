@@ -107,8 +107,8 @@
         <div class="container-sm" id="printable-report">
 
             <div class="d-flex justify-content-between align-items-center">
-                <img src="/green_bridge_recycling_v2/imgs/internal/img_one.png" alt="Green Bridge Recycling" style="height: 80px;">
-                <img src="/green_bridge_recycling_v2/imgs/internal/img_two.png" alt="Gühring Carbide" style="height: 40px;">
+                <img src="https://www.gbrguh.eu/imgs/internal/img_one.png" alt="Green Bridge Recycling" style="height: 80px;">
+                <img src="https://www.gbrguh.eu/imgs/internal/img_two.png" alt="Gühring Carbide" style="height: 40px;">
             </div>
             <hr class="top-rule">
 

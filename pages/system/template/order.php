@@ -285,7 +285,7 @@
                                 <div class="border p-2 rounded bg-light d-flex align-items-center">
                                     <?php 
                                         $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
-                                        $full_web_path = "/green_bridge_recycling_v2/" . $file['file_path'];
+                                        $full_web_path = "" . $file['file_path'];
                                         
                                         if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png'])): 
                                     ?>

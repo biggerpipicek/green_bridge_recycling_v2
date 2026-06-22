@@ -121,7 +121,7 @@
                                 $date = date("m/d/Y", strtotime($row['date']));
 
                                 $doc_link = !empty($row['img_path']) 
-                                    ? "<a href='/green_bridge_recycling_v2/{$row['img_path']}' target='_blank'>Document</a>" 
+                                    ? "<a href='{$row['img_path']}' target='_blank'>Document</a>" 
                                     : "<span class='text-muted'>No document</span>";
                         ?>
                             <tr>

@@ -1,64 +1,26 @@
 <?php
     // MICHAEL D. PHILLIPS - 20.04.2026
     // ADD ITEMS TO INVENTORY
-    // UPDATED: AJAX JSON support so other pages (e.g. add_guhring_order.php)
-    // can create a partner inline without losing form data / leaving the page.
 
     require "../../build/auth.php";
     require "../../build/functions.php";
-
-    // --- AJAX BRANCH: handle inline "add partner" requests from other pages ---
-    if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['ajax']) && $_POST['ajax'] === '1') {
-        header('Content-Type: application/json');
-
-        if (!isset($_SESSION['user'])) {
-            echo json_encode(['success' => false, 'error' => 'Not logged in.']);
-            exit;
-        }
-
-        $name         = trim($_POST['name'] ?? '');
-        $type         = trim($_POST['type'] ?? '');
-        $contact_info = trim($_POST['con_info'] ?? '');
-
-        if ($name === '' || $contact_info === '' || !in_array($type, ['customer', 'supplier'], true)) {
-            echo json_encode(['success' => false, 'error' => 'Missing or invalid fields.']);
-            exit;
-        }
-
-        $sql = "INSERT INTO partners (name, type, contact_info) VALUES (?, ?, ?)";
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sss", $name, $type, $contact_info);
-
-        if (mysqli_stmt_execute($stmt)) {
-            $new_id = mysqli_insert_id($conn);
-            logActivity($conn, $_SESSION['user_id'], 'client', 'list', $new_id, "User #{$_SESSION['user_id']} added client {$name} to list");
-            echo json_encode(['success' => true, 'id' => $new_id, 'name' => $name, 'type' => $type]);
-        } else {
-            echo json_encode(['success' => false, 'error' => mysqli_error($conn)]);
-        }
-        exit;
-    }
-
+    
     $page_title = "GBR Add Client";
     include "../../build/header.php"; 
 
     if($_SERVER['REQUEST_METHOD'] === "POST") {
-        $name = trim($_POST['name']);
-        $type = trim($_POST['type']);
-        $contact_info = trim($_POST['con_info']);
+        $name = $_POST['name'];
+        $type = $_POST['type'];
+        $contact_info = $_POST['con_info'];
+        $sql = "INSERT INTO partners (name, type, contact_info) VALUES ('$name', '$type', '$contact_info')";
 
-        $sql = "INSERT INTO partners (name, type, contact_info) VALUES (?, ?, ?)";
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sss", $name, $type, $contact_info);
-
-        if (mysqli_stmt_execute($stmt)) {
-            $new_id = mysqli_insert_id($conn);
-            logActivity($conn, $_SESSION['user_id'], 'client', 'list', $new_id, "User #{$_SESSION['user_id']} added client {$name} to list");
+        if(mysqli_query($conn, $sql)) {
+            logActivity($conn, $_SESSION['user_id'], 'client', 'list', $_SESSION['user_id'], "User #{$_SESSION['user_id']} added client {$name} to list");
             header("Location: add_client.php?success=1");
             exit;
             //echo "Client added to the list!";
         } else {
-            echo "Error: ". mysqli_error($conn);
+            echo "Error: ". $sql . "<br>" . mysqli_error($conn);
         }
     }
     ?>

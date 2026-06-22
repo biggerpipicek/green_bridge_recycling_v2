@@ -107,8 +107,8 @@
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
                 <br>
-                <label for="password" class="form-label" aoutocomplete="password">Password</label>
-                <input type="password" name="password" id="password" class="form-control" required>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" id="password" class="form-control" autocomplete="password" required>
                 <br>
                 <input type="submit" value="Log in" class="btn btn-primary">
             </form>

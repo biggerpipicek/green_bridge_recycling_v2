@@ -102,14 +102,14 @@
                     Please log in to access that page.
                 </div>
             <?php endif; ?>
-            <form action="" method="post" class="border border-secondary-subtle rounded-4 p-4" autocomplete="on">
-                <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <form action="index.php" method="post" class="border border-secondary-subtle rounded-4 p-4" autocomplete="on">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
                 <br>
                 <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" id="password" class="form-control" autocomplete="password" required>
+                <input type="password" name="password" id="password" class="form-control" autocomplete="current-password" required>
                 <br>
+                <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                 <input type="submit" value="Log in" class="btn btn-primary">
             </form>
         </div>

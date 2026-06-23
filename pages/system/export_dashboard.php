@@ -9,6 +9,26 @@ require "../../build/fpdf.php";   // adjust path if needed
 logActivity($conn, $_SESSION['user_id'], 'checking', 'dashboard', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported dashboard");
 
 // ---------------------------------------------------------
+// CHART IMAGES — decode base64 PNG from POST
+// ---------------------------------------------------------
+function saveChartImage($post_key) {
+    if (empty($_POST[$post_key])) return null;
+    $data = preg_replace('/^data:image\/png;base64,/', '', $_POST[$post_key]);
+    $data = base64_decode($data);
+    if (!$data) return null;
+    $tmp = sys_get_temp_dir() . '/gbr_chart_' . $post_key . '_' . time() . '.png';
+    file_put_contents($tmp, $data);
+    return $tmp;
+}
+
+$chart_images = [
+    'Activity Trend (Incoming vs Outgoing Orders)' => saveChartImage('chart_activity'),
+    'Top Partners by Order Count'                  => saveChartImage('chart_partners'),
+    'Revenue Over Time (EUR)'                      => saveChartImage('chart_revenue'),
+    'In vs Out Ratio'                              => saveChartImage('chart_ratio'),
+];
+
+// ---------------------------------------------------------
 // 1. FILTER VALIDATION
 // ---------------------------------------------------------
 $allowed_periods = ['day', 'week', 'month', 'semi', 'annually'];
@@ -526,6 +546,55 @@ if (empty($orders_rows)) {
     $pdf->SetFont('Arial', '', 8);
     $pdf->SetX(10);
     $pdf->Cell(194, 6, 'No orders found for this filter combination.', 0, 1, 'C');
+}
+
+// ---------------------------------------------------------
+// PAGE 4: Charts
+// ---------------------------------------------------------
+$has_charts = array_filter($chart_images);
+if (!empty($has_charts)) {
+    $pdf->AddPage();
+    $pdf->SectionTitle('Dashboard Charts - ' . $period_label);
+    $pdf->Ln(2);
+
+    $chart_y = $pdf->GetY();
+    $col = 0;
+
+    foreach ($chart_images as $label => $path) {
+        if (!$path || !file_exists($path)) continue;
+
+        $x = ($col === 0) ? 10 : 108;
+        $w = 92;
+        $h = 58;
+
+        if ($col === 0 && ($chart_y + $h + 12) > 272) {
+            $pdf->AddPage();
+            $chart_y = $pdf->GetY();
+        }
+
+        // Label
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->SetTextColor(60, 60, 70);
+        $pdf->SetXY($x, $chart_y);
+        $pdf->Cell($w, 5, $label, 0, 0, 'L');
+
+        // Image
+        $pdf->Image($path, $x, $chart_y + 6, $w, $h, 'PNG');
+
+        // Border
+        $pdf->SetDrawColor(220, 220, 230);
+        $pdf->Rect($x, $chart_y + 6, $w, $h);
+        $pdf->SetDrawColor(0, 0, 0);
+
+        if ($col === 0) {
+            $col = 1;
+        } else {
+            $col = 0;
+            $chart_y += $h + 14;
+        }
+
+        @unlink($path);
+    }
 }
 
 // ---------------------------------------------------------

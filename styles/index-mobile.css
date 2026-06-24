@@ -1,0 +1,62 @@
+/* ============================================
+   GBR — index-mobile.css
+   Max-width rules go inside the 599px block.
+   Min-width (tablet+) rules go in the 600px block.
+   ============================================ */
+
+@media (max-width: 600px) {
+
+    /* --- Alerts (w-75 is hardcoded in PHP, override it) --- */
+    .alert.w-75 {
+        width: 100% !important;
+    }
+
+    /* --- Login form --- */
+    .login {
+        padding: 1.25rem !important;
+    }
+
+    /* --- Welcome card --- */
+    .card h1 {
+        font-size: 1.4rem;
+    }
+    .card h4 {
+        font-size: 1rem;
+    }
+
+    /* --- Stacked column spacing --- */
+    /* Bootstrap col-md-* already stacks below 768px,
+       this just adds a gap between the two cards */
+    .row > .col-md-7,
+    .row > .col-md-5 {
+        margin-bottom: 1rem;
+    }
+
+    /* --- Activity log rows --- */
+    /* Prevent description text from pushing layout */
+    .card .d-flex.align-items-center.py-3 small {
+        display: block;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Timestamp stays compact */
+    .card .d-flex.align-items-center.py-3 > div:last-child {
+        font-size: 0.72rem !important;
+        white-space: nowrap;
+    }
+
+    /* --- Quick action buttons — comfortable tap targets --- */
+    .action-btn {
+        padding-top: 0.85rem !important;
+        padding-bottom: 0.85rem !important;
+    }
+
+    /* --- Reduce side padding on small screens --- */
+    .container-sm {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}

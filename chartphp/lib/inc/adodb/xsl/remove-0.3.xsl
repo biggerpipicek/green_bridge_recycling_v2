@@ -19,7 +19,7 @@ Uninstallation Schema
 			<xsl:attribute name="version">0.3</xsl:attribute>
 
 			<xsl:apply-templates select="schema/table">
-				<xsl:sort select="position()" data-type="number" order="descending"/>
+				<xsl:sort select="position()" data-type="number" inputmode="numeric" pattern="[0-9]*" order="descending"/>
 			</xsl:apply-templates>
 		</xsl:element>
 	</xsl:template>

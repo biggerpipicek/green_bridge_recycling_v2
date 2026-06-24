@@ -315,7 +315,7 @@
                             <!-- Price -->
                             <div class="col-md-2">
                                 <label class="form-label">Price</label>
-                                <input type="number" step="0.01" name="price" class="form-control" required>
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="price" class="form-control" required>
                             </div>
 
                             <!-- Currency -->
@@ -339,7 +339,7 @@
                             <!-- Brutto Weight -->
                             <div class="col-md-6">
                                 <label class="form-label">Brutto Weight (kg)</label>
-                                <input type="number" step="0.01" name="brutto_weight" class="form-control">
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control">
                             </div>
 
                             <!-- ================= MATERIALS SECTION ================= -->
@@ -368,7 +368,7 @@
 
                                         <!-- Weight -->
                                         <div class="col-md-3">
-                                            <input type="number" step="0.01" name="weights[]" 
+                                            <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="weights[]" 
                                                 class="form-control weight-input" 
                                                 placeholder="Weight (kg)" required>
                                         </div>
@@ -391,7 +391,7 @@
                             <!-- Auto Netto -->
                             <div class="col-md-6">
                                 <label class="form-label">Netto Weight (kg)</label>
-                                <input type="number" step="0.01" name="netto_weight" 
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="netto_weight" 
                                     id="netto_weight" class="form-control" readonly>
                             </div>
                             <!-- ===================================================== -->
@@ -482,7 +482,7 @@
                             <!-- Price -->
                             <div class="col-md-2">
                                 <label class="form-label">Price</label>
-                                <input type="number" step="0.01" name="price" class="form-control" required>
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="price" class="form-control" required>
                             </div>
 
                             <!-- Currency -->
@@ -506,7 +506,7 @@
                             <!-- Brutto Weight -->
                             <div class="col-md-6">
                                 <label class="form-label">Brutto Weight (kg)</label>
-                                <input type="number" step="0.01" name="brutto_weight" class="form-control">
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control">
                             </div>
 
                             <!-- ================= MATERIALS SECTION ================= -->
@@ -535,7 +535,7 @@
 
                                         <!-- Weight -->
                                         <div class="col-md-3">
-                                            <input type="number" step="0.01" name="weights[]" 
+                                            <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="weights[]" 
                                                 class="form-control weight-input" 
                                                 placeholder="Weight (kg)" required>
                                         </div>
@@ -558,7 +558,7 @@
                             <!-- Auto Netto -->
                             <div class="col-md-6">
                                 <label class="form-label">Netto Weight (kg)</label>
-                                <input type="number" step="0.01" name="netto_weight" 
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="netto_weight" 
                                     id="netto_weight" class="form-control" readonly>
                             </div>
                             <!-- ===================================================== -->

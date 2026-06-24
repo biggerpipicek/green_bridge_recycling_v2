@@ -11,7 +11,7 @@
     }
 
     $page_title = "GBR Home";
-    $extra_css = ["styles/index-quickaction.css"];
+    $extra_css = ["styles/index-quickaction.css", "styles/index-mobile.css"];
 
     if($_SERVER['REQUEST_METHOD'] === "POST") {
 
@@ -102,7 +102,7 @@
                     Please log in to access that page.
                 </div>
             <?php endif; ?>
-            <form action="index.php" method="post" class="border border-secondary-subtle rounded-4 p-4" autocomplete="on">
+            <form action="index.php" method="post" class="border border-secondary-subtle rounded-4 p-4 login" autocomplete="on">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
                 <br>

@@ -102,6 +102,71 @@
             margin: 25px 0 25px 0;
         }
     </style>
+    <style>
+        @media (max-width: 600px) {
+
+            /* --- Logos: stack vertically, both fit on screen --- */
+            #printable-report > .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            #printable-report > .d-flex img:last-child {
+                height: 30px;
+            }
+
+            /* --- Report container padding --- */
+            #printable-report {
+                padding: 16px !important;
+            }
+
+            /* --- Headings --- */
+            #printable-report h1 {
+                font-size: 17px;
+            }
+            #printable-report h2 {
+                font-size: 14px;
+            }
+
+            /* --- Field rows: allow wrapping so inputs don't overflow --- */
+            .field-row {
+                flex-wrap: wrap !important;
+                gap: 4px;
+            }
+
+            .field-row label {
+                min-width: 100% !important;   /* label takes full line */
+                font-weight: 600;
+            }
+
+            .field-row .menge-number {
+                min-width: auto !important;   /* number sits inline with input */
+            }
+
+            .field-input {
+                width: 100% !important;       /* input fills remaining width */
+                flex: 1 1 auto;
+            }
+
+            /* Except the kg number inputs — keep those compact */
+            .menge-input.field-input {
+                width: 90px !important;
+                flex: 0 0 90px;
+            }
+
+            /* --- Table: shrink font, let it scroll if needed --- */
+            .gbr-table td,
+            .gbr-table th {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .menge-kg-cell {
+                width: 80px;
+            }
+        }
+        </style>
 
     <div class="container-fluid">
         <div class="container-sm" id="printable-report">
@@ -123,7 +188,7 @@
 
                 <div class="field-row">
                     <label for="interne_vorgangsnummer">Interne Vorgangsnummer:</label>
-                    <input type="number" id="interne_vorgangsnummer" class="form-control field-input" style="width: 220px;">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="interne_vorgangsnummer" class="form-control field-input" style="width: 220px;">
                 </div>
 
                 <div class="field-row">
@@ -136,27 +201,27 @@
                 <div class="field-row">
                     <label for="m_schaftwerkzeuge">Menge Schaftwerkzeuge</label>
                     <span class="menge-number">400199354:</span>
-                    <input type="number" id="m_schaftwerkzeuge" name="m_schaftwerkzeuge" class="form-control field-input menge-input" data-row="schaft" style="width: 120px;">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_schaftwerkzeuge" name="m_schaftwerkzeuge" class="form-control field-input menge-input" data-row="schaft" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="m_wsp_und_sontiges_hm">Menge WSP und sonstiges HM</label>
                     <span class="menge-number">400199360:</span>
-                    <input type="number" id="m_wsp_und_sontiges_hm" name="m_wsp_und_sontiges_hm" class="form-control field-input menge-input" data-row="wsp" style="width: 120px;">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_wsp_und_sontiges_hm" name="m_wsp_und_sontiges_hm" class="form-control field-input menge-input" data-row="wsp" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="m_reststoffe">Menge Reststoffe (HSS etc.)</label>
                     <span class="menge-number">400200010:</span>
-                    <input type="number" id="m_reststoffe" name="m_reststoffe" class="form-control field-input menge-input" data-row="rest" style="width: 120px;">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_reststoffe" name="m_reststoffe" class="form-control field-input menge-input" data-row="rest" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="g_gebinde">Gewicht Gebinde (Fass, Palette etc.)</label>
-                    <input type="number" id="g_gebinde" name="g_gebinde" class="form-control field-input" style="width: 120px;">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="g_gebinde" name="g_gebinde" class="form-control field-input" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 

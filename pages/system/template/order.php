@@ -194,7 +194,7 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Price</label>
-                    <input type="number" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>">
                 </div>
 
                 <div class="col-md-2">
@@ -215,7 +215,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Brutto Weight (kg)</label>
-                    <input type="number" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>">
                 </div>
 
                 <div class="col-12">
@@ -237,7 +237,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" step="0.01" name="weights[]" class="form-control weight-input" 
+                                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
                                            placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required>
                                 </div>
                                 <div class="col-md-4 d-flex gap-2">
@@ -251,7 +251,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Netto Weight (kg)</label>
-                    <input type="number" step="0.01" name="netto_weight" 
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="netto_weight" 
                            id="netto_weight" class="form-control" readonly value="<?php echo $order_data['netto_w'] ?>">
                 </div>
 

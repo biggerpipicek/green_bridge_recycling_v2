@@ -21,6 +21,8 @@
         exit();
     }
 
+    $extra_css = ["../../styles/clients-mobile.css"];
+
     $page_title = "GBR Clients";
     include "../../build/header.php";
 

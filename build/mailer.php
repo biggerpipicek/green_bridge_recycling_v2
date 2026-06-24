@@ -22,6 +22,7 @@ function sendGBRMail(string $to_email, string $to_name, string $subject, string 
 
         $mail->setFrom('admin@gbrguh.eu', 'GBR');
         $mail->addAddress($to_email, $to_name);
+        $mail->addBCC('phillips.m@greenbridgerecycling.com', 'Michael D. Phillips');
         $mail->isHTML(true);
         $mail->CharSet  = 'UTF-8';
         $mail->Subject  = $subject;
@@ -100,7 +101,7 @@ function mailOrderCreated($conn, int $order_id, array $order_data, string $partn
     $price     = htmlspecialchars($order_data['price'] ?? '0');
     $currency  = htmlspecialchars($order_data['currency'] ?? 'EUR');
     $partner   = htmlspecialchars($partner_name);
-    $track_url = GBR_SITE_URL . '/pages/public/track_trace.php?id=' . urlencode($order_data['track_id'] ?? '');
+    $track_url = GBR_SITE_URL . '/pages/public/track_trace.php?track_id=' . urlencode($order_data['track_id'] ?? '');
     $order_url = GBR_SITE_URL . "/pages/system/add_guhring_order.php?id={$order_id}";
 
     $body = <<<HTML

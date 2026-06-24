@@ -4,6 +4,7 @@
 
     require "../../../build/auth.php";
     require "../../../build/functions.php";
+    require "../../../build/mailer.php";
 
     $page_title = "GBR Change Password";
 
@@ -42,6 +43,13 @@
             if (mysqli_stmt_execute($update_stmt)) {
                 $msg = "Password updated successfully!";
                 logActivity($conn, $_SESSION['user_id'], 'password', 'user', $_SESSION['user_id'], "User #{$_SESSION['user_id']} changed its password");
+
+                // --- SEND EMAIL CONFIRMATION TO USER ---
+                $user_email = $_SESSION['email'] ?? '';
+                $username   = $_SESSION['user']  ?? "User #{$_SESSION['user_id']}";
+                if (!empty($user_email)) {
+                    mailPasswordChanged($conn, $_SESSION['user_id'], $username, $user_email);
+                }
             } else {
                 $msg = "Error updating password: " . mysqli_error($conn);
             }

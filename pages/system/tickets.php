@@ -4,6 +4,7 @@
 
     require "../../build/auth.php";
     require "../../build/functions.php";
+    require "../../build/mailer.php";
 
     // --- 1. HANDLE TICKET CREATION BEFORE ANY OUTPUT (PRG PATTERN) ---
     $success_msg = false;
@@ -20,9 +21,12 @@
                 mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $priority, $created_by);
                 
                 if (mysqli_stmt_execute($stmt)) {
-                    // Optional: Track activity through log helper
-                    logActivity($conn, $created_by, 'create', 'ticket', mysqli_insert_id($conn), "Created new ticket: {$title}");
-                    
+                    $new_ticket_id = mysqli_insert_id($conn);
+                    logActivity($conn, $created_by, 'create', 'ticket', $new_ticket_id, "Created new ticket: {$title}");
+
+                    // --- SEND EMAIL NOTIFICATION ---
+                    mailTicketCreated($conn, $new_ticket_id, $title, $description, $priority, $_SESSION['user'] ?? "User #{$created_by}");
+
                     // Redirect to clear post data and prevent duplicate insertions
                     header("Location: tickets.php?created=1");
                     exit();

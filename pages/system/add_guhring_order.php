@@ -7,6 +7,7 @@
     use chillerlan\QRCode\Output\QROutputInterface;
     require "../../build/auth.php";
     require "../../build/functions.php";
+    require "../../build/mailer.php";
 
     $page_title = "Guhring Add Order";
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -192,6 +193,25 @@
 
             logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no}");
 
+            // --- FETCH PARTNER NAME FOR EMAIL ---
+            $pn_stmt = mysqli_prepare($conn, "SELECT name FROM partners WHERE id = ?");
+            mysqli_stmt_bind_param($pn_stmt, "i", $sub_data['partner_id']);
+            mysqli_stmt_execute($pn_stmt);
+            $pn_row = mysqli_stmt_get_result($pn_stmt)->fetch_assoc();
+            $partner_name_for_mail = $pn_row['name'] ?? 'Unknown Partner';
+
+            // --- SEND EMAIL NOTIFICATION ---
+            $mail_order_data = array_merge($sub_data, [
+                'order_no' => $final_order_no,
+                'track_id' => mysqli_fetch_assoc(mysqli_query($conn, "SELECT track_id FROM orders WHERE id = $id"))['track_id'] ?? ''
+            ]);
+
+            if ($action_type === 'create') {
+                mailOrderCreated($conn, $id, $mail_order_data, $partner_name_for_mail);
+            } else {
+                mailOrderUpdated($conn, $id, $order_data, $sub_data, $partner_name_for_mail);
+            }
+
             // FIX: absolute redirect URL so it always works regardless of current path
             header("Location: /pages/system/add_guhring_order.php?id=$id&success=1");
             exit;
@@ -304,7 +324,7 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Price</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?= $order_data['price'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?= $order_data['price'] ?>">
                 </div>
 
                 <div class="col-md-2">
@@ -325,7 +345,7 @@
 
                 <div class="col-md-5">
                     <label class="form-label">Brutto Weight (kg)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?= $order_data['brutto_w'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?= $order_data['brutto_w'] ?>">
                 </div>
 
                 <div class="col-12">
@@ -347,7 +367,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
+                                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
                                            placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required>
                                 </div>
                                 <div class="col-md-4 d-flex gap-2">
@@ -361,7 +381,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Netto Weight (kg)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="netto_weight" 
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="netto_weight" 
                            id="netto_weight" class="form-control" readonly value="<?= $order_data['netto_w'] ?>">
                 </div>
 

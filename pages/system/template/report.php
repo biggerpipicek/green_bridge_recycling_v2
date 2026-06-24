@@ -188,7 +188,7 @@
 
                 <div class="field-row">
                     <label for="interne_vorgangsnummer">Interne Vorgangsnummer:</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="interne_vorgangsnummer" class="form-control field-input" style="width: 220px;">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="interne_vorgangsnummer" class="form-control field-input" style="width: 220px;">
                 </div>
 
                 <div class="field-row">
@@ -201,27 +201,27 @@
                 <div class="field-row">
                     <label for="m_schaftwerkzeuge">Menge Schaftwerkzeuge</label>
                     <span class="menge-number">400199354:</span>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_schaftwerkzeuge" name="m_schaftwerkzeuge" class="form-control field-input menge-input" data-row="schaft" style="width: 120px;">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="m_schaftwerkzeuge" name="m_schaftwerkzeuge" class="form-control field-input menge-input" data-row="schaft" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="m_wsp_und_sontiges_hm">Menge WSP und sonstiges HM</label>
                     <span class="menge-number">400199360:</span>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_wsp_und_sontiges_hm" name="m_wsp_und_sontiges_hm" class="form-control field-input menge-input" data-row="wsp" style="width: 120px;">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="m_wsp_und_sontiges_hm" name="m_wsp_und_sontiges_hm" class="form-control field-input menge-input" data-row="wsp" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="m_reststoffe">Menge Reststoffe (HSS etc.)</label>
                     <span class="menge-number">400200010:</span>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="m_reststoffe" name="m_reststoffe" class="form-control field-input menge-input" data-row="rest" style="width: 120px;">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="m_reststoffe" name="m_reststoffe" class="form-control field-input menge-input" data-row="rest" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 
                 <div class="field-row">
                     <label for="g_gebinde">Gewicht Gebinde (Fass, Palette etc.)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="g_gebinde" name="g_gebinde" class="form-control field-input" style="width: 120px;">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="g_gebinde" name="g_gebinde" class="form-control field-input" style="width: 120px;">
                     <span class="kg-suffix">kg</span>
                 </div>
 

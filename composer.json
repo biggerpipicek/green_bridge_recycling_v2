@@ -8,6 +8,7 @@
         }
     ],
     "require": {
-        "chillerlan/php-qrcode": "4.3"
+        "chillerlan/php-qrcode": "4.3",
+        "phpmailer/phpmailer": "^7.1"
     }
 }

@@ -4,6 +4,7 @@
     $page_title = "GBR ORDER {$id}";
     require "../../../build/auth.php";
     require "../../../build/functions.php";
+    require "../../../build/mailer.php";
     include "../../../build/header.php";
 
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -104,6 +105,14 @@
                 }
 
                 logActivity($conn, $_SESSION['user_id'], 'update', 'orders', $id, $description);
+
+                // --- FETCH PARTNER NAME & SEND EMAIL ---
+                $pn_stmt = mysqli_prepare($conn, "SELECT name FROM partners WHERE id = ?");
+                mysqli_stmt_bind_param($pn_stmt, "i", $order_data['partner_id']);
+                mysqli_stmt_execute($pn_stmt);
+                $pn_row = mysqli_stmt_get_result($pn_stmt)->fetch_assoc();
+                $partner_name_for_mail = $pn_row['name'] ?? 'Unknown Partner';
+                mailOrderUpdated($conn, $id, $order_data, $sub_data, $partner_name_for_mail);
                 
                 $order_data = array_merge($order_data, $sub_data);
                 $success_msg = "Order and materials updated successfully! " . ($is_fully_approved ? "Stock has been updated." : "Stock not updated (Order must be Approved & Completed).");
@@ -194,7 +203,7 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Price</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>">
                 </div>
 
                 <div class="col-md-2">
@@ -215,7 +224,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Brutto Weight (kg)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>">
                 </div>
 
                 <div class="col-12">
@@ -237,7 +246,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
+                                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
                                            placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required>
                                 </div>
                                 <div class="col-md-4 d-flex gap-2">
@@ -251,7 +260,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Netto Weight (kg)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" name="netto_weight" 
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="netto_weight" 
                            id="netto_weight" class="form-control" readonly value="<?php echo $order_data['netto_w'] ?>">
                 </div>
 

@@ -71,7 +71,7 @@
                     <label for="item_name" class="form-label">Item name</label>
                     <input type="text" name="item_name" class="form-control" required>
                     <label for="item_code" class="form-label">Item code</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
                     <br>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -97,7 +97,7 @@
                     </select>
 
                     <label for="item_weight" class="form-label mt-3">Weight (kg)</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" step="0.01" min="0.01" name="item_weight" id="item_weight" class="form-control" required>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" min="0.01" name="item_weight" id="item_weight" class="form-control" required>
 
                     <label for="direction" class="form-label mt-3">Direction</label>
                     <select name="direction" id="direction" class="form-select" required>

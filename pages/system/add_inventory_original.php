@@ -55,7 +55,7 @@
                     <label for="item_name" class="form-label">Item name</label>
                     <input type="text" name="item_name" class="form-control" required>
                     <label for="item_code" class="form-label">Item code</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
                     <br>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -72,7 +72,7 @@
                     <label for="item_name" class="form-label">Item name</label>
                     <input type="text" name="item_name" class="form-control" required>
                     <label for="item_code" class="form-label">Item code</label>
-                    <input type="number" inputmode="numeric" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" name="item_code" class="form-control" length="4" required>
                     <br>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>

@@ -133,7 +133,7 @@ if($is_searching):
                                 </div>
                                 <br>
                                 <div class='row'>
-                                    <img src='../../imgs/weight.png' style='width: 75px; height: 50px;'>
+                                    <img src='../../imgs/pallet.png' style='width: 75px; height: 50px;'>
                                     <div class='col'>
                                         <p class='mb-0'>Pallet No.</p>
                                         <h4><?= $row['pallet_no'] ?></h4>

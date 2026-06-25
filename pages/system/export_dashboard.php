@@ -4,7 +4,8 @@
 
 require "../../build/auth.php";
 require "../../build/functions.php";
-require "../../build/fpdf.php";   // adjust path if needed
+require "../../build/fpdf.php";
+require_once "../../build/mailer.php";
 
 logActivity($conn, $_SESSION['user_id'], 'checking', 'dashboard', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported dashboard");
 
@@ -601,14 +602,25 @@ if (!empty($has_charts)) {
 // OUTPUT — save to temp, email to user, then stream to browser
 // ---------------------------------------------------------
 $filename = 'GBR_Dashboard_Export_' . date('Ymd_His') . '.pdf';
-$tmp_path = sys_get_temp_dir() . '/' . $filename;
+
+// Use uploads/tmp/ — guaranteed writable on Endora, unlike sys_get_temp_dir()
+$tmp_dir  = __DIR__ . '/../../uploads/tmp/';
+if (!is_dir($tmp_dir)) mkdir($tmp_dir, 0755, true);
+$tmp_path = $tmp_dir . $filename;
+
 $pdf->Output('F', $tmp_path);
 
-require_once "../../build/mailer.php";
 $user_email = $_SESSION['email'] ?? '';
 $username   = $_SESSION['user']  ?? "User #{$_SESSION['user_id']}";
+
 if (!empty($user_email)) {
-    mailExportReady($conn, $tmp_path, $filename, 'Dashboard', $user_email, $username);
+    if (file_exists($tmp_path) && filesize($tmp_path) > 0) {
+        mailExportReady($conn, $tmp_path, $filename, 'Dashboard', $user_email, $username);
+    } else {
+        error_log("GBR Export: tmp PDF not created or empty at {$tmp_path}");
+    }
+} else {
+    error_log("GBR Export: no email in session, export email skipped for user_id " . ($_SESSION['user_id'] ?? 'unknown'));
 }
 
 header('Content-Type: application/pdf');

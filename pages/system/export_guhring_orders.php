@@ -291,5 +291,19 @@ if (empty($orders_rows)) {
 }
 
 $filename = 'GBR_Guhring_Orders_Export_' . date('Ymd_His') . '.pdf';
-$pdf->Output('D', $filename);
+$tmp_path = sys_get_temp_dir() . '/' . $filename;
+$pdf->Output('F', $tmp_path);
+
+require_once "../../build/mailer.php";
+$user_email = $_SESSION['email'] ?? '';
+$username   = $_SESSION['user']  ?? "User #{$_SESSION['user_id']}";
+if (!empty($user_email)) {
+    mailExportReady($conn, $tmp_path, $filename, 'Gühring Orders', $user_email, $username);
+}
+
+header('Content-Type: application/pdf');
+header('Content-Disposition: attachment; filename="' . $filename . '"');
+header('Content-Length: ' . filesize($tmp_path));
+readfile($tmp_path);
+@unlink($tmp_path);
 exit;

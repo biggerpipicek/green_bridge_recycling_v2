@@ -22,7 +22,6 @@ function sendGBRMail(string $to_email, string $to_name, string $subject, string 
 
         $mail->setFrom('admin@gbrguh.eu', 'GBR');
         $mail->addAddress($to_email, $to_name);
-        $mail->addBCC('phillips.m@greenbridgerecycling.com', 'Michael D. Phillips');
         $mail->isHTML(true);
         $mail->CharSet  = 'UTF-8';
         $mail->Subject  = $subject;
@@ -101,7 +100,7 @@ function mailOrderCreated($conn, int $order_id, array $order_data, string $partn
     $price     = htmlspecialchars($order_data['price'] ?? '0');
     $currency  = htmlspecialchars($order_data['currency'] ?? 'EUR');
     $partner   = htmlspecialchars($partner_name);
-    $track_url = GBR_SITE_URL . '/pages/public/track_trace.php?track_id=' . urlencode($order_data['track_id'] ?? '');
+    $track_url = GBR_SITE_URL . '/pages/public/track_trace.php?id=' . urlencode($order_data['track_id'] ?? '');
     $order_url = GBR_SITE_URL . "/pages/system/add_guhring_order.php?id={$order_id}";
 
     $body = <<<HTML
@@ -297,5 +296,53 @@ HTML;
     if ($sent) {
         logActivity($conn, $user_id, 'email_sent', 'user', $user_id,
             "Email sent to {$user_email} — password change confirmation for user #{$user_id}");
+    }
+}
+
+/**
+ * Export notification — saves PDF to temp, emails it to the user with admin BCC,
+ * then the caller streams it to the browser.
+ * $pdf_path    = temp file path of already-generated PDF (Output 'F')
+ * $filename    = download filename e.g. GBR_Inventory_Export_20260611.pdf
+ * $export_type = human label e.g. "Inventory", "Dashboard", "Gühring Orders"
+ */
+function mailExportReady($conn, string $pdf_path, string $filename, string $export_type, string $user_email, string $username): void {
+    $clean_user = htmlspecialchars($username);
+    $time       = date('d.m.Y H:i');
+
+    $body = <<<HTML
+<p>Hi <strong>{$clean_user}</strong>,</p>
+<p>Your <strong>{$export_type}</strong> export from <strong>{$time}</strong> is attached to this email.</p>
+<p style="color:#999;font-size:13px;">This was generated automatically upon your request in GBR.</p>
+HTML;
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'mailin.endora.cz';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'admin@gbrguh.eu';
+        $mail->Password   = "8kl6G1/d=96'";
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('admin@gbrguh.eu', 'GBR');
+        $mail->addAddress($user_email, $clean_user);
+        $mail->addBCC(GBR_ADMIN_EMAIL, GBR_ADMIN_NAME);
+        $mail->isHTML(true);
+        $mail->CharSet  = 'UTF-8';
+        $mail->Subject  = "GBR Export — {$export_type} ({$time})";
+        $mail->Body     = wrapGBRTemplate("GBR Export — {$export_type}", $body);
+        $mail->AltBody  = "Your {$export_type} export from {$time} is attached.";
+        $mail->addAttachment($pdf_path, $filename);
+
+        $mail->send();
+
+        $user_id = $_SESSION['user_id'] ?? 0;
+        logActivity($conn, $user_id, 'email_sent', 'export', $user_id,
+            "Export email ({$export_type}) sent to {$user_email} with PDF attachment");
+
+    } catch (Exception $e) {
+        error_log("PHPMailer export error: " . $mail->ErrorInfo);
     }
 }

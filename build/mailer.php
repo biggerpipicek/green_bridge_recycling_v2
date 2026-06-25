@@ -53,13 +53,11 @@ function wrapGBRTemplate(string $title, string $content): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:32px 0;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-        <!-- HEADER -->
         <tr>
           <td style="background:#1a6b3a;padding:24px 32px;">
             <span style="color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">&#9850; Green Bridge Recycling</span>
           </td>
         </tr>
-        <!-- BODY -->
         <tr>
           <td style="padding:32px;">
             <h2 style="margin:0 0 20px;color:#1a1a1a;font-size:20px;">{$title}</h2>
@@ -68,7 +66,6 @@ function wrapGBRTemplate(string $title, string $content): string {
             </div>
           </td>
         </tr>
-        <!-- FOOTER -->
         <tr>
           <td style="background:#f8f9fa;padding:18px 32px;border-top:1px solid #e9ecef;">
             <p style="margin:0;color:#999;font-size:12px;">

@@ -317,7 +317,7 @@
                     <input type="text" class="form-control" disabled value="<?= $order_data['track_id']; ?>">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <label class="form-label">Date</label>
                     <input type="date" name="date" class="form-control" required value="<?= $order_data['date']; ?>">
                 </div>
@@ -338,12 +338,12 @@
                     </select>
                 </div>
 
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label">Pallet No</label>
                     <input type="text" name="pallet_no" class="form-control" value="<?= $order_data['pallet_no'] ?>">
                 </div>
 
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label">Brutto Weight (kg)</label>
                     <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?= $order_data['brutto_w'] ?>">
                 </div>

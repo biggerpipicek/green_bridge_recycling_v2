@@ -12,3 +12,9 @@
     transform-origin: center;
     backface-visibility: hidden; /* Keeps the text crisp during rotation */
 }
+
+/* Hide: Date, Documents, Price, Approve Status */
+.table thead tr th:nth-child(5),
+.table tbody tr td:nth-child(5) {
+    display: none;
+}

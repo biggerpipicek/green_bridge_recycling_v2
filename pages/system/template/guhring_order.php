@@ -408,17 +408,41 @@
                 <head>
                     <title>Print QR Code</title>
                     <style>
-                        body {
+                        * {
                             margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        html, body {
+                            width: 100%;
+                            height: auto;
                             display: flex;
                             justify-content: center;
-                            align-items: center;
-                            height: 100vh;
+                            align-items: flex-start;
                         }
                         img {
-                            width: 400px;
-                            height: 400px;
+                            width: 300px;
+                            height: 300px;
                             object-fit: contain;
+                            display: block;
+                        }
+                        @media print {
+                            @page {
+                                size: A4;
+                                margin: 10mm;
+                            }
+                            html, body {
+                                width: 100%;
+                                height: auto;
+                                display: block;
+                                text-align: center;
+                            }
+                            img {
+                                width: 250px;
+                                height: 250px;
+                                page-break-inside: avoid;
+                                break-inside: avoid;
+                            }
                         }
                     </style>
                 </head>

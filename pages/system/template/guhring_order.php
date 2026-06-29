@@ -356,13 +356,13 @@
 
                 <div class="col-6 mt-4">
                     <label for="" class="form-label"><strong>QR Code</strong></label>
-                    <div class="d-flex  flex-wrap flex-direction-column">
+                    <div class="d-flex  flex-wrap flex-column">
                         <?php if (!empty($qr_data)): ?>
                             <a href="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
                                 <img id="qrcode_img" src="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">
                             </a>
                             <br>
-                            <div class="border p-2 rounded bg-light d-flex align-items-center" style="width: fit-content;">
+                            <div class="border p-2 rounded bg-light d-flex align-items-center ms-3" style="width: fit-content;">
                                 <a href="#" class="btn btn-sm btn-outline-primary" onclick="printQRCode(); return false;">Print QR Code</a>
                             </div>
                         <?php else: ?>

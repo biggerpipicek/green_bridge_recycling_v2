@@ -1,5 +1,4 @@
 <?php
-    die("TEST - soubor je aktuální: ". __FILE__);
     // MICHAEL D. PHILLIPS - 28/04/2026
     // GÜHRING ORDERS LIST
 

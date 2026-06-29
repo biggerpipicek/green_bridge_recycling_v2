@@ -1,5 +1,4 @@
 <?php
-    die("TEST - soubor je aktuální: ". __FILE__);
     // MICHAEL D. PHILLIPS - 17.04.2026
     // ORDER TEMPLATE PAGE
     require "../../../build/auth.php";

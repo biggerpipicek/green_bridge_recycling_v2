@@ -356,7 +356,7 @@
 
                 <div class="col-6 mt-4">
                     <label for="" class="form-label"><strong>QR Code</strong></label>
-                    <div class="d-flex  flex-wrap gap-2">
+                    <div class="d-flex  flex-wrap flex-direction-column">
                         <?php if (!empty($qr_data)): ?>
                             <a href="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" target="_blank">
                                 <img id="qrcode_img" src="/uploads/qrcodes/<?= $qr_data['file_path']; ?>" alt="QR Code" width="150" height="150" class="p-2 border rounded-4">

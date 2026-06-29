@@ -45,6 +45,21 @@
         exit;
     }
 
+    // --- ADD COMMENT (PRG pattern) ---
+    if (isset($_POST['add_comment'])) {
+        $body = trim($_POST['comment_body'] ?? '');
+        if (!empty($body)) {
+            $c_stmt = mysqli_prepare($conn, "INSERT INTO ticket_comments (ticket_id, user_id, body) VALUES (?, ?, ?)");
+            mysqli_stmt_bind_param($c_stmt, "iis", $id, $_SESSION['user_id'], $body);
+            mysqli_stmt_execute($c_stmt);
+            mysqli_stmt_close($c_stmt);
+            logActivity($conn, $_SESSION['user_id'], 'create', 'ticket_comment', $id,
+                "User #{$_SESSION['user_id']} commented on ticket #{$id}");
+        }
+        header("Location: ticket.php?id=" . $id . "#comments");
+        exit;
+    }
+
     // --- FETCH TICKET ---
     $stmt = mysqli_prepare($conn, "SELECT t.*, u.username FROM tickets t LEFT JOIN users u ON t.created_by = u.id WHERE t.id = ?");
     mysqli_stmt_bind_param($stmt, "i", $id);
@@ -52,6 +67,18 @@
     $ticket = mysqli_stmt_get_result($stmt)->fetch_assoc();
 
     if (!$ticket) { die("Ticket not found."); }
+
+    // --- FETCH COMMENTS ---
+    $com_stmt = mysqli_prepare($conn, 
+        "SELECT tc.body, tc.created_at, u.username 
+         FROM ticket_comments tc 
+         LEFT JOIN users u ON tc.user_id = u.id 
+         WHERE tc.ticket_id = ? 
+         ORDER BY tc.created_at ASC");
+    mysqli_stmt_bind_param($com_stmt, "i", $id);
+    mysqli_stmt_execute($com_stmt);
+    $comments = mysqli_fetch_all(mysqli_stmt_get_result($com_stmt), MYSQLI_ASSOC);
+    mysqli_stmt_close($com_stmt);
 
     $page_title = "GBR Ticket #" . $id;
 
@@ -120,6 +147,45 @@
                     <a href="../tickets.php" class="btn btn-secondary">Back</a>
                 </form>
             </div>
+        <!-- COMMENTS SECTION -->
+        <div class="mt-4" id="comments">
+            <h5 class="fw-bold mb-3">💬 Comments <span class="text-muted fw-normal small">(<?= count($comments) ?>)</span></h5>
+
+            <?php if (!empty($comments)): ?>
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <?php foreach ($comments as $c): ?>
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body py-3 px-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-semibold small"><?= htmlspecialchars($c['username'] ?? 'Unknown', ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span class="text-muted small"><?= date("d.m.Y H:i", strtotime($c['created_at'])) ?></span>
+                                </div>
+                                <p class="mb-0 text-dark"><?= nl2br(htmlspecialchars($c['body'], ENT_QUOTES, 'UTF-8')) ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="text-muted small mb-4">No comments yet.</p>
+            <?php endif; ?>
+
+            <!-- NEW COMMENT FORM -->
+            <?php if ($ticket['status'] !== 'closed'): ?>
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-semibold mb-3">Add a comment</h6>
+                        <form method="POST" action="ticket.php?id=<?= $id ?>">
+                            <div class="mb-3">
+                                <textarea name="comment_body" class="form-control rounded-3" rows="3" 
+                                          placeholder="Write your comment..." required></textarea>
+                            </div>
+                            <button type="submit" name="add_comment" class="btn btn-primary px-4">Post Comment</button>
+                        </form>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p class="text-muted small fst-italic">This ticket is closed — commenting is disabled.</p>
+            <?php endif; ?>
         </div>
     </div>
 </div>

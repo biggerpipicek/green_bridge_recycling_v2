@@ -15,6 +15,7 @@
 
     // --- UPDATE STATUS (PRG pattern — POST before any output) ---
     if (isset($_POST['update_status'])) {
+        requireRole('staff'); // viewers can't change status
         $allowed_statuses = ['open', 'in_progress', 'closed'];
         $new_status = trim($_POST['status'] ?? '');
 
@@ -47,6 +48,7 @@
 
     // --- ADD COMMENT (PRG pattern) ---
     if (isset($_POST['add_comment'])) {
+        requireRole('staff'); // viewers can't comment
         $body = trim($_POST['comment_body'] ?? '');
         if (!empty($body)) {
             $c_stmt = mysqli_prepare($conn, "INSERT INTO ticket_comments (ticket_id, user_id, body) VALUES (?, ?, ?)");
@@ -134,6 +136,7 @@
                 </div>
                 <hr>
                 <!-- UPDATE STATUS FORM -->
+                <?php if (hasRole('staff')): ?>
                 <form method="POST">
                     <div class="mb-3">
                         <label class="form-label">Update Status</label>
@@ -146,6 +149,9 @@
                     <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
                     <a href="../tickets.php" class="btn btn-secondary">Back</a>
                 </form>
+                <?php else: ?>
+                    <a href="../tickets.php" class="btn btn-secondary">Back</a>
+                <?php endif; ?>
             </div>
         <!-- COMMENTS SECTION -->
         <div class="mt-4" id="comments">
@@ -170,7 +176,9 @@
             <?php endif; ?>
 
             <!-- NEW COMMENT FORM -->
-            <?php if ($ticket['status'] !== 'closed'): ?>
+            <?php if (!hasRole('staff')): ?>
+                <p class="text-muted small fst-italic">You have read-only access — commenting is disabled.</p>
+            <?php elseif ($ticket['status'] !== 'closed'): ?>
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
                         <h6 class="fw-semibold mb-3">Add a comment</h6>

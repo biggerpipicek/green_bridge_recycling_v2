@@ -107,3 +107,26 @@
         if (!$full) $string = array_slice($string, 0, 1);
         return $string ? implode(', ', $string) . ' ago' : 'just now';
     }
+
+    // --- ROLE-BASED ACCESS CONTROL ---
+
+    // Role hierarchy: viewer < staff < admin
+    function roleLevel($role) {
+        $levels = ['viewer' => 1, 'staff' => 2, 'admin' => 3];
+        return $levels[$role] ?? 0;
+    }
+
+    // Returns true/false — use for showing/hiding buttons, conditional UI, etc.
+    function hasRole($min_role) {
+        $current_role = $_SESSION['role'] ?? 'viewer';
+        return roleLevel($current_role) >= roleLevel($min_role);
+    }
+
+    // Hard stop — kills the page if the user doesn't meet the minimum role.
+    // Use at the top of pages/actions that should be restricted (e.g. delete partner).
+    function requireRole($min_role) {
+        if (!hasRole($min_role)) {
+            http_response_code(403);
+            die("Access denied — you don't have permission to perform this action.");
+        }
+    }

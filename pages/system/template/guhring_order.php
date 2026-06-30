@@ -34,6 +34,7 @@
 
     // --- 4. HANDLE FORM SUBMISSION (POST) ---
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        requireRole('staff'); // viewers can see the order but cannot submit changes
         
         // Calculate Netto weight from the submitted material rows
         $calculated_netto = isset($_POST['weights']) ? array_sum($_POST['weights']) : 0;

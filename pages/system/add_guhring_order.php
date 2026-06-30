@@ -8,6 +8,7 @@
     require "../../build/auth.php";
     require "../../build/functions.php";
     require "../../build/mailer.php";
+    requireRole('staff'); // viewers cannot create/edit orders
 
     $page_title = "Guhring Add Order";
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -171,47 +172,19 @@
 
             // --- SAVE DOCUMENTS ---
             if (!empty($_FILES['documents']['name'][0])) {
+                // FIX: upload dir and DB path must match
                 $upload_dir = "../../order_attachments/guhring/";
                 if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
-                // Collect valid uploaded files
-                $valid_files = [];
                 foreach ($_FILES['documents']['name'] as $key => $name) {
                     if ($_FILES['documents']['error'][$key] !== UPLOAD_ERR_OK) continue;
-                    $valid_files[] = [
-                        'tmp_name' => $_FILES['documents']['tmp_name'][$key],
-                        'original' => $name,
-                        'ext'      => strtolower(pathinfo($name, PATHINFO_EXTENSION)),
-                    ];
-                }
+                    $tmp_name = $_FILES['documents']['tmp_name'][$key];
+                    $file_ext = pathinfo($name, PATHINFO_EXTENSION);
+                    $new_filename = "order_" . $id . "_" . time() . "_" . $key . "." . $file_ext;
+                    $target_file = $upload_dir . $new_filename;
+                    $db_path = "order_attachments/guhring/" . $new_filename;
 
-                if (count($valid_files) === 1) {
-                    // Single file — save as-is
-                    $f = $valid_files[0];
-                    $new_filename = "order_" . $id . "_" . time() . "." . $f['ext'];
-                    $target_file  = $upload_dir . $new_filename;
-                    $db_path      = "order_attachments/guhring/" . $new_filename;
-
-                    if (move_uploaded_file($f['tmp_name'], $target_file)) {
-                        $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
-                        mysqli_stmt_bind_param($ins_at, "is", $id, $db_path);
-                        mysqli_stmt_execute($ins_at);
-                    }
-
-                } elseif (count($valid_files) > 1) {
-                    // Multiple files — bundle into a single ZIP
-                    $zip_filename = "order_" . $id . "_" . time() . "_documents.zip";
-                    $zip_path     = $upload_dir . $zip_filename;
-                    $db_path      = "order_attachments/guhring/" . $zip_filename;
-
-                    $zip = new ZipArchive();
-                    if ($zip->open($zip_path, ZipArchive::CREATE) === true) {
-                        foreach ($valid_files as $f) {
-                            // Keep original filename inside the ZIP
-                            $zip->addFile($f['tmp_name'], $f['original']);
-                        }
-                        $zip->close();
-
+                    if (move_uploaded_file($tmp_name, $target_file)) {
                         $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
                         mysqli_stmt_bind_param($ins_at, "is", $id, $db_path);
                         mysqli_stmt_execute($ins_at);

@@ -4,6 +4,7 @@
 
     require "../../build/auth.php";
     require "../../build/functions.php";
+    requireRole('staff'); // viewers cannot add inventory
     
     $page_title = "GBR Add Inventory";
     include "../../build/header.php"; 

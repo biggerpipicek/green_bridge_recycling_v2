@@ -7,6 +7,8 @@
 
     // --- 1. HANDLE ACTION TERMINATIONS (SAFE INLINE DELETION) ---
     if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
+        requireRole('admin'); // only admins can delete partners
+
         $delete_id = (int)$_GET['delete_id'];
         $delete_stmt = mysqli_prepare($conn, "DELETE FROM partners WHERE id = ?");
         if ($delete_stmt) {
@@ -175,9 +177,11 @@
                                         <a href="template/client.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">
                                             Edit
                                         </a>
+                                        <?php if (hasRole('admin')): ?>
                                         <a href="clients.php?delete_id=<?= $clean_id ?>" class="btn btn-outline-danger px-3" onclick="return confirm('Warning: Are you absolutely certain you want to permanently delete client profile \'<?= addslashes($clean_name) ?>\'? This action cannot be undone.');">
                                             Delete
                                         </a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

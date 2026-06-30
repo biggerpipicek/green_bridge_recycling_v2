@@ -97,8 +97,8 @@ function mailOrderCreated($conn, int $order_id, array $order_data, string $partn
     $price     = htmlspecialchars($order_data['price'] ?? '0');
     $currency  = htmlspecialchars($order_data['currency'] ?? 'EUR');
     $partner   = htmlspecialchars($partner_name);
-    $track_url = GBR_SITE_URL . '/pages/public/track_trace.php?id=' . urlencode($order_data['track_id'] ?? '');
-    $order_url = GBR_SITE_URL . "/pages/system/add_guhring_order.php?id={$order_id}";
+    $track_url = GBR_SITE_URL . '/green_bridge_recycling_v2/pages/public/track_trace.php?id=' . urlencode($order_data['track_id'] ?? '');
+    $order_url = GBR_SITE_URL . "/green_bridge_recycling_v2/pages/system/add_guhring_order.php?id={$order_id}";
 
     $body = <<<HTML
 <p>A new order has been created in the system.</p>
@@ -131,7 +131,7 @@ function mailOrderUpdated($conn, int $order_id, array $old_data, array $new_data
     $order_no  = htmlspecialchars($old_data['order_no'] ?? "#{$order_id}");
     $new_status = $new_data['order_status'] ?? '';
     $old_status = $old_data['order_status'] ?? '';
-    $order_url  = GBR_SITE_URL . "/pages/system/add_guhring_order.php?id={$order_id}";
+    $order_url  = GBR_SITE_URL . "/green_bridge_recycling_v2/pages/system/add_guhring_order.php?id={$order_id}";
     $view_btn   = "<br><br><a href=\"{$order_url}\" style=\"display:inline-block;padding:10px 22px;background:#1a6b3a;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;\">View Order</a>";
 
     // --- COMPLETED ---
@@ -208,7 +208,7 @@ function mailTicketCreated($conn, int $ticket_id, string $title, string $descrip
     $clean_desc     = nl2br(htmlspecialchars($description));
     $clean_priority = htmlspecialchars(ucfirst($priority));
     $clean_creator  = htmlspecialchars($creator);
-    $ticket_url     = GBR_SITE_URL . "/pages/system/template/ticket.php?id={$ticket_id}";
+    $ticket_url     = GBR_SITE_URL . "/green_bridge_recycling_v2/pages/system/template/ticket.php?id={$ticket_id}";
 
     $priority_color = match($priority) {
         'high'   => '#dc3545',
@@ -246,7 +246,7 @@ function mailTicketUpdated($conn, int $ticket_id, string $title, string $old_sta
     $clean_old_status = htmlspecialchars(ucfirst(str_replace('_', ' ', $old_status)));
     $clean_new_status = htmlspecialchars(ucfirst(str_replace('_', ' ', $new_status)));
     $clean_updater    = htmlspecialchars($updater);
-    $ticket_url       = GBR_SITE_URL . "/pages/system/template/ticket.php?id={$ticket_id}";
+    $ticket_url       = GBR_SITE_URL . "/green_bridge_recycling_v2/pages/system/template/ticket.php?id={$ticket_id}";
 
     $status_color = match($new_status) {
         'closed'      => '#198754',

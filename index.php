@@ -19,7 +19,7 @@
         $pass = $_POST['password'] ?? '';
 
         // SQL & FETCHING DATA
-        $stmt = mysqli_prepare($conn, "SELECT id, username, email, password FROM users WHERE username = ?");
+        $stmt = mysqli_prepare($conn, "SELECT id, username, email, password, role FROM users WHERE username = ?");
         mysqli_stmt_bind_param($stmt, "s", $user);
         mysqli_stmt_execute($stmt);
 
@@ -36,6 +36,7 @@
             $_SESSION['user'] = $user_val['username'];
             $_SESSION['email'] = $user_val['email'];
             $_SESSION['user_id'] = $user_val['id'];
+            $_SESSION['role'] = $user_val['role'];
 
             // Establish secure cookie constraints
             setcookie('user_login', $user_val['username'], [

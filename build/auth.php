@@ -29,7 +29,7 @@
 
     // --- SESSION GUARD ---
     // Pages that don't require login (whitelist)
-    $public_pages = ['/index.php', '/green_bridge_recycling_v2/pages/public/track_trace.php', '/green_bridge_recycling_v2/pages/public/profile.php'];
+    $public_pages = ['/index.php', '/pages/public/track_trace.php', '/pages/public/profile.php'];
 
     $current_uri = strtok($_SERVER['REQUEST_URI'], '?'); // strip query string
 

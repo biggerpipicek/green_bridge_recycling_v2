@@ -131,7 +131,7 @@
     <div class="container-fluid">
         <!-- INCOMING/OUTGOING ORDERS NAVIGATION -->
         <ul class="nav nav-tabs container-sm">
-            <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?action=go" class="nav-link active">Gühring orders</a></li>
+            <li class="nav-item"><a href="/pages/system/guhring_orders.php?action=go" class="nav-link active">Gühring orders</a></li>
         </ul>
 
         <br>
@@ -152,17 +152,17 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Sort</a>
                         <ul class="dropdown-menu">
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
-                            <li><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/guhring_orders.php" class="nav-link">Refresh</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/add_guhring_order.php" class="nav-link">Add</a></li>
-                    <li class="nav-item"><a href="/green_bridge_recycling_v2/pages/system/export_guhring_orders.php" class="nav-link">Export</a></li>
+                    <li class="nav-item"><a href="/pages/system/guhring_orders.php" class="nav-link">Refresh</a></li>
+                    <li class="nav-item"><a href="/pages/system/add_guhring_order.php" class="nav-link">Add</a></li>
+                    <li class="nav-item"><a href="/pages/system/export_guhring_orders.php" class="nav-link">Export</a></li>
                 </ul>
             </div>
         </nav>
@@ -217,8 +217,8 @@
                                     <td><span class="<?= $a_badge ?>"><?= ucfirst($row['approve_status']) ?></span></td>
                                     <td class="pe-4 text-end">
                                         <div class="btn-group btn-group-sm rounded-2">
-                                            <a href="/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">Edit</a>
-                                            <a href="/green_bridge_recycling_v2/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            <a href="/pages/system/template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">Edit</a>
+                                            <a href="/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                                class="btn btn-outline-secondary px-3" target="_blank">Track</a>
                                             <?php if (hasRole('admin')): ?>
                                             <a href="guhring_orders.php?delete_id=<?= $clean_id ?>" class="btn btn-outline-danger px-3"

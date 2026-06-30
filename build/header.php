@@ -48,13 +48,13 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/dashboard.php',  'Dashboard');  ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/guhring_orders.php',     'Orders');     ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/inventory.php',  'Inventory');  ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/track_trace.php','Track & Trace'); ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/clients.php',    'Partners');    ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/system/tickets.php',    'Tickets');    ?></li>
-                    <li class="nav-item"><?php nav_link('/green_bridge_recycling_v2/pages/public/profile.php',    'Profile');    ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/system/dashboard.php',  'Dashboard');  ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/system/guhring_orders.php',     'Orders');     ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/system/inventory.php',  'Inventory');  ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/public/track_trace.php','Track & Trace'); ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/system/clients.php',    'Partners');    ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/system/tickets.php',    'Tickets');    ?></li>
+                    <li class="nav-item"><?php nav_link('/pages/public/profile.php',    'Profile');    ?></li>
                 </ul>
             </div>
         </div>

@@ -5,6 +5,31 @@
     require "../../build/auth.php";
     require "../../build/functions.php";
 
+    // --- HANDLE DELETE (admin only) ---
+    if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
+        requireRole('admin');
+
+        $delete_id = (int)$_GET['delete_id'];
+
+        // Clean up dependent rows first to avoid orphaned data
+        mysqli_query($conn, "DELETE FROM order_materials WHERE order_id = $delete_id");
+        mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $delete_id");
+        mysqli_query($conn, "DELETE FROM order_attachments WHERE order_id = $delete_id");
+        mysqli_query($conn, "DELETE FROM order_status_history WHERE order_id = $delete_id");
+
+        $del_stmt = mysqli_prepare($conn, "DELETE FROM orders WHERE id = ?");
+        if ($del_stmt) {
+            mysqli_stmt_bind_param($del_stmt, "i", $delete_id);
+            if (mysqli_stmt_execute($del_stmt)) {
+                logActivity($conn, $_SESSION['user_id'], 'delete', 'order', $delete_id, "Deleted order #{$delete_id}");
+            }
+            mysqli_stmt_close($del_stmt);
+        }
+
+        header("Location: guhring_orders.php");
+        exit();
+    }
+
     $page_title = "Gühring GBR Orders";
 
     $extra_css = ["../../styles/orders.css", "../../styles/guhring_orders-mobile.css"];
@@ -195,6 +220,10 @@
                                             <a href="/green_bridge_recycling_v2/pages/system/template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">Edit</a>
                                             <a href="/green_bridge_recycling_v2/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                                class="btn btn-outline-secondary px-3" target="_blank">Track</a>
+                                            <?php if (hasRole('admin')): ?>
+                                            <a href="guhring_orders.php?delete_id=<?= $clean_id ?>" class="btn btn-outline-danger px-3"
+                                               onclick="return confirm('Warning: Are you sure you want to permanently delete order \'<?= addslashes($clean_order_no) ?>\'? This action cannot be undone.');">Delete</a>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>

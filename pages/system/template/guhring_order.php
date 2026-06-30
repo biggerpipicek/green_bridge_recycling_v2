@@ -7,6 +7,28 @@
 
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
+    // --- HANDLE DELETE (admin only) ---
+    if (isset($_GET['delete']) && $_GET['delete'] === '1' && $id > 0) {
+        requireRole('admin');
+
+        mysqli_query($conn, "DELETE FROM order_materials WHERE order_id = $id");
+        mysqli_query($conn, "DELETE FROM inventory_movements WHERE order_id = $id");
+        mysqli_query($conn, "DELETE FROM order_attachments WHERE order_id = $id");
+        mysqli_query($conn, "DELETE FROM order_status_history WHERE order_id = $id");
+
+        $del_stmt = mysqli_prepare($conn, "DELETE FROM orders WHERE id = ?");
+        if ($del_stmt) {
+            mysqli_stmt_bind_param($del_stmt, "i", $id);
+            if (mysqli_stmt_execute($del_stmt)) {
+                logActivity($conn, $_SESSION['user_id'], 'delete', 'order', $id, "Deleted order #{$id}");
+            }
+            mysqli_stmt_close($del_stmt);
+        }
+
+        header("Location: ../guhring_orders.php");
+        exit();
+    }
+
     // --- 1. FETCH MAIN ORDER DATA ---
     $sql = "SELECT * FROM orders WHERE id = ?";
     $stmt = mysqli_prepare($conn, $sql);
@@ -386,6 +408,15 @@
                         Update Order & Save Changes
                     </button>
                 </div>
+
+                <?php if ($id > 0 && hasRole('admin')): ?>
+                <div class="col-12 mt-2">
+                    <a href="guhring_order.php?id=<?= $id ?>&delete=1" class="btn btn-outline-danger w-100 py-2"
+                       onclick="return confirm('Warning: Are you sure you want to permanently delete this order? This action cannot be undone.');">
+                        Delete Order
+                    </a>
+                </div>
+                <?php endif; ?>
 
             </div>
         </form> 

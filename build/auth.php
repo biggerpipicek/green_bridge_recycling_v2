@@ -7,10 +7,16 @@
     }
 
     // AUTHORISATION
+    /*
     define("DB_HOST", "db.dw357.endora.cz");
     define("DB_USER", "gbrguh_eu");
     define("DB_PASS", "D8BiL3K#?.");
     define("DB_NAME", "gbrguh");
+    */
+    define("DB_HOST", "127.0.0.1");
+    define("DB_USER", "root");
+    define("DB_PASS", "");
+    define("DB_NAME", "green_bridge_recycling_v2");
 
     $conn = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 

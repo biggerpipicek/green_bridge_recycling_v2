@@ -17,18 +17,21 @@
             exit;
         }
 
-        $name         = trim($_POST['name'] ?? '');
-        $type         = trim($_POST['type'] ?? '');
-        $contact_info = trim($_POST['con_info'] ?? '');
+        $name           = trim($_POST['name'] ?? '');
+        $type           = trim($_POST['type'] ?? '');
+        $contact_info   = trim($_POST['con_info'] ?? '');
+        $contact_person = trim($_POST['contact_person'] ?? '');
+        $phone          = trim($_POST['phone'] ?? '');
 
         if ($name === '' || $contact_info === '' || !in_array($type, ['customer', 'supplier'], true)) {
             echo json_encode(['success' => false, 'error' => 'Missing or invalid fields.']);
             exit;
         }
 
-        $sql = "INSERT INTO partners (name, type, contact_info) VALUES (?, ?, ?)";
+        // Quick-add only captures the essentials; address/VAT/IČO are filled in later via client.php
+        $sql = "INSERT INTO partners (name, type, contact_info, contact_person, phone) VALUES (?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sss", $name, $type, $contact_info);
+        mysqli_stmt_bind_param($stmt, "sssss", $name, $type, $contact_info, $contact_person, $phone);
 
         if (mysqli_stmt_execute($stmt)) {
             $new_id = mysqli_insert_id($conn);
@@ -44,13 +47,27 @@
     include "../../build/header.php"; 
 
     if($_SERVER['REQUEST_METHOD'] === "POST") {
-        $name = trim($_POST['name']);
-        $type = trim($_POST['type']);
-        $contact_info = trim($_POST['con_info']);
+        $name           = trim($_POST['name']);
+        $type           = trim($_POST['type']);
+        $contact_info   = trim($_POST['con_info']);
+        $contact_person = trim($_POST['contact_person'] ?? '');
+        $phone          = trim($_POST['phone'] ?? '');
+        $address_street = trim($_POST['address_street'] ?? '');
+        $address_city   = trim($_POST['address_city'] ?? '');
+        $address_zip    = trim($_POST['address_zip'] ?? '');
+        $address_country = trim($_POST['address_country'] ?? '');
+        $vat_id         = trim($_POST['vat_id'] ?? '');
+        $ico            = trim($_POST['ico'] ?? '');
 
-        $sql = "INSERT INTO partners (name, type, contact_info) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO partners
+                    (name, type, contact_info, contact_person, phone,
+                     address_street, address_city, address_zip, address_country, vat_id, ico)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sss", $name, $type, $contact_info);
+        mysqli_stmt_bind_param($stmt, "sssssssssss",
+            $name, $type, $contact_info, $contact_person, $phone,
+            $address_street, $address_city, $address_zip, $address_country, $vat_id, $ico
+        );
 
         if (mysqli_stmt_execute($stmt)) {
             $new_id = mysqli_insert_id($conn);
@@ -71,14 +88,51 @@
                 <form action="" method="post" class="border rounded-4 w-50 p-4">
                     <label for="name" class="form-label">Client name</label>
                     <input type="text" name="name" class="form-control" required>
+
                     <label for="type" class="form-label">Client type</label>
                     <select name="type" class="form-select" required>
-                        <option value="" disabled>Select a type</option>
+                        <option value="" disabled selected>Select a type</option>
                         <option value="customer">Customer</option>
                         <option value="supplier">Supplier</option>
                     </select>
-                    <label for="con_info" class="form-label">Contact info</label>
+
+                    <label for="contact_person" class="form-label">Contact person</label>
+                    <input type="text" name="contact_person" class="form-control">
+
+                    <label for="con_info" class="form-label">Contact email</label>
                     <input type="email" name="con_info" class="form-control" required>
+
+                    <label for="phone" class="form-label">Phone</label>
+                    <input type="tel" name="phone" class="form-control">
+
+                    <label for="address_street" class="form-label">Street address</label>
+                    <input type="text" name="address_street" class="form-control">
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label for="address_city" class="form-label">City</label>
+                            <input type="text" name="address_city" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label for="address_zip" class="form-label">ZIP / Postal code</label>
+                            <input type="text" name="address_zip" class="form-control">
+                        </div>
+                    </div>
+
+                    <label for="address_country" class="form-label">Country</label>
+                    <input type="text" name="address_country" class="form-control">
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label for="ico" class="form-label">IČO</label>
+                            <input type="text" name="ico" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label for="vat_id" class="form-label">VAT / DIČ</label>
+                            <input type="text" name="vat_id" class="form-control">
+                        </div>
+                    </div>
+
                     <br>
                     <input type="submit" value="Submit" class="btn btn-primary">
                 </form>

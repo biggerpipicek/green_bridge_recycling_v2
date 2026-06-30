@@ -294,12 +294,16 @@
                             <input type="email" id="new_partner_email" class="form-control form-control-sm" placeholder="Email *">
                         </div>
                         <div class="mb-2">
+                            <input type="tel" id="new_partner_phone" class="form-control form-control-sm" placeholder="Phone">
+                        </div>
+                        <div class="mb-2">
                             <select id="new_partner_type" class="form-select form-select-sm">
                                 <option value="" disabled selected>Type *</option>
                                 <option value="customer">Customer</option>
                                 <option value="supplier">Supplier</option>
                             </select>
                         </div>
+                        <p class="text-muted small mb-2">Address / VAT / IČO can be added later in the full client profile.</p>
                         <div class="d-flex gap-2">
                             <button type="button" id="add_partner_btn" class="btn btn-sm btn-primary">Add Partner</button>
                             <button type="button" id="cancel_add_partner" class="btn btn-sm btn-secondary">Cancel</button>
@@ -447,6 +451,7 @@
     const errorDiv      = document.getElementById('add_partner_error');
     const newName       = document.getElementById('new_partner_name');
     const newEmail      = document.getElementById('new_partner_email');
+    const newPhone      = document.getElementById('new_partner_phone');
     const newType       = document.getElementById('new_partner_type');
 
     const SEARCH_URL = '/build/ajax_search_partners.php';
@@ -534,13 +539,14 @@
         body.append('ajax', '1');
         body.append('name', name);
         body.append('con_info', email);
+        body.append('phone', newPhone.value.trim());
         body.append('type', type);
         fetch(ADD_URL, { method: 'POST', body })
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
                     selectPartner(res.id, res.name);
-                    newName.value = ''; newEmail.value = ''; newType.value = '';
+                    newName.value = ''; newEmail.value = ''; newPhone.value = ''; newType.value = '';
                     addPanel.style.display = 'none';
                 } else {
                     errorDiv.textContent = res.error || 'Something went wrong.';
@@ -556,7 +562,7 @@
 
     cancelBtn.addEventListener('click', () => {
         addPanel.style.display = 'none';
-        newName.value = ''; newEmail.value = ''; newType.value = '';
+        newName.value = ''; newEmail.value = ''; newPhone.value = ''; newType.value = '';
         errorDiv.style.display = 'none';
     });
 

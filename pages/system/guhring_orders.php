@@ -217,7 +217,7 @@
                                     <td><span class="<?= $a_badge ?>"><?= ucfirst($row['approve_status']) ?></span></td>
                                     <td class="pe-4 text-end">
                                         <div class="btn-group btn-group-sm rounded-2">
-                                            <a href="/pages/system/template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">Edit</a>
+                                            <a href="/pages/system/template/guhring_order.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3"><?= hasRole('staff') ? 'Edit' : 'View' ?></a>
                                             <a href="/pages/public/track_trace.php?track_id=<?= htmlspecialchars($row['track_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                                class="btn btn-outline-secondary px-3" target="_blank">Track</a>
                                             <?php if (hasRole('admin')): ?>

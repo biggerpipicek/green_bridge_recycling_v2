@@ -25,7 +25,7 @@
         session_start();
     } 
 
-    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    if ($_SERVER['REQUEST_METHOD'] === "POST" && hasRole('staff')) {
         $sub_data = [
             'name'            => trim($_POST['name']),
             'type'            => trim($_POST['type']),
@@ -98,56 +98,57 @@
                     </div>
                 <?php endif; ?>
 
+                <?php $is_viewer = !hasRole('staff'); ?>
                 <form action="" method="post" class="border rounded-4 w-50 p-4">
                     <label for="name" class="form-label">Client name</label>
-                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>" required>
+                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>" required <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <label for="type" class="form-label">Client type</label>
-                    <select name="type" class="form-select" required>
+                    <select name="type" class="form-select" required <?= $is_viewer ? 'disabled' : '' ?>>
                         <option value="" disabled>Select a type</option>
                         <option value="customer" <?php echo ($row['type'] == "customer") ? 'selected' : '' ?>>Customer</option>
                         <option value="supplier" <?php echo ($row['type'] == "supplier") ? 'selected' : '' ?>>Supplier</option>
                     </select>
 
                     <label for="contact_person" class="form-label">Contact person</label>
-                    <input type="text" name="contact_person" class="form-control" value="<?= htmlspecialchars($row['contact_person'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="contact_person" class="form-control" value="<?= htmlspecialchars($row['contact_person'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <label for="con_info" class="form-label">Contact email</label>
-                    <input type="email" name="con_info" class="form-control" value="<?= htmlspecialchars($row['contact_info'], ENT_QUOTES, 'UTF-8') ?>" required>
+                    <input type="email" name="con_info" class="form-control" value="<?= htmlspecialchars($row['contact_info'], ENT_QUOTES, 'UTF-8') ?>" required <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <label for="phone" class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($row['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($row['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <label for="address_street" class="form-label">Street address</label>
-                    <input type="text" name="address_street" class="form-control" value="<?= htmlspecialchars($row['address_street'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="address_street" class="form-control" value="<?= htmlspecialchars($row['address_street'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <div class="row g-2">
                         <div class="col-6">
                             <label for="address_city" class="form-label">City</label>
-                            <input type="text" name="address_city" class="form-control" value="<?= htmlspecialchars($row['address_city'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="text" name="address_city" class="form-control" value="<?= htmlspecialchars($row['address_city'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                         </div>
                         <div class="col-6">
                             <label for="address_zip" class="form-label">ZIP / Postal code</label>
-                            <input type="text" name="address_zip" class="form-control" value="<?= htmlspecialchars($row['address_zip'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="text" name="address_zip" class="form-control" value="<?= htmlspecialchars($row['address_zip'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                         </div>
                     </div>
 
                     <label for="address_country" class="form-label">Country</label>
-                    <input type="text" name="address_country" class="form-control" value="<?= htmlspecialchars($row['address_country'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="text" name="address_country" class="form-control" value="<?= htmlspecialchars($row['address_country'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
 
                     <div class="row g-2">
                         <div class="col-6">
                             <label for="ico" class="form-label">IČO</label>
-                            <input type="text" name="ico" class="form-control" value="<?= htmlspecialchars($row['ico'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="text" name="ico" class="form-control" value="<?= htmlspecialchars($row['ico'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                         </div>
                         <div class="col-6">
                             <label for="vat_id" class="form-label">VAT / DIČ</label>
-                            <input type="text" name="vat_id" class="form-control" value="<?= htmlspecialchars($row['vat_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="text" name="vat_id" class="form-control" value="<?= htmlspecialchars($row['vat_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                         </div>
                     </div>
 
                     <br>
-                    <input type="submit" value="Submit" class="btn btn-primary">
+                    <input type="submit" value="<?= $is_viewer ? 'View Only — No Edit Access' : 'Submit' ?>" class="btn btn-primary" <?= $is_viewer ? 'disabled' : '' ?>>
                 </form>
             </div>
         </div>

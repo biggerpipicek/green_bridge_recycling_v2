@@ -175,7 +175,7 @@
                                 <td class="pe-4 text-end">
                                     <div class="btn-group btn-group-sm rounded-2">
                                         <a href="template/client.php?id=<?= $clean_id ?>" class="btn btn-outline-primary px-3">
-                                            Edit
+                                            <?= hasRole('staff') ? 'Edit' : 'View' ?>
                                         </a>
                                         <?php if (hasRole('admin')): ?>
                                         <a href="clients.php?delete_id=<?= $clean_id ?>" class="btn btn-outline-danger px-3" onclick="return confirm('Warning: Are you absolutely certain you want to permanently delete client profile \'<?= addslashes($clean_name) ?>\'? This action cannot be undone.');">

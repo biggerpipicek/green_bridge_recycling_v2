@@ -227,12 +227,13 @@
         
         <?php if(isset($success_msg)) echo "<div class='alert alert-success'>$success_msg</div>"; ?>
 
+        <?php $is_viewer = !hasRole('staff'); ?>
         <form method="POST" action="" enctype="multipart/form-data" class="container mt-4">
             <div class="row g-3">
 
                 <div class="col-md-6">
                     <label class="form-label">Customer</label>
-                    <select name="customer" class="form-select" required>
+                    <select name="customer" class="form-select" required <?= $is_viewer ? 'disabled' : '' ?>>
                         <?php
                             $cust_res = mysqli_query($conn, "SELECT id, name FROM partners");
                             while($cust = mysqli_fetch_assoc($cust_res)) {
@@ -245,7 +246,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Select Type</label>
-                    <select name="type" class="form-select" required>
+                    <select name="type" class="form-select" required <?= $is_viewer ? 'disabled' : '' ?>>
                         <option value="guh-in" <?php echo ($order_data['type'] == 'guh-in') ? 'selected' : '' ?>>Incoming</option>
                         <option value="guh-out" <?php echo ($order_data['type'] == 'guh-out') ? 'selected' : '' ?>>Outgoing</option>
                     </select>
@@ -263,17 +264,17 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Date</label>
-                    <input type="date" name="date" class="form-control" required value="<?php echo $order_data['date']; ?>">
+                    <input type="date" name="date" class="form-control" required value="<?php echo $order_data['date']; ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                 </div>
 
                 <div class="col-md-3 d-none">
                     <label class="form-label">Price</label>
-                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?php echo $order_data['price'] ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                 </div>
 
                 <div class="col-md-3 d-none">
                     <label class="form-label">Currency</label>
-                    <select name="currency" class="form-select" required>
+                    <select name="currency" class="form-select" required <?= $is_viewer ? 'disabled' : '' ?>>
                         <option value="EUR" <?php echo ($order_data['currency'] == "EUR") ? 'selected' : '' ?>>€ EUR</option>
                         <option value="USD" <?php echo ($order_data['currency'] == "USD") ? 'selected' : '' ?>>$ USD</option>
                         <option value="CZK" <?php echo ($order_data['currency'] == "CZK") ? 'selected' : '' ?>>Kč CZK</option>
@@ -284,12 +285,12 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Pallet No</label>
-                    <input type="text" name="pallet_no" class="form-control" value="<?php echo $order_data['pallet_no'] ?>">
+                    <input type="text" name="pallet_no" class="form-control" value="<?php echo $order_data['pallet_no'] ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Brutto Weight (kg)</label>
-                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>">
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="brutto_weight" class="form-control" value="<?php echo $order_data['brutto_w'] ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                 </div>
 
                 <div class="col-12">
@@ -300,8 +301,8 @@
                         foreach($display_items as $om): 
                         ?>
                             <div class="row g-2 material-row mb-2 align-items-center">
-                                <div class="col-md-5">
-                                    <select name="materials[]" class="form-select" required>
+                                <div class="<?= $is_viewer ? 'col-md-6' : 'col-md-5' ?>">
+                                    <select name="materials[]" class="form-select" required <?= $is_viewer ? 'disabled' : '' ?>>
                                         <option value="" disabled <?= empty($om['material_id']) ? 'selected' : '' ?>>Select material</option>
                                         <?php foreach($materials as $m): ?>
                                             <option value="<?= $m['id']; ?>" <?= ($m['id'] == $om['material_id']) ? 'selected' : '' ?>>
@@ -310,14 +311,16 @@
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="<?= $is_viewer ? 'col-md-6' : 'col-md-3' ?>">
                                     <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="weights[]" class="form-control weight-input" 
-                                           placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required>
+                                           placeholder="Weight (kg)" value="<?= $om['weight']; ?>" required <?= $is_viewer ? 'readonly' : '' ?>>
                                 </div>
+                                <?php if (!$is_viewer): ?>
                                 <div class="col-md-4 d-flex gap-2">
                                     <button type="button" class="btn btn-danger w-50 remove-material">Remove</button>
                                     <button type="button" class="btn btn-success w-50 add-material">+ Add</button>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -331,7 +334,7 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Approve Status</label>
-                    <select name="approve_status" class="form-select">
+                    <select name="approve_status" class="form-select" <?= $is_viewer ? 'disabled' : '' ?>>
                         <option value="approved" <?php echo ($order_data['approve_status'] == 'approved') ? 'selected' : '' ?>>Approved</option>
                         <option value="not approved" <?php echo ($order_data['approve_status'] == 'not approved') ? 'selected' : '' ?>>Not Approved</option>
                     </select>
@@ -339,7 +342,7 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Order Status</label>
-                    <select name="order_status" class="form-select">
+                    <select name="order_status" class="form-select" <?= $is_viewer ? 'disabled' : '' ?>>
                         <option value="created" <?php echo ($order_data['order_status'] == 'created') ? 'selected' : '' ?>>Created</option>
                         <option value="received" <?php echo ($order_data['order_status'] == 'received') ? 'selected' : '' ?>>Received</option>
                         <option value="in process" <?php echo ($order_data['order_status'] == 'in process') ? 'selected' : '' ?>>In process</option>
@@ -350,7 +353,9 @@
 
                 <div class="col-12 mt-3">
                     <label class="form-label">Documents (Images / PDFs)</label>
+                    <?php if (!$is_viewer): ?>
                     <input type="file" name="documents[]" class="form-control mb-2" multiple accept=".jpg,.jpeg,.png,.pdf, .zip, .rar, .7zip">
+                    <?php endif; ?>
                     
                     <label class="form-label mt-2"><strong>Existing Attachments:</strong></label>
                     <div class="d-flex flex-wrap gap-2">
@@ -404,8 +409,8 @@
                 </div>
 
                 <div class="col-12 mt-4">
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        Update Order & Save Changes
+                    <button type="submit" class="btn btn-primary w-100 py-2" <?= $is_viewer ? 'disabled' : '' ?>>
+                        <?= $is_viewer ? 'View Only — No Edit Access' : 'Update Order & Save Changes' ?>
                     </button>
                 </div>
 

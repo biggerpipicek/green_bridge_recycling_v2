@@ -15,11 +15,20 @@
             mysqli_stmt_bind_param($delete_stmt, "i", $delete_id);
             if (mysqli_stmt_execute($delete_stmt)) {
                 logActivity($conn, $_SESSION['user_id'], 'delete', 'client', $delete_id, "Deleted client record index #{$delete_id}");
+                header("Location: clients.php?flash=deleted");
+            } else {
+                // MySQL error 1451 = FK constraint: partner still has orders referencing it
+                $errno = mysqli_stmt_errno($delete_stmt);
+                if ($errno === 1451) {
+                    header("Location: clients.php?flash=fk_error");
+                } else {
+                    header("Location: clients.php?flash=db_error");
+                }
             }
             mysqli_stmt_close($delete_stmt);
+        } else {
+            header("Location: clients.php?flash=db_error");
         }
-        // Redirect cleanly to avoid continuous deletion flags on reload
-        header("Location: clients.php");
         exit();
     }
 
@@ -141,6 +150,19 @@
         </nav>
 
         <br>
+
+        <?php 
+            $flash = $_GET['flash'] ?? '';
+            if ($flash === 'deleted'): ?>
+                <div class="alert alert-success text-center">Partner deleted successfully.</div>
+            <?php elseif ($flash === 'fk_error'): ?>
+                <div class="alert alert-warning text-center">
+                    <strong>Cannot delete this partner</strong> — they still have orders linked to them.<br>
+                    Remove or reassign those orders first, then try again.
+                </div>
+            <?php elseif ($flash === 'db_error'): ?>
+                <div class="alert alert-danger text-center">An unexpected database error occurred. Please try again.</div>
+        <?php endif; ?>
 
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
             <div class="table-responsive">

@@ -148,7 +148,10 @@
                     </div>
 
                     <br>
-                    <input type="submit" value="<?= $is_viewer ? 'View Only — No Edit Access' : 'Submit' ?>" class="btn btn-primary" <?= $is_viewer ? 'disabled' : '' ?>>
+                    <div class="d-flex gap-2">
+                        <input type="submit" value="<?= $is_viewer ? 'View Only — No Edit Access' : 'Submit' ?>" class="btn btn-primary w-100" <?= $is_viewer ? 'disabled' : '' ?>>
+                        <a href="/pages/system/clients.php" class="btn btn-secondary w-100">Back to Partners</a>
+                    </div>
                 </form>
             </div>
         </div>

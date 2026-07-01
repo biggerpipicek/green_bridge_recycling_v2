@@ -17,3 +17,7 @@
 
     echo "Logging out.";
     header("Refresh:2; url=../../../index.php");
+?>
+    <head>
+        <title>Logging out</title>
+    </head>

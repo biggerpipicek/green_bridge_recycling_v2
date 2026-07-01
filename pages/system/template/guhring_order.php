@@ -409,9 +409,12 @@
                 </div>
 
                 <div class="col-12 mt-4">
-                    <button type="submit" class="btn btn-primary w-100 py-2" <?= $is_viewer ? 'disabled' : '' ?>>
-                        <?= $is_viewer ? 'View Only — No Edit Access' : 'Update Order & Save Changes' ?>
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 py-2" <?= $is_viewer ? 'disabled' : '' ?>>
+                            <?= $is_viewer ? 'View Only — No Edit Access' : 'Update Order & Save Changes' ?>
+                        </button>
+                        <a href="/pages/system/guhring_orders.php" class="btn btn-secondary w-100 py-2">Back to Orders</a>
+                    </div>
                 </div>
 
                 <?php if ($id > 0 && hasRole('admin')): ?>

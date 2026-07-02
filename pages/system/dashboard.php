@@ -338,6 +338,16 @@ include "../../build/header.php";
                             </svg>
                             Export PDF
                         </a>
+                    <a href="export_dashboard_csv.php?<?= $export_params ?>"
+                        class="btn btn-outline-secondary btn-sm px-3"
+                        title="Export current view as CSV">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                class="bi bi-file-earmark-spreadsheet me-1" viewBox="0 0 16 16">
+                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+                                <path d="M9 9.5H7.5v-1H9v1zm0 1.5H7.5v1H9v-1zm-3.5-1.5H7v-1H5.5v1zm0 1.5H7v1H5.5v-1zm5 0H10v1H8.5v-1z"/>
+                            </svg>
+                            Export CSV
+                        </a>
 
                 </div>
             </form>

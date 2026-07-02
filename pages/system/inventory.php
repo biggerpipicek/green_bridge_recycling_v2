@@ -78,6 +78,9 @@
                 <li class="nav-item">
                     <a href="export_inventory.php" class="nav-link">Export</a>
                 </li>
+                <li class="nav-item">
+                    <a href="export_inventory_csv.php" class="nav-link">Export CSV</a>
+                </li>
 
             </ul>
         </div>

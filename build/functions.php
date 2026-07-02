@@ -75,8 +75,40 @@
         return $changes;
     }
 
+    // Compares an order's stored materials against the submitted form values.
+    // $existing: rows from order_materials, each with 'material_id' and 'weight'.
+    // $submitted_ids / $submitted_weights: raw $_POST['materials'] / $_POST['weights'] arrays (same key order).
+    // Order-independent — only the set of (material_id, weight) pairs is compared.
+    function materialsChanged(array $existing, array $submitted_ids, array $submitted_weights) {
+        $normalize = fn($id, $weight) => (int)$id . ':' . number_format((float)$weight, 2, '.', '');
+
+        $existing_set = [];
+        foreach ($existing as $row) {
+            $existing_set[] = $normalize($row['material_id'], $row['weight']);
+        }
+        sort($existing_set);
+
+        $submitted_set = [];
+        foreach ($submitted_ids as $key => $m_id) {
+            $submitted_set[] = $normalize($m_id, $submitted_weights[$key] ?? 0);
+        }
+        sort($submitted_set);
+
+        return $existing_set !== $submitted_set;
+    }
+
     function generateTrackId($length = 12) {
         return strtoupper(bin2hex(random_bytes($length / 2)));
+    }
+
+    // --- LOW STOCK CHECK ---
+    // Returns 'out' (0 or negative), 'low' (positive but under threshold), or 'ok'.
+    // Default threshold is 50kg — adjust per-call if a material needs a different cutoff.
+    function stockLevel($weight, $threshold = 50) {
+        $weight = (float)$weight;
+        if ($weight <= 0) return 'out';
+        if ($weight <= $threshold) return 'low';
+        return 'ok';
     }
 
     function time_elapsed_string($datetime, $full = false) {
@@ -131,5 +163,3 @@
             die($message ?? "Access denied — you don't have permission to perform this action.");
         }
     }
-
-    

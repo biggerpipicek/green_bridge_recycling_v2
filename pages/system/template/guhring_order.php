@@ -75,8 +75,9 @@
         ];
 
         $difference = getChangedFields($order_data, $sub_data);
+        $materials_changed = materialsChanged($order_materials, $_POST['materials'] ?? [], $_POST['weights'] ?? []);
 
-        if(!empty($difference) || !empty($_POST['materials'])) {
+        if(!empty($difference) || $materials_changed) {
             $changed_summary = [];
             foreach ($difference as $field => $values) {
                 $changed_summary[] = "$field ('{$values['from']}' -> '{$values['to']}')";
@@ -140,6 +141,8 @@
                 $om_stmt->execute();
                 $order_materials = mysqli_fetch_all($om_stmt->get_result(), MYSQLI_ASSOC);
             }
+        } else {
+            $info_msg = "No changes detected — nothing was updated.";
         }
 
         // ================= INVENTORY MOVEMENTS =================
@@ -226,6 +229,7 @@
         <h1>Order Management</h1>
         
         <?php if(isset($success_msg)) echo "<div class='alert alert-success'>$success_msg</div>"; ?>
+        <?php if(isset($info_msg)) echo "<div class='alert alert-info'>$info_msg</div>"; ?>
 
         <?php $is_viewer = !hasRole('staff'); ?>
         <form method="POST" action="" enctype="multipart/form-data" class="container mt-4">
@@ -512,7 +516,7 @@
         txt.select();
         txt.setSelectionRange(0,99999);
         navigator.clipboard.writeText(txt.value);
-        alert("Track ID copied:\n" + txt.value);
+        alert("Track ID copied:" + txt.value);
     }
 </script>
 

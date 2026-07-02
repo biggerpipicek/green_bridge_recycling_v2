@@ -73,7 +73,8 @@
         "login_failed"    => "imgs/person.png",
         "logout"          => "imgs/person.png",
         "update"          => "imgs/package.png",
-        "checking"        => "imgs/search.png"
+        "checking"        => "imgs/search.png",
+        "inventory"       => "imgs/list.png"
     ];
 
     include "build/header.php";

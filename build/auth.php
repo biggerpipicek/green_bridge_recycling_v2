@@ -7,12 +7,9 @@
     }
 
     // AUTHORISATION
-    
-    define("DB_HOST", "db.dw357.endora.cz");
-    define("DB_USER", "gbrguh_eu");
-    define("DB_PASS", "D8BiL3K#?.");
-    define("DB_NAME", "gbrguh");
-    
+
+    // REPLACED FOR THE DEFINE()
+    require __DIR__ . '/db_config.php';
     /*
     define("DB_HOST", "127.0.0.1");
     define("DB_USER", "root");

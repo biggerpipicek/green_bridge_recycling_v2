@@ -154,7 +154,7 @@ class GUH_PDF extends FPDF {
         $headers = ['Order No.', 'Date', 'Customer', 'Order Status', 'Approve', 'Netto/Brutto (kg)'];
         foreach ($col_w as $i => $w) {
             $align = ($i === 2) ? 'L' : 'C';
-            $this->Cell($w, 7, $headers[$i], 0, 0, $align, true);
+            $this->Cell($w, 6, $headers[$i], 0, 0, $align, true);
         }
         $this->Ln();
         $this->SetTextColor(0, 0, 0);

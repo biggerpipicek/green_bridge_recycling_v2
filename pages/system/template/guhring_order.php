@@ -257,12 +257,17 @@
                     <input type="text" name="order_no" class="form-control" disabled value="<?php echo $order_data['order_no']; ?>">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Track ID</label>
-                    <input type="text" name="track_id" class="form-control" disabled value="<?php echo $order_data['track_id']; ?>">
+                    <input type="text" name="track_id" id="trackid" class="form-control" disabled value="<?php echo $order_data['track_id']; ?>">
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-2">
+                    <label class="form-label">CopyTrack ID</label>
+                    <button class="btn btn-primary" onclick="copyTrackID()">Copy</button>    
+                </div>
+
+                <div class="col-md-5">
                     <label class="form-label">Date</label>
                     <input type="date" name="date" class="form-control" required value="<?php echo $order_data['date']; ?>" <?= $is_viewer ? 'readonly' : '' ?>>
                 </div>
@@ -499,6 +504,15 @@
         `);
 
         printWindow.document.close();
+    }
+
+    function copyTrackID() {
+        var txt = document.getElementById("trackid");
+
+        txt.select();
+        txt.setSelectionRange(0,99999);
+        navigator.clipboard.writeText(txt.value);
+        alert("Track ID copied:" + txt.value);
     }
 </script>
 

@@ -76,7 +76,7 @@
                 </li>
                 <?php endif; ?>
                 <li class="nav-item">
-                    <a href="export_inventory.php" class="nav-link">Export</a>
+                    <a href="export_inventory.php" class="nav-link">Export PDF</a>
                 </li>
                 <li class="nav-item">
                     <a href="export_inventory_csv.php" class="nav-link">Export CSV</a>

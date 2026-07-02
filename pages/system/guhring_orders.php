@@ -164,7 +164,7 @@
                     <?php if (hasRole('staff')): ?>
                     <li class="nav-item"><a href="/pages/system/add_guhring_order.php" class="nav-link">Add</a></li>
                     <?php endif; ?>
-                    <li class="nav-item"><a href="/pages/system/export_guhring_orders.php" class="nav-link">Export</a></li>
+                    <li class="nav-item"><a href="/pages/system/export_guhring_orders.php" class="nav-link">Export PDF</a></li>
                     <li class="nav-item"><a href="/pages/system/export_guhring_orders_csv.php" class="nav-link">Export CSV</a></li>
                 </ul>
             </div>

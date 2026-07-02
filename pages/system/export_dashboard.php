@@ -25,7 +25,6 @@ function saveChartImage($post_key) {
 $chart_images = [
     'Activity Trend (Incoming vs Outgoing Orders)' => saveChartImage('chart_activity'),
     'Top Partners by Order Count'                  => saveChartImage('chart_partners'),
-    'Revenue Over Time (EUR)'                      => saveChartImage('chart_revenue'),
     'In vs Out Ratio'                              => saveChartImage('chart_ratio'),
 ];
 
@@ -393,11 +392,9 @@ $pdf->Ln(3);
 $pdf->SectionTitle('Summary');
 $pdf->Ln(1);
 $stat_y = $pdf->GetY();
-$pdf->StatBox(10,  $stat_y, 44, 'Total Orders (System)',  number_format($total_res['count']));
-$pdf->StatBox(57,  $stat_y, 44, 'Filtered Count',         number_format($filtered_count));
-$pdf->StatBox(104, $stat_y, 44, 'Pending Action',         $pending_res['count']);
-$pdf->StatBox(151, $stat_y, 49, 'Monthly Revenue (EUR)',  'EUR ' . number_format($monthly_eur, 2),
-              'Filtered: EUR ' . number_format($filtered_eur, 2));
+$pdf->StatBox(10,  $stat_y, 60, 'Total Orders (System)',  number_format($total_res['count']));
+$pdf->StatBox(73,  $stat_y, 60, 'Filtered Count',         number_format($filtered_count));
+$pdf->StatBox(136, $stat_y, 60, 'Pending Action',         $pending_res['count']);
 $pdf->Ln(28);
 
 // Top Partners table
@@ -443,8 +440,8 @@ $pdf->AddPage();
 $pdf->SectionTitle('Daily Activity - ' . $period_label);
 $pdf->Ln(1);
 
-$col_w2 = [38, 30, 30, 32, 65];
-$headers2 = ['Date', 'Outgoing', 'Incoming', 'Total', 'Daily Revenue (EUR)'];
+$col_w2 = [50, 45, 45, 55];
+$headers2 = ['Date', 'Outgoing', 'Incoming', 'Total'];
 $pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 8);
@@ -456,23 +453,20 @@ $pdf->Ln();
 
 $pdf->SetFont('Arial', '', 8);
 $odd = true;
-$total_out = 0; $total_in = 0; $total_rev_eur = 0.0;
+$total_out = 0; $total_in = 0;
 foreach ($chart_rows as $row) {
     $pdf->SetFillColor($odd ? 248 : 255, $odd ? 250 : 255, $odd ? 255 : 255);
     $pdf->SetTextColor(30, 30, 40);
     $pdf->SetX(10);
     $day_total  = (int)$row['out_count'] + (int)$row['in_count'];
-    $day_rev    = $row['day_revenue_eur'] ?? 0.0;
     $pdf->Cell($col_w2[0], 6, $row['date'],                              0, 0, 'L', true);
     $pdf->Cell($col_w2[1], 6, $row['out_count'],                         0, 0, 'C', true);
     $pdf->Cell($col_w2[2], 6, $row['in_count'],                          0, 0, 'C', true);
     $pdf->Cell($col_w2[3], 6, $day_total,                                0, 0, 'C', true);
-    $pdf->Cell($col_w2[4], 6, 'EUR ' . number_format($day_rev, 2),       0, 0, 'R', true);
     $pdf->Ln();
     $odd = !$odd;
     $total_out    += (int)$row['out_count'];
     $total_in     += (int)$row['in_count'];
-    $total_rev_eur += $day_rev;
 }
 
 // Totals row
@@ -484,7 +478,6 @@ $pdf->Cell($col_w2[0], 7, 'TOTAL',                                        0, 0, 
 $pdf->Cell($col_w2[1], 7, $total_out,                                     0, 0, 'C', true);
 $pdf->Cell($col_w2[2], 7, $total_in,                                      0, 0, 'C', true);
 $pdf->Cell($col_w2[3], 7, $total_out + $total_in,                         0, 0, 'C', true);
-$pdf->Cell($col_w2[4], 7, 'EUR ' . number_format($total_rev_eur, 2),      0, 0, 'R', true);
 $pdf->Ln();
 
 if (empty($chart_rows)) {

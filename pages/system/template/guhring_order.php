@@ -268,7 +268,7 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Copy Track ID</label><br>
-                    <button class="btn btn-primary" style="width: inherit;" onclick="copyTrackID()">Copy</button>    
+                    <button class="btn btn-primary" style="width: 100%;" onclick="copyTrackID()">Copy</button>    
                 </div>
 
                 <div class="col-md-5">

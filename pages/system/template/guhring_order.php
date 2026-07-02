@@ -512,7 +512,7 @@
         txt.select();
         txt.setSelectionRange(0,99999);
         navigator.clipboard.writeText(txt.value);
-        alert("Track ID copied:" + txt.value);
+        alert("Track ID copied:\n" + txt.value);
     }
 </script>
 

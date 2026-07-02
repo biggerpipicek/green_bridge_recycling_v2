@@ -21,7 +21,7 @@ $order_currency = [
 // FETCH ALL GÜHRING ORDERS
 // ---------------------------------------------------------
 $sql = "SELECT o.id, o.order_no, o.date, p.name AS partner_name,
-               o.price, o.currency, o.netto_w, o.brutto_w,
+               o.netto_w, o.brutto_w,
                o.order_status, o.approve_status
         FROM orders o
         JOIN partners p ON o.partner_id = p.id
@@ -150,8 +150,8 @@ class GUH_PDF extends FPDF {
         $this->SetTextColor(255, 255, 255);
         $this->SetFont('Arial', 'B', 7);
         $this->SetX(10);
-        $col_w = [34, 20, 34, 24, 26, 26, 26];
-        $headers = ['Order No.', 'Date', 'Customer', 'Price', 'Order Status', 'Approve', 'Netto/Brutto (kg)'];
+        $col_w = [34, 20, 34, 26, 26, 26];
+        $headers = ['Order No.', 'Date', 'Customer', 'Order Status', 'Approve', 'Netto/Brutto (kg)'];
         foreach ($col_w as $i => $w) {
             $align = ($i === 2) ? 'L' : 'C';
             $this->Cell($w, 7, $headers[$i], 0, 0, $align, true);

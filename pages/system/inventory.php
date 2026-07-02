@@ -70,9 +70,11 @@
                 <li class="nav-item">
                     <a href="" class="nav-link">Refresh</a>
                 </li>
+                <?php if (hasRole('staff')): ?>
                 <li class="nav-item">
                     <a href="add_inventory.php" class="nav-link">Add</a>
                 </li>
+                <?php endif; ?>
                 <li class="nav-item">
                     <a href="export_inventory.php" class="nav-link">Export</a>
                 </li>

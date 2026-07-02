@@ -124,9 +124,10 @@
 
     // Hard stop — kills the page if the user doesn't meet the minimum role.
     // Use at the top of pages/actions that should be restricted (e.g. delete partner).
-    function requireRole($min_role) {
+    // Optional $message lets specific pages show a more tailored explanation.
+    function requireRole($min_role, $message = null) {
         if (!hasRole($min_role)) {
             http_response_code(403);
-            die("Access denied — you don't have permission to perform this action.");
+            die($message ?? "Access denied — you don't have permission to perform this action.");
         }
     }

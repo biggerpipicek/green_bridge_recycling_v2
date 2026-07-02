@@ -6,7 +6,7 @@
 
     require "../../build/auth.php";
     require "../../build/functions.php";
-    requireRole('staff'); // viewers cannot add/edit partners
+    requireRole('staff', "Users with a role 'viewer' are not eligible to access this page."); // viewers cannot add/edit partners
 
     // --- AJAX BRANCH: handle inline "add partner" requests from other pages ---
     if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['ajax']) && $_POST['ajax'] === '1') {

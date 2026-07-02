@@ -8,7 +8,7 @@
     require "../../build/auth.php";
     require "../../build/functions.php";
     require "../../build/mailer.php";
-    requireRole('staff'); // viewers cannot create/edit orders
+    requireRole('staff', "Users with a role 'viewer' are not eligible to access this page."); // viewers cannot create/edit orders
 
     $page_title = "Guhring Add Order";
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;

@@ -161,7 +161,9 @@
                         </ul>
                     </li>
                     <li class="nav-item"><a href="/pages/system/guhring_orders.php" class="nav-link">Refresh</a></li>
+                    <?php if (hasRole('staff')): ?>
                     <li class="nav-item"><a href="/pages/system/add_guhring_order.php" class="nav-link">Add</a></li>
+                    <?php endif; ?>
                     <li class="nav-item"><a href="/pages/system/export_guhring_orders.php" class="nav-link">Export</a></li>
                 </ul>
             </div>

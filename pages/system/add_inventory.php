@@ -4,7 +4,7 @@
 
     require "../../build/auth.php";
     require "../../build/functions.php";
-    requireRole('staff'); // viewers cannot add inventory
+    requireRole('staff', "Users with a role 'viewer' are not eligible to access this page."); // viewers cannot add inventory
     
     $page_title = "GBR Add Inventory";
     include "../../build/header.php"; 

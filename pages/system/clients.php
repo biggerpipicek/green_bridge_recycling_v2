@@ -141,9 +141,11 @@
                         <a href="clients.php" class="nav-link">Reset</a>
                     </li>
 
+                    <?php if (hasRole('staff')): ?>
                     <li class="nav-item">
                         <a href="add_client.php" class="nav-link">Add Partner</a>
                     </li>
+                    <?php endif; ?>
 
                 </ul>
             </div>

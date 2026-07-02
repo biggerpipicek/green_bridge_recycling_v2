@@ -9,6 +9,7 @@
     // --- 1. HANDLE TICKET CREATION BEFORE ANY OUTPUT (PRG PATTERN) ---
     $success_msg = false;
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_ticket'])) {
+        requireRole('staff', "Users with a role 'viewer' are not eligible to access this page."); // viewers cannot create tickets
         $title       = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $priority    = trim($_POST['priority'] ?? 'medium');
@@ -58,6 +59,7 @@
             </div>
         <?php endif; ?>
 
+        <?php if (hasRole('staff')): ?>
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
             <h5 class="fw-bold text-secondary mb-3">Create New Ticket</h5>
             <form method="POST" action="">
@@ -86,6 +88,11 @@
                 </div>
             </form>
         </div>
+        <?php else: ?>
+        <div class="alert alert-secondary rounded-4 mb-5">
+            Users with a role 'viewer' are not eligible to access this page.
+        </div>
+        <?php endif; ?>
 
         <hr class="my-4 opacity-10">
 

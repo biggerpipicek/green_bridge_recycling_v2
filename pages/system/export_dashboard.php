@@ -1,6 +1,6 @@
 <?php
 // MICHAEL D. PHILLIPS - UPDATED 06/10/2026
-// DASHBOARD PDF EXPORT — MULTI-CURRENCY
+// DASHBOARD PDF EXPORT
 
 require "../../build/auth.php";
 require "../../build/functions.php";
@@ -79,48 +79,15 @@ $type_label_map = ['all' => 'All (In & Out)', 'in' => 'Inbound', 'out' => 'Outbo
 $type_label     = $type_label_map[$type_filter] ?? 'All';
 
 // ---------------------------------------------------------
-// 2. EXCHANGE RATES — fetch once
-// ---------------------------------------------------------
-$fx_rates  = ['EUR' => 1.0];
-$fx_source = 'fallback';
-
-$fx_ctx  = stream_context_create(['http' => ['header' => 'Cache-Control: no-cache']]);
-$fx_json = @file_get_contents('https://api.frankfurter.app/latest?base=EUR&symbols=USD,CZK,PLN,JPY', false, $fx_ctx);
-if ($fx_json) {
-    $fx_data = json_decode($fx_json, true);
-    if (!empty($fx_data['rates'])) {
-        foreach ($fx_data['rates'] as $code => $rate) {
-            $fx_rates[$code] = (float)$rate;
-        }
-        $fx_source = $fx_data['date'] ?? 'live';
-    }
-}
-
-function exportToEur($amount, $currency, $rates) {
-    $currency = strtoupper(trim($currency ?? 'EUR'));
-    if ($currency === 'EUR' || !isset($rates[$currency])) return (float)$amount;
-    return (float)$amount / $rates[$currency];
-}
-
-// Format: "CZK 22,037.00 -> EUR 882.15" (ASCII arrow for FPDF Latin-1)
-function exportFmtPrice($amount, $currency, $rates) {
-    $currency = strtoupper(trim($currency ?? 'EUR'));
-    $orig = $currency . ' ' . number_format((float)$amount, 2);
-    if ($currency === 'EUR') return $orig;
-    $eur = exportToEur($amount, $currency, $rates);
-    return $orig . ' -> EUR ' . number_format($eur, 2);
-}
-
-// ---------------------------------------------------------
-// 3. FETCH SUMMARY STATS
+// 2. FETCH SUMMARY STATS
 // ---------------------------------------------------------
 function exportFetchSingle($conn, $sql, $types = "", $params = []) {
     $stmt = mysqli_prepare($conn, $sql);
-    if (!$stmt) return ['count' => 0, 'total' => 0];
+    if (!$stmt) return ['count' => 0];
     if (!empty($params)) mysqli_stmt_bind_param($stmt, $types, ...$params);
     mysqli_stmt_execute($stmt);
     $res  = mysqli_stmt_get_result($stmt);
-    $data = mysqli_fetch_assoc($res) ?? ['count' => 0, 'total' => 0];
+    $data = mysqli_fetch_assoc($res) ?? ['count' => 0];
     mysqli_stmt_close($stmt);
     return $data;
 }
@@ -128,39 +95,17 @@ function exportFetchSingle($conn, $sql, $types = "", $params = []) {
 $total_res   = exportFetchSingle($conn, "SELECT COUNT(*) as count FROM orders");
 $pending_res = exportFetchSingle($conn, "SELECT COUNT(*) as count FROM orders WHERE approve_status = 'not approved'");
 
-// Filtered count + EUR total
-$filtered_stmt = mysqli_prepare($conn, "SELECT price, currency FROM orders WHERE $type_where AND $date_where");
-$filtered_count = 0; $filtered_eur = 0.0;
-if ($filtered_stmt) {
-    if (!empty($bind_params)) mysqli_stmt_bind_param($filtered_stmt, $bind_types, ...$bind_params);
-    mysqli_stmt_execute($filtered_stmt);
-    $filtered_res = mysqli_stmt_get_result($filtered_stmt);
-    while ($r = mysqli_fetch_assoc($filtered_res)) {
-        $filtered_eur += exportToEur($r['price'], $r['currency'] ?? 'EUR', $fx_rates);
-        $filtered_count++;
-    }
-    mysqli_stmt_close($filtered_stmt);
-}
-
-// Monthly revenue in EUR
-$monthly_stmt = mysqli_prepare($conn, "SELECT price, currency FROM orders WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
-$monthly_eur = 0.0;
-if ($monthly_stmt) {
-    mysqli_stmt_execute($monthly_stmt);
-    $monthly_res = mysqli_stmt_get_result($monthly_stmt);
-    while ($r = mysqli_fetch_assoc($monthly_res)) {
-        $monthly_eur += exportToEur($r['price'], $r['currency'] ?? 'EUR', $fx_rates);
-    }
-    mysqli_stmt_close($monthly_stmt);
-}
+// Filtered count
+$filtered_res = exportFetchSingle($conn, "SELECT COUNT(*) as count FROM orders WHERE $type_where AND $date_where", $bind_types, $bind_params);
+$filtered_count = $filtered_res['count'];
 
 // ---------------------------------------------------------
-// 4. FETCH FILTERED ORDERS TABLE
+// 3. FETCH FILTERED ORDERS TABLE
 // ---------------------------------------------------------
 $orders_sql = "
     SELECT o.order_no, p.name AS partner_name, o.type,
            o.approve_status, o.order_status,
-           o.price, o.currency, DATE(o.created_at) AS order_date
+           DATE(o.created_at) AS order_date
     FROM orders o
     LEFT JOIN partners p ON o.partner_id = p.id
     WHERE $type_where AND " . str_replace('created_at', 'o.created_at', $date_where) . "
@@ -180,7 +125,7 @@ if ($orders_stmt) {
 }
 
 // ---------------------------------------------------------
-// 5. FETCH DAILY ACTIVITY (chart data)
+// 4. FETCH DAILY ACTIVITY (chart data)
 // ---------------------------------------------------------
 $chart_sql = "
     SELECT DATE(created_at) as date,
@@ -204,38 +149,15 @@ if ($chart_stmt) {
     mysqli_stmt_close($chart_stmt);
 }
 
-// Daily revenue in EUR (fetched per-order, summed by day)
-$rev_sql = "SELECT DATE(created_at) as date, price, currency FROM orders WHERE $date_where ORDER BY created_at ASC";
-$rev_stmt = mysqli_prepare($conn, $rev_sql);
-$rev_by_day = [];
-if ($rev_stmt) {
-    if (!empty($bind_params)) mysqli_stmt_bind_param($rev_stmt, $bind_types, ...$bind_params);
-    mysqli_stmt_execute($rev_stmt);
-    $rev_res = mysqli_stmt_get_result($rev_stmt);
-    while ($r = mysqli_fetch_assoc($rev_res)) {
-        $d = $r['date'];
-        if (!isset($rev_by_day[$d])) $rev_by_day[$d] = 0.0;
-        $rev_by_day[$d] += exportToEur($r['price'], $r['currency'] ?? 'EUR', $fx_rates);
-    }
-    mysqli_stmt_close($rev_stmt);
-}
-
-// Merge daily revenue into chart_rows
-foreach ($chart_rows as &$cr) {
-    $cr['day_revenue_eur'] = $rev_by_day[$cr['date']] ?? 0.0;
-}
-unset($cr);
-
 // ---------------------------------------------------------
-// 6. FETCH TOP PARTNERS
+// 5. FETCH TOP PARTNERS
 // ---------------------------------------------------------
 $partners_sql = "
-    SELECT p.name AS partner_name, COUNT(o.id) AS order_count,
-           SUM(o.price) AS total_value, o.currency
+    SELECT p.name AS partner_name, COUNT(o.id) AS order_count
     FROM orders o
     LEFT JOIN partners p ON o.partner_id = p.id
     WHERE $type_where AND " . str_replace('created_at', 'o.created_at', $date_where) . "
-    GROUP BY o.partner_id, p.name, o.currency
+    GROUP BY o.partner_id, p.name
     ORDER BY order_count DESC
     LIMIT 8
 ";
@@ -246,14 +168,13 @@ if ($partners_stmt) {
     mysqli_stmt_execute($partners_stmt);
     $partners_result = mysqli_stmt_get_result($partners_stmt);
     while ($r = mysqli_fetch_assoc($partners_result)) {
-        $r['total_value_eur'] = exportToEur($r['total_value'], $r['currency'] ?? 'EUR', $fx_rates);
         $partner_rows[] = $r;
     }
     mysqli_stmt_close($partners_stmt);
 }
 
 // ---------------------------------------------------------
-// 7. BUILD PDF
+// 6. BUILD PDF
 // ---------------------------------------------------------
 class GBR_PDF extends FPDF {
 
@@ -352,7 +273,7 @@ $pdf->SetAutoPageBreak(true, 15);
 $pdf->SetMargins(10, 10, 10);
 
 // ---------------------------------------------------------
-// PAGE 1: Summary + FX rates + Top Partners
+// PAGE 1: Summary + Top Partners
 // ---------------------------------------------------------
 $pdf->AddPage();
 
@@ -372,22 +293,6 @@ $pdf->SetTextColor(0, 0, 0);
 $pdf->SetDrawColor(0, 0, 0);
 $pdf->Ln(12);
 
-// FX rates strip
-$pdf->SetFillColor(245, 255, 245);
-$pdf->SetDrawColor(40, 167, 69);
-$pdf->Rect(10, $pdf->GetY(), 190, 7, 'DF');
-$pdf->SetFont('Arial', '', 7);
-$pdf->SetTextColor(20, 80, 30);
-$pdf->SetX(13);
-$fx_str = 'FX Rates (-> EUR, ' . $fx_source . '):  ';
-foreach ($fx_rates as $code => $rate) {
-    if ($code !== 'EUR') $fx_str .= "1 EUR = $rate $code   ";
-}
-$pdf->Cell(186, 7, $fx_str, 0, 1, 'L');
-$pdf->SetTextColor(0, 0, 0);
-$pdf->SetDrawColor(0, 0, 0);
-$pdf->Ln(3);
-
 // Stat boxes
 $pdf->SectionTitle('Summary');
 $pdf->Ln(1);
@@ -401,8 +306,8 @@ $pdf->Ln(28);
 $pdf->SectionTitle('Top Partners - ' . $period_label . ' (' . $type_label . ')');
 $pdf->Ln(1);
 
-$col_w = [75, 30, 45, 45];
-$headers = ['Partner Name', 'Orders', 'Original Value', 'EUR Value'];
+$col_w = [145, 45];
+$headers = ['Partner Name', 'Orders'];
 $pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 8);
@@ -418,18 +323,15 @@ foreach ($partner_rows as $row) {
     $pdf->SetFillColor($odd ? 248 : 255, $odd ? 250 : 255, $odd ? 255 : 255);
     $pdf->SetTextColor(30, 30, 40);
     $pdf->SetX(10);
-    $cur = strtoupper($row['currency'] ?? 'EUR');
-    $pdf->Cell($col_w[0], 6, mb_substr($row['partner_name'] ?? 'Unknown', 0, 40), 0, 0, 'L', true);
+    $pdf->Cell($col_w[0], 6, mb_substr($row['partner_name'] ?? 'Unknown', 0, 75), 0, 0, 'L', true);
     $pdf->Cell($col_w[1], 6, $row['order_count'],                                  0, 0, 'C', true);
-    $pdf->Cell($col_w[2], 6, $cur . ' ' . number_format((float)$row['total_value'], 2), 0, 0, 'R', true);
-    $pdf->Cell($col_w[3], 6, 'EUR ' . number_format((float)$row['total_value_eur'], 2), 0, 0, 'R', true);
     $pdf->Ln();
     $odd = !$odd;
 }
 if (empty($partner_rows)) {
     $pdf->SetTextColor(150, 150, 150);
     $pdf->SetX(10);
-    $pdf->Cell(195, 6, 'No partner data for this period.', 0, 1, 'C');
+    $pdf->Cell(190, 6, 'No partner data for this period.', 0, 1, 'C');
 }
 $pdf->SetTextColor(0, 0, 0);
 
@@ -440,7 +342,7 @@ $pdf->AddPage();
 $pdf->SectionTitle('Daily Activity - ' . $period_label);
 $pdf->Ln(1);
 
-$col_w2 = [50, 45, 45, 55];
+$col_w2 = [50, 45, 45, 50]; // Adjusted to perfectly equal 190 total width
 $headers2 = ['Date', 'Outgoing', 'Incoming', 'Total'];
 $pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
@@ -484,7 +386,7 @@ if (empty($chart_rows)) {
     $pdf->SetTextColor(150, 150, 150);
     $pdf->SetFont('Arial', '', 8);
     $pdf->SetX(10);
-    $pdf->Cell(195, 6, 'No activity data for this period.', 0, 1, 'C');
+    $pdf->Cell(190, 6, 'No activity data for this period.', 0, 1, 'C');
 }
 $pdf->SetTextColor(0, 0, 0);
 
@@ -502,8 +404,8 @@ if (count($orders_rows) === 200) {
 }
 $pdf->Ln(1);
 
-$col_w3 = [25, 45, 18, 24, 22, 60];
-$headers3 = ['Order #', 'Partner', 'Type', 'Approval', 'Status', 'Price (orig -> EUR)'];
+$col_w3 = [35, 60, 25, 35, 35]; // perfectly divided into 190 width
+$headers3 = ['Order #', 'Partner', 'Type', 'Approval', 'Status'];
 $pdf->SetFillColor(19, 150, 15);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->SetFont('Arial', 'B', 7);
@@ -519,19 +421,12 @@ foreach ($orders_rows as $row) {
     $pdf->SetFillColor($odd ? 248 : 255, $odd ? 250 : 255, $odd ? 255 : 255);
     $pdf->SetTextColor(30, 30, 40);
     $pdf->SetX(10);
-    $cur     = strtoupper($row['currency'] ?? 'EUR');
-    $amt     = (float)$row['price'];
-    $eur_amt = exportToEur($amt, $cur, $fx_rates);
-    $price_str = $cur === 'EUR'
-        ? 'EUR ' . number_format($amt, 2)
-        : $cur . ' ' . number_format($amt, 2) . ' -> EUR ' . number_format($eur_amt, 2);
 
-    $pdf->Cell($col_w3[0], 5.5, mb_substr($row['order_no'] ?? 'N/A', 0, 14),         0, 0, 'L', true);
-    $pdf->Cell($col_w3[1], 5.5, mb_substr($row['partner_name'] ?? 'Unknown', 0, 26), 0, 0, 'L', true);
+    $pdf->Cell($col_w3[0], 5.5, mb_substr($row['order_no'] ?? 'N/A', 0, 20),         0, 0, 'L', true);
+    $pdf->Cell($col_w3[1], 5.5, mb_substr($row['partner_name'] ?? 'Unknown', 0, 35), 0, 0, 'L', true);
     $pdf->Cell($col_w3[2], 5.5, strtoupper($row['type'] ?? ''),                      0, 0, 'C', true);
     $pdf->Cell($col_w3[3], 5.5, ucfirst($row['approve_status'] ?? ''),               0, 0, 'C', true);
     $pdf->Cell($col_w3[4], 5.5, ucfirst($row['order_status'] ?? ''),                 0, 0, 'C', true);
-    $pdf->Cell($col_w3[5], 5.5, $price_str,                                          0, 0, 'R', true);
     $pdf->Ln();
     $odd = !$odd;
 }
@@ -539,7 +434,7 @@ if (empty($orders_rows)) {
     $pdf->SetTextColor(150, 150, 150);
     $pdf->SetFont('Arial', '', 8);
     $pdf->SetX(10);
-    $pdf->Cell(194, 6, 'No orders found for this filter combination.', 0, 1, 'C');
+    $pdf->Cell(190, 6, 'No orders found for this filter combination.', 0, 1, 'C');
 }
 
 // ---------------------------------------------------------

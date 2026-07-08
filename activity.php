@@ -86,7 +86,8 @@
         "logout"          => "imgs/person.png",
         "update"          => "imgs/package.png",
         "checking"        => "imgs/search.png",
-        "inventory"       => "imgs/list.png"
+        "inventory"       => "imgs/list.png",
+        "email_sent"      => "imgs/mail.png"
     ];
 
     // Log page access smoothly

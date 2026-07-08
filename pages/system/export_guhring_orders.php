@@ -9,14 +9,6 @@ require_once "../../build/mailer.php";
 
 logActivity($conn, $_SESSION['user_id'], 'checking', 'orders', $_SESSION['user_id'], "User #{$_SESSION['user_id']} exported guhring orders");
 
-$order_currency = [
-    "EUR" => "EUR",
-    "USD" => "USD",
-    "JPY" => "JPY",
-    "PLN" => "PLN",
-    "CZK" => "CZK"
-];
-
 // ---------------------------------------------------------
 // FETCH ALL GÜHRING ORDERS
 // ---------------------------------------------------------
@@ -226,7 +218,7 @@ $pdf->SetY($stat_y + 24);
 $pdf->SectionTitle('Orders - Full List (' . count($orders_rows) . ' total)');
 $pdf->Ln(1);
 
-$col_w = [34, 20, 34, 24, 26, 26, 26];
+$col_w = [34, 20, 34, 26, 26, 26];
 
 $pdf->OrderRowHeader();
 $pdf->SetFont('Arial', '', 7);
@@ -245,8 +237,6 @@ foreach ($orders_rows as $row) {
     }
 
     // Order header row
-    $cur     = strtoupper($row['currency'] ?? 'EUR');
-    $price_str = $cur . ' ' . number_format((float)$row['price'], 2);
     $weight_str = number_format((float)$row['netto_w'], 1) . ' / ' . number_format((float)$row['brutto_w'], 1);
     $date_str = date("d.m.Y", strtotime($row['date']));
 
@@ -257,10 +247,9 @@ foreach ($orders_rows as $row) {
     $pdf->Cell($col_w[0], 6, $row['order_no'],                       1, 0, 'C', true);
     $pdf->Cell($col_w[1], 6, $date_str,                              1, 0, 'C', true);
     $pdf->Cell($col_w[2], 6, mb_substr($row['partner_name'], 0, 28), 1, 0, 'L', true);
-    $pdf->Cell($col_w[3], 6, $price_str,                             1, 0, 'C', true);
-    $pdf->Cell($col_w[4], 6, ucfirst($row['order_status']),          1, 0, 'C', true);
-    $pdf->Cell($col_w[5], 6, ucfirst($row['approve_status']),        1, 0, 'C', true);
-    $pdf->Cell($col_w[6], 6, $weight_str,                            1, 0, 'C', true);
+    $pdf->Cell($col_w[3], 6, ucfirst($row['order_status']),          1, 0, 'C', true);
+    $pdf->Cell($col_w[4], 6, ucfirst($row['approve_status']),        1, 0, 'C', true);
+    $pdf->Cell($col_w[5], 6, $weight_str,                            1, 0, 'C', true);
     $pdf->Ln();
 
     // Items sub-rows

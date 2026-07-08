@@ -10,7 +10,7 @@ logActivity($conn, $_SESSION['user_id'], 'checking', 'orders', $_SESSION['user_i
 // FETCH ALL GÜHRING ORDERS (same query as the PDF export)
 // ---------------------------------------------------------
 $sql = "SELECT o.id, o.order_no, o.date, p.name AS partner_name,
-               o.price, o.currency, o.netto_w, o.brutto_w,
+               o.netto_w, o.brutto_w,
                o.order_status, o.approve_status
         FROM orders o
         JOIN partners p ON o.partner_id = p.id
@@ -53,7 +53,7 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 $out = fopen('php://output', 'w');
 fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel opens accents/diacritics correctly
 
-fputcsv($out, ['Order No.', 'Date', 'Customer', 'Price', 'Currency', 'Netto (kg)', 'Brutto (kg)', 'Order Status', 'Approve Status', 'Materials']);
+fputcsv($out, ['Order No.', 'Date', 'Customer', 'Netto (kg)', 'Brutto (kg)', 'Order Status', 'Approve Status', 'Materials']);
 
 foreach ($orders_rows as $row) {
     $items = $materials_by_order[$row['id']] ?? [];
@@ -68,8 +68,6 @@ foreach ($orders_rows as $row) {
         $row['order_no'],
         $row['date'],
         $row['partner_name'],
-        number_format((float)$row['price'], 2),
-        strtoupper($row['currency'] ?? 'EUR'),
         number_format((float)$row['netto_w'], 2),
         number_format((float)$row['brutto_w'], 2),
         ucfirst($row['order_status']),

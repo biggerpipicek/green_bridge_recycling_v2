@@ -187,8 +187,13 @@
                 </div>
 
                 <div class="field-row">
-                    <label for="interne_vorgangsnummer">Interne Vorgangsnummer:</label>
-                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="interne_vorgangsnummer" class="form-control field-input" style="width: 220px;">
+                    <label for="vorgangsnummer">Vorgangsnummer:</label>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="vorgangsnummer" class="form-control field-input" style="width: 220px;">
+                </div>
+
+                <div class="field-row">
+                    <label for="bestellnummer_sortierung">Bestellnummer Sortierung:</label>
+                    <input type="number" inputmode="decimal" pattern="[0-9]*" id="bestellnummer_sortierung" class="form-control field-input" style="width: 220px;">
                 </div>
 
                 <div class="field-row">

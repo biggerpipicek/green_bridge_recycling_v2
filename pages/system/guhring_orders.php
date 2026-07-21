@@ -154,8 +154,8 @@
                         <ul class="dropdown-menu">
                             <li><a href="/pages/system/guhring_orders.php?sort=date_asc" class="dropdown-item">Date: Old → New</a></li>
                             <li><a href="/pages/system/guhring_orders.php?sort=date_desc" class="dropdown-item">Date: New → Old</a></li>
-                            <!-- <li><a href="/pages/system/guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
-                            <li><a href="/pages/system/guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li> -->
+                            <li><a href="/pages/system/guhring_orders.php?sort=price_asc" class="dropdown-item">Price: Low → High</a></li>
+                            <li><a href="/pages/system/guhring_orders.php?sort=price_desc" class="dropdown-item">Price: High → Low</a></li>
                             <li><a href="/pages/system/guhring_orders.php?sort=orderno_asc" class="dropdown-item">Order No.: Low → High</a></li>
                             <li><a href="/pages/system/guhring_orders.php?sort=orderno_desc" class="dropdown-item">Order No.: High → Low</a></li>
                         </ul>

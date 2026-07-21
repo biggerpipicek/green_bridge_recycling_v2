@@ -338,16 +338,6 @@ include "../../build/header.php";
                             </svg>
                             Export PDF
                         </a>
-                    <a href="export_dashboard_csv.php?<?= $export_params ?>"
-                        class="btn btn-outline-secondary btn-sm px-3"
-                        title="Export current view as CSV">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
-                                class="bi bi-file-earmark-spreadsheet me-1" viewBox="0 0 16 16">
-                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
-                                <path d="M9 9.5H7.5v-1H9v1zm0 1.5H7.5v1H9v-1zm-3.5-1.5H7v-1H5.5v1zm0 1.5H7v1H5.5v-1zm5 0H10v1H8.5v-1z"/>
-                            </svg>
-                            Export CSV
-                        </a>
 
                 </div>
             </form>
@@ -356,6 +346,7 @@ include "../../build/header.php";
 <form id="chartExportForm" method="POST" action="export_dashboard.php?<?= $export_params ?>" style="display:none;">
     <input type="hidden" name="chart_activity" id="chart_activity_data">
     <input type="hidden" name="chart_partners" id="chart_partners_data">
+    <input type="hidden" name="chart_revenue"  id="chart_revenue_data">
     <input type="hidden" name="chart_ratio"    id="chart_ratio_data">
 </form>
 
@@ -364,6 +355,7 @@ function exportWithCharts(link) {
     const charts = {
         chart_activity_data: 'activityChart',
         chart_partners_data: 'partnersChart',
+        chart_revenue_data:  'revenueChart',
         chart_ratio_data:    'ratioChart'
     };
 
@@ -396,13 +388,13 @@ function exportWithCharts(link) {
 
     <!-- STAT CARDS -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Total Orders (System)</small>
                 <h4 class="fw-bold"><?= number_format($total_res['count']) ?></h4>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Filtered Count</small>
                 <h4 class="fw-bold"><?= number_format($filtered_count) ?></h4>
@@ -411,7 +403,7 @@ function exportWithCharts(link) {
                 </small>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
                 <small class="text-muted">Pending Action</small>
                 <h4 class="fw-bold text-danger"><?= $pending_res['count'] ?></h4>
@@ -419,8 +411,9 @@ function exportWithCharts(link) {
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 p-3">
-                <small class="text-muted">Monthly Revenue</small>
-                <h4 class="fw-bold">€<?= number_format($value_res['total'] ?? 0, 2) ?></h4>
+                <small class="text-muted">Monthly Revenue (EUR)</small>
+                <h4 class="fw-bold">€<?= number_format($monthly_eur, 2) ?></h4>
+                <small class="text-muted">Filtered total: €<?= number_format($filtered_eur_total, 2) ?></small>
             </div>
         </div>
     </div>
@@ -520,9 +513,9 @@ function exportWithCharts(link) {
         </div>
     </div>
 
-    <!-- ROW 2: Top Partners | In vs Out Ratio -->
+    <!-- ROW 2: Top Partners | Revenue Over Time | In vs Out Ratio -->
     <div class="row g-4">
-        <div class="col-lg-8">
+        <div class="col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
                 <h6 class="fw-bold mb-3">Top Partners by Order Count</h6>
                 <?php if (empty($partner_labels)): ?>
@@ -560,6 +553,40 @@ function exportWithCharts(link) {
         </div>
 
         <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <h6 class="fw-bold mb-3">Revenue Over Time <span class="text-muted fw-normal small">(EUR)</span></h6>
+                <canvas id="revenueChart" height="260"></canvas>
+                <script>
+                new Chart(document.getElementById('revenueChart'), {
+                    type: 'line',
+                    data: {
+                        labels: <?= $revenue_labels_json ?>,
+                        datasets: [{
+                            label: 'Revenue (EUR)',
+                            data: <?= $revenue_data_json ?>,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40,167,69,0.12)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: val => '€' + val.toLocaleString() }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+                </script>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">In vs Out Ratio</h6>
                 <?php if ($ratio_in === 0 && $ratio_out === 0): ?>

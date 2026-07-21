@@ -417,6 +417,12 @@ function exportWithCharts(link) {
                 <h4 class="fw-bold text-danger"><?= $pending_res['count'] ?></h4>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <small class="text-muted">Monthly Revenue</small>
+                <h4 class="fw-bold">€<?= number_format($value_res['total'] ?? 0, 2) ?></h4>
+            </div>
+        </div>
     </div>
 
     <!-- ROW 1: Activity Trend + Recent Orders -->

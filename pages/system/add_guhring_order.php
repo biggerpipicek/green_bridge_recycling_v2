@@ -327,12 +327,12 @@
                     <input type="date" name="date" class="form-control" required value="<?= $order_data['date']; ?>">
                 </div>
 
-                <div class="col-md-3 d-none">
+                <div class="col-md-3">
                     <label class="form-label">Price</label>
                     <input type="number" inputmode="decimal" pattern="[0-9]*" step="0.01" name="price" class="form-control" required value="<?= $order_data['price'] ?>">
                 </div>
 
-                <div class="col-md-2 d-none">
+                <div class="col-md-2">
                     <label class="form-label">Currency</label>
                     <select name="currency" class="form-select" required>
                         <?php 

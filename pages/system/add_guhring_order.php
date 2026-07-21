@@ -179,12 +179,25 @@
                 foreach ($_FILES['documents']['name'] as $key => $name) {
                     if ($_FILES['documents']['error'][$key] !== UPLOAD_ERR_OK) continue;
                     $tmp_name = $_FILES['documents']['tmp_name'][$key];
-                    $file_ext = pathinfo($name, PATHINFO_EXTENSION);
-                    $new_filename = "order_" . $id . "_" . time() . "_" . $key . "." . $file_ext;
-                    $target_file = $upload_dir . $new_filename;
-                    $db_path = "order_attachments/guhring/" . $new_filename;
+                    $file_ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-                    if (move_uploaded_file($tmp_name, $target_file)) {
+                    // Images always get saved as .jpg after compression; other files (pdf etc) keep their extension
+                    $is_image     = in_array($file_ext, ['jpg', 'jpeg', 'png', 'webp']);
+                    $save_ext     = $is_image ? 'jpg' : $file_ext;
+                    $new_filename = "order_" . $id . "_" . time() . "_" . $key . "." . $save_ext;
+                    $target_file  = $upload_dir . $new_filename;
+                    $db_path      = "order_attachments/guhring/" . $new_filename;
+
+                    $saved = false;
+                    if ($is_image) {
+                        $saved = compressUploadedImage($tmp_name, $target_file, $file_ext, 1600, 70);
+                    }
+                    if (!$saved) {
+                        // fallback: not an image, or compression failed — just move it as-is
+                        $saved = move_uploaded_file($tmp_name, $target_file);
+                    }
+
+                    if ($saved) {
                         $ins_at = mysqli_prepare($conn, "INSERT INTO order_attachments (order_id, file_path) VALUES (?, ?)");
                         mysqli_stmt_bind_param($ins_at, "is", $id, $db_path);
                         mysqli_stmt_execute($ins_at);

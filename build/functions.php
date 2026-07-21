@@ -163,3 +163,66 @@
             die($message ?? "Access denied — you don't have permission to perform this action.");
         }
     }
+
+
+    /**
+ * Compresses an uploaded image (JPEG/PNG/WEBP) in place before saving.
+ * Resizes to a max dimension and re-encodes at lower quality.
+ * Returns true on success, false if the type isn't a compressible image
+ * (caller should then just move the file normally, e.g. PDFs).
+ */
+function compressUploadedImage(string $tmp_path, string $target_path, string $ext, int $max_dimension = 1600, int $jpeg_quality = 70): bool {
+    $ext = strtolower($ext);
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!in_array($ext, $allowed)) {
+        return false; // not an image GD can handle here — e.g. pdf
+    }
+
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg':
+            $src = @imagecreatefromjpeg($tmp_path);
+            break;
+        case 'png':
+            $src = @imagecreatefrompng($tmp_path);
+            break;
+        case 'webp':
+            $src = @imagecreatefromwebp($tmp_path);
+            break;
+        default:
+            return false;
+    }
+
+    if (!$src) {
+        return false; // corrupt/unreadable image — let caller fall back to plain move
+    }
+
+    $orig_w = imagesx($src);
+    $orig_h = imagesy($src);
+
+    // Only shrink if it's actually larger than max_dimension
+    if ($orig_w > $max_dimension || $orig_h > $max_dimension) {
+        $ratio = min($max_dimension / $orig_w, $max_dimension / $orig_h);
+        $new_w = (int)round($orig_w * $ratio);
+        $new_h = (int)round($orig_h * $ratio);
+
+        $resized = imagecreatetruecolor($new_w, $new_h);
+
+        // preserve transparency for png
+        if ($ext === 'png') {
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+        }
+
+        imagecopyresampled($resized, $src, 0, 0, 0, 0, $new_w, $new_h, $orig_w, $orig_h);
+        imagedestroy($src);
+        $src = $resized;
+    }
+
+    // Always save as JPEG regardless of input type, since it compresses far better
+    // than PNG for photos. Skip this if you need to preserve PNG transparency.
+    $saved = imagejpeg($src, $target_path, $jpeg_quality);
+    imagedestroy($src);
+
+    return $saved;
+}

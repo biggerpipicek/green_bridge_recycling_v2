@@ -173,7 +173,7 @@
 
         <!-- TABLE -->
         <div class="container">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="width: 110%;">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="width: 110%; margin-left: -5%;">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light border-bottom">

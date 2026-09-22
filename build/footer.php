@@ -34,6 +34,7 @@
         </div>|
         <div class="half">
             <a href="https://www.greenbridgerecycling.com" target="_blank">Homepage</a>
+            
         </div>
     </footer>
 </body>

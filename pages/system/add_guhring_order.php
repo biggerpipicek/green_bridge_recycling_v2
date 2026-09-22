@@ -206,6 +206,7 @@
             }
 
             logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no}");
+            //logActivity($conn, $_SESSION['user_id'], $action_type, 'order', $id, "User #{$_SESSION['user_id']} {$action_type}d order No. {$final_order_no} with status '{$sub_data['order_status']}");
 
             // --- FETCH PARTNER NAME FOR EMAIL ---
             $pn_stmt = mysqli_prepare($conn, "SELECT name FROM partners WHERE id = ?");

@@ -226,3 +226,8 @@ function compressUploadedImage(string $tmp_path, string $target_path, string $ex
 
     return $saved;
 }
+
+function isValidImageExtension(string $ext): bool {
+    $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    return in_array(strtolower($ext), $allowed);
+}

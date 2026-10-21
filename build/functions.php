@@ -231,3 +231,4 @@ function isValidImageExtension(string $ext): bool {
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
     return in_array(strtolower($ext), $allowed);
 }
+
